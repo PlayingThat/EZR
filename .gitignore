@@ -2,6 +2,7 @@
 build
 .vscode
 .idea
+cmake-build-debug
 
 ### CTest ###
 Testing
@@ -18,6 +19,14 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
+Dependencies/glfw/cmake_uninstall.cmake
+Dependencies/glfw/lib/libglfw3.a
+Dependencies/glfw/src/glfw_config.h
+Dependencies/glfw/src/glfw3.pc
+Dependencies/glfw/src/glfw3Config.cmake
+Dependencies/glfw/src/glfw3ConfigVersion.cmake
+Dependencies/glfw/src/libglfw3.a
+Dependencies/glfw/tests/
 
 ### CMake Patch ###
 # External projects
