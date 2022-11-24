@@ -14,8 +14,11 @@ cmake_policy(SET CMP0074 NEW)
 find_package(GLFW3 REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLM REQUIRED)
+find_package(Assimp REQUIRED)
 
 include_directories(Include)
+include_directories(${ASSIMP_INCLUDE_DIRS})
+include_directories(Dependencies/assimp/contrib)
 
 set(SRC_LIST Include/stb_image.h
         Include/imgui/imconfig.h
@@ -46,11 +49,16 @@ set(SRC_LIST Include/stb_image.h
         Source/Objects/Quad.cpp
         Source/Engine/State.cpp
         Source/Engine/Scene.cpp
+        Source/Engine/ModelLoader.cpp
         Source/Objects/ColorfullTriangle.cpp)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST} )
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIR} ${GLFW3_INCLUDE_DIR} ${GLM_INCLUDE_PATH} Include)
+target_include_directories(${PROJECT_NAME} PUBLIC ${OPENGL_INCLUDE_DIR}
+                                                  ${GLFW3_INCLUDE_DIR} 
+                                                  ${GLM_INCLUDE_PATH}
+                                                  Dependencies/assimp/include
+                                                  Include)
 
 # glad
 set(GLAD_DIR "${LIB_DIR}/glad")
@@ -59,12 +67,18 @@ target_include_directories("glad" PRIVATE "${GLAD_DIR}/include")
 target_include_directories(${PROJECT_NAME} PRIVATE "${GLAD_DIR}/include")
 target_link_libraries(${PROJECT_NAME} "glad" "${CMAKE_DL_LIBS}")
 
+# assimp
+#set(ASSIMP_DIR "${CMAKE_CURRENT_LIST_DIR}/Dependencies/assimp")
+#add_library("assimp" "${GLAD_DIR}/src/glad.c")
+#target_link_libraries(${PROJECT_NAME} "assimp" "${CMAKE_CURRENT_LIST_DIR}/Dependencies/assimp/lib/libassimp.a")
+
 target_link_libraries(
         ${PROJECT_NAME}
         ${OpenGL3_LIBRARIES}
         GLFW3::glfw3
         GLM::glm
         opengl32
+        ${ASSIMP_LIBRARIES}
         glad
         imm32)
 
@@ -78,4 +92,4 @@ add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
 #list(APPEND CMAKE_CXX_FLAGS "-mwindows")
 
 # Disable testing
-set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DBUILD_TESTING:BOOL=OFF")
+set (ADD_BUILD_OPTIONS "${ADD_BUILD_OPTIONS} -DBUILD_TESTING:BOOL=OFF -flto -Wl,-allow-multiple-definition")
