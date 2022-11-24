@@ -4,14 +4,13 @@
 
 #include "Engine/Drawable.h"
 
-Drawable::Drawable()
+Drawable::Drawable(glm::vec3 position, 
+                   glm::vec3 rotation, 
+                   glm::vec3 scale)
 {
-    m_vertexbuffer = 0;
-    m_normalbuffer = 0;
-    m_tangentbuffer = 0;
-    m_uvbuffer = 0;
-    m_indexlist = 0;
-    m_vao = 0;
+    m_position = position;
+    m_rotation = rotation;
+    m_scale = scale;
 };
 
 void Drawable::draw()
