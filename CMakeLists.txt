@@ -50,7 +50,10 @@ set(SRC_LIST Include/stb_image.h
         Source/Engine/State.cpp
         Source/Engine/Scene.cpp
         Source/Engine/ModelLoader.cpp
-        Source/Objects/ColorfullTriangle.cpp)
+        Source/Objects/ColorfullTriangle.cpp
+        
+        Include/Objects/Terrain.h
+        Source/Objects/Terrain.cpp)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST} )
 
