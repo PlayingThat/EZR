@@ -39,3 +39,16 @@ Dependencies/glfw/tests/
 *.ptx
 *.cubin
 *.fatbin
+*.dll
+*.cmake
+*.a
+*.ninja
+*.pc
+Dependencies/assimp/contrib/zlib/libzlibstatic.a
+Dependencies/assimp/include/assimp/config.h
+Dependencies/assimp/revision.h
+Dependencies/glm/.ninja_deps
+Dependencies/glm/.ninja_log
+Dependencies/assimp/contrib/zlib/libzlibstatic.a
+Dependencies/assimp/contrib/zlib/libzlibstatic.a
+Dependencies/assimp/contrib/zlib/libzlibstatic.a
