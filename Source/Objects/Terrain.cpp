@@ -9,6 +9,11 @@ Terrain::Terrain()
     create();
 }
 
+void Terrain::draw()
+{
+    
+}
+
 void Terrain::create()
 {
 
