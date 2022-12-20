@@ -53,7 +53,10 @@ set(SRC_LIST Include/stb_image.h
         Source/Objects/ColorfullTriangle.cpp
         
         Include/Objects/Terrain.h
-        Source/Objects/Terrain.cpp)
+        Source/Objects/Terrain.cpp
+        Include/Engine/ConcurrentBinaryTree.h
+        Source/Engine/ConcurrentBinaryTree.cpp)
+        
 
 add_executable(${PROJECT_NAME} ${SRC_LIST} )
 

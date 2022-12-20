@@ -39,8 +39,9 @@ Dependencies/glfw/tests/
 *.ptx
 *.cubin
 *.fatbin
+
+### Misc ###
 *.dll
-*.cmake
 *.a
 *.ninja
 *.pc
