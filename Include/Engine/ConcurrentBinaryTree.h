@@ -13,7 +13,6 @@
 #include "ParallelFor.h"
 
 
-typedef struct cbt_Tree cbt_Tree;
 typedef struct {
     uint64_t id   : 58; // heapID
     uint64_t depth:  6; // log2(heapID)
@@ -22,6 +21,14 @@ typedef struct {
 // Parallel binary tree
 struct cbt_Tree {
     uint64_t *heap;
+};
+
+struct atomicLock {
+  std::atomic<bool> lock_ = {false};
+
+  void lock() { while(lock_.exchange(true, std::memory_order_acquire)); }
+
+  void unlock() { lock_.store(false, std::memory_order_release); }
 };
 
 // Args for reading and writing to the two 64 bit words that bound the queries range
@@ -35,7 +42,7 @@ class ConcurrentBinaryTree
 {
 public:
     // Create tree
-    ConcurrentBinaryTree(int64_t maxDepth);
+    ConcurrentBinaryTree(int64_t maxDepth, int64_t depth);
     // Release tree
     ~ConcurrentBinaryTree();
 
@@ -81,6 +88,9 @@ public:
 
 
 private:
+    // Atomic lock
+    atomicLock m_lock;
+
     // Helpers for heap management
     void clearBitField();
     uint64_t heapReadExplicit(const cbt_Node node, int64_t bitCount);

@@ -4,9 +4,9 @@
 
 #include "Engine/ConcurrentBinaryTree.h"
 
-ConcurrentBinaryTree::ConcurrentBinaryTree(int64_t maxDepth)
+ConcurrentBinaryTree::ConcurrentBinaryTree(int64_t maxDepth, int64_t depth)
 {
-    createAtDepth(maxDepth, 0);
+    createAtDepth(maxDepth, depth);
 }
 
 ConcurrentBinaryTree::~ConcurrentBinaryTree()
@@ -22,7 +22,7 @@ void ConcurrentBinaryTree::createAtDepth(int64_t maxDepth, int64_t depth)
         LOG_WARNING("maxDepth must be at least 5");
     if(maxDepth > 58)
         LOG_WARNING("maxDepth must be at most 58");  // (dont try, it'll break)
-    m_tree = (cbt_Tree *)malloc(sizeof(m_tree));
+    m_tree = (cbt_Tree *)malloc(sizeof(*m_tree));
 
     int64_t bitfieldSize = 1LL << (maxDepth - 1);
     m_tree->heap = (uint64_t *)malloc(bitfieldSize);
@@ -267,10 +267,11 @@ void ConcurrentBinaryTree::setBitValue(uint64_t *bitField, int64_t bitID, uint64
 {
     const uint64_t bitMask = ~(1ULL << bitID);
 
-    // atomic?
+    // atomic
+    m_lock.lock();
     (*bitField)&= bitMask;
-    // atomic?
     (*bitField)|= (bitValue << bitID);
+    m_lock.unlock();
 }
 
 // Inserts data in range [offset, offset + count - 1]
@@ -279,10 +280,11 @@ inline void ConcurrentBinaryTree::bitFieldInsert( uint64_t *bitField, int64_t  b
         LOG_WARNING("Bitfield access using out of bounds bit offset or count (CBT heap)");
     uint64_t bitMask = ~(~(0xFFFFFFFFFFFFFFFFULL << bitCount) << bitOffset);
 
-    // atomic?
+    // atomic
+    m_lock.lock();
     (*bitField)&= bitMask;
-    // atomic?
     (*bitField)|= (bitData << bitOffset);
+    m_lock.unlock();
 }
 
 // BitFieldExtract -- Extracts bits [bitOffset, bitOffset + bitCount - 1] from a bitfield
@@ -437,7 +439,8 @@ void ConcurrentBinaryTree::computeSumReduction()
             bitField = (bitField & 0x5555555555555555ULL)
                     + ((bitField >>  1) & 0x5555555555555555ULL);
             bitData = bitField;
-            m_tree->heap[(alignedBitOffset - minNodeID) >> 6] = bitData;
+            auto test = (alignedBitOffset - minNodeID) >> 6;
+            m_tree->heap[test] = bitData;
 
             // 3-bits
             bitField = (bitField & 0x3333333333333333ULL)

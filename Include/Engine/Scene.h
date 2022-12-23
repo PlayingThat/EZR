@@ -9,6 +9,7 @@
 #include <vector>
 #include "Engine/Drawable.h"
 #include "Objects/ColorfullTriangle.h"
+#include "Objects/Terrain.h"
 
 class Scene
 {
@@ -29,5 +30,6 @@ private:
 
     // Objects
     std::shared_ptr<ColorfullTriangle> m_triangle;
+    std::shared_ptr<Drawable> m_terrain;
 
 };
