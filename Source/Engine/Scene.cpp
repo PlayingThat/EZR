@@ -14,7 +14,10 @@ Scene::Scene(std::shared_ptr<State> state)
     // Setup objects
     m_triangle = std::make_shared<ColorfullTriangle>();
 
-    addObject(std::move(m_triangle));
+    m_terrain = std::make_shared<Terrain>();
+
+    addObject(m_triangle);
+    addObject(m_terrain);
 }
 
 Scene::~Scene()

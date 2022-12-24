@@ -42,6 +42,11 @@ void ColorfullTriangle::draw()
     // Keep in screen space 
     m_basicShaderProgram->setMat4("projectionMatrix", glm::mat4(1.0f));
     m_basicShaderProgram->setMat4("viewMatrix", glm::mat4(1.0f));
+    m_basicShaderProgram->setMat4("modelMatrix", glm::mat4(1.0f));
+    m_triangle->draw();
+    m_basicShaderProgram->setMat4("modelMatrix", glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 1.0f, 0.0f)));
+    m_basicShaderProgram->setMat4("modelMatrix", glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 2.0f, 0.0f)));
+    m_basicShaderProgram->setVec3("color", glm::vec3(1.0f, 0.5f, 0.0f));
     m_triangle->draw();
 }
 

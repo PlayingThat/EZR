@@ -1,5 +1,5 @@
 cd Dependencies/glfw
-cmake . -DGLFW_BUILD_EXAMPLES=OFF -G "MinGW Makefiles"
+cmake . -DGLFW_BUILD_DOCS=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_EXAMPLES=OFF -G "MinGW Makefiles"
 cmake --build . -j %NUMBER_OF_PROCESSORS%
 xcopy %cd%\src\libglfw3.a %cd%\lib\libglfw3.a* /d
 setx GLFW3_ROOT "%cd%"

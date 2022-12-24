@@ -50,7 +50,15 @@ set(SRC_LIST Include/stb_image.h
         Source/Engine/State.cpp
         Source/Engine/Scene.cpp
         Source/Engine/ModelLoader.cpp
-        Source/Objects/ColorfullTriangle.cpp)
+        Source/Objects/ColorfullTriangle.cpp
+        
+        Include/Objects/Terrain.h
+        Source/Objects/Terrain.cpp
+        Include/Engine/ConcurrentBinaryTree.h
+        Source/Engine/ConcurrentBinaryTree.cpp
+        Include/Engine/LongestEdgeBisection.h
+        Source/Engine/LongestEdgeBisection.cpp)
+        
 
 add_executable(${PROJECT_NAME} ${SRC_LIST} )
 
@@ -83,6 +91,12 @@ target_link_libraries(
         imm32)
 
 # Copy Assets
+add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/Dependencies/assimp/bin/libassimp-5.dll
+                ${CMAKE_BINARY_DIR}/libassimp.dll)
+
+# Copy ASSIMP
 add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
                 ${CMAKE_SOURCE_DIR}/Assets
