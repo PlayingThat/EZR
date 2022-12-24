@@ -38,4 +38,5 @@ Dependencies/glfw/tests/
 *.gpu
 *.ptx
 *.cubin
+*.a
 *.fatbin
