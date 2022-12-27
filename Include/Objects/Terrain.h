@@ -50,5 +50,5 @@ private:
     // GUI Elements
 
     // Max subdivision depth of the terrain
-    int m_maxDepth = 5;
+    int m_maxDepth = 6;
 };
