@@ -8,10 +8,14 @@
 #include "../Engine/ShaderProgram.h"
 #include "../Engine/Drawable.h"
 #include "../Engine/State.h"
-#include <string>
+#include "../Engine/Defs.h"
 
 #include "../Engine/ConcurrentBinaryTree.h"
 #include "../Engine/LongestEdgeBisection.h"
+
+#include <map>
+#include <string>
+
 
 class Terrain : public Drawable
 {
@@ -21,7 +25,6 @@ public:
 
     void draw();
 
-    void loadSubdivisionBuffer();
 
 private:
     void drawGUI(); 
@@ -33,8 +36,17 @@ private:
     std::unique_ptr<ShaderProgram> m_basicShaderProgram;
 
     std::unique_ptr<ConcurrentBinaryTree> m_concurrentBinaryTree;
+    std::unique_ptr<LongestEdgeBisection> m_longesEdgeBisection;
 
+    // base buffers
     void create();
+
+    // Member functions to setup buffers
+    void loadSubdivisionBuffer();
+    // Buffers for indirect rendering of the terrain
+    void loadRenderBuffer();
+    // Buffers for the subdivided triangle, i.e. triangle meshlet
+    bool LoadTriangleMeshletBuffers();
 
     //////////////////////////////////////////////////////////
     // GL Buffer
@@ -45,10 +57,23 @@ private:
     // Buffer indices
     GLuint m_subdivionBufferIndex = 0;
 
+    // Buffers for indirect drawing
+    GLuint m_bufferTerrainDraw = 0;
+    GLuint m_bufferTerrainDrawMeshTask = 0;
+    GLuint m_bufferTerrainDrawComputeShader = 0;
+    GLuint m_bufferTerrainDispatchComputeShader = 0;
+
+    // Buffers for terrain subdivision meshlet
+    GLuint m_bufferMeshletVertices = 0;
+    GLuint m_bufferMeshletIndices = 0;
+
 
     //////////////////////////////////////////////////////////
     // GUI Elements
 
     // Max subdivision depth of the terrain
     int m_maxDepth = 6;
+
+    // Patch subdivision level to be sent to GPU
+    int m_patchSubDiv = 0;
 };
