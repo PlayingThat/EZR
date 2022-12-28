@@ -41,12 +41,17 @@ private:
     // base buffers
     void create();
 
+    // Setup buffers
+    void setupBuffers();
+
     // Member functions to setup buffers
     void loadSubdivisionBuffer();
     // Buffers for indirect rendering of the terrain
     void loadRenderBuffer();
     // Buffers for the subdivided triangle, i.e. triangle meshlet
-    bool LoadTriangleMeshletBuffers();
+    void loadTriangleMeshletBuffers();
+
+    void loadCBTNodeCountBuffer();
 
     //////////////////////////////////////////////////////////
     // GL Buffer
@@ -66,6 +71,9 @@ private:
     // Buffers for terrain subdivision meshlet
     GLuint m_bufferMeshletVertices = 0;
     GLuint m_bufferMeshletIndices = 0;
+
+    GLuint m_bufferCBTNodeCount = 0;
+    GLuint m_bufferCBTNodeCountIndex = 0;
 
 
     //////////////////////////////////////////////////////////

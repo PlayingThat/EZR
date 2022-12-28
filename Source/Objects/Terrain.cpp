@@ -39,15 +39,31 @@ void Terrain::create()
     m_basicShaderProgram->attachShader(m_basicFragmentShader);
     m_basicShaderProgram->link(); */
 
+    // Load buffers
+    setupBuffers();
+}
+
+void Terrain::setupBuffers()
+{
+    // Clear any previous errors
+    CLEAR_GL_ERRORS();
+
     // Load subdivision buffer
     loadSubdivisionBuffer();
 
     // Load buffers for indirect drawing
     loadRenderBuffer();
+
+    loadTriangleMeshletBuffers();
+
+    loadCBTNodeCountBuffer();
+
 }
 
 void Terrain::loadSubdivisionBuffer()
 {
+    LOG_INFO("Loading Subdivision buffer for LEB and CBT");
+
     m_concurrentBinaryTree = std::make_unique<ConcurrentBinaryTree>(m_maxDepth, 1);
     m_longesEdgeBisection = std::make_unique<LongestEdgeBisection>();
 
@@ -103,62 +119,80 @@ void Terrain::loadRenderBuffer()
     HANDLE_GL_ERRORS("loading terrain render buffer");
 }
 
-// bool Terrain::LoadTriangleMeshletBuffers()
-// {
-//     std::vector<uint16_t> indexBuffer;
-//     std::vector<glm::vec2> vertexBuffer;
-//     std::map<uint32_t, uint16_t> hashMap;
-//     int lebDepth = 2 * m_patchSubDiv;
-//     int triangleCount = 1 << lebDepth;
-//     int edgeTessellationFactor = 1 << m_patchSubDiv;
+void Terrain::loadCBTNodeCountBuffer()
+{
+    LOG_INFO("Loading Cbt-Node-Count-Buffer");
+    if (glIsBuffer(m_bufferCBTNodeCount))
+        glDeleteBuffers(1, &m_bufferCBTNodeCount);
+    glGenBuffers(1, &m_bufferCBTNodeCount);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_bufferCBTNodeCount);
+    glBufferStorage(GL_SHADER_STORAGE_BUFFER,
+                    sizeof(int32_t),
+                    NULL,
+                    GL_MAP_READ_BIT);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                     m_bufferCBTNodeCountIndex,
+                     m_bufferCBTNodeCount);
 
-//     // compute index and vertex buffer
-//     for (int i = 0; i < triangleCount; ++i) {
-//         cbt_Node node = {(uint64_t)(triangleCount + i), 2 * m_patchSubDiv};
-//         float attribArray[][3] = { {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f} };
+    HANDLE_GL_ERRORS("loading CBT Node counter buffer");
+}
 
-//         m_longesEdgeBisection->decodeNodeAttributeArray(node, 2, attribArray);
+void Terrain::loadTriangleMeshletBuffers()
+{
+    std::vector<uint16_t> indexBuffer;
+    std::vector<glm::vec2> vertexBuffer;
+    std::map<uint32_t, uint16_t> hashMap;
+    int lebDepth = 2 * m_patchSubDiv;
+    int triangleCount = 1 << lebDepth;
+    int edgeTessellationFactor = 1 << m_patchSubDiv;
 
-//         for (int j = 0; j < 3; ++j) {
-//             uint32_t vertexID = attribArray[0][j] * (edgeTessellationFactor + 1)
-//                               + attribArray[1][j] * (edgeTessellationFactor + 1) * (edgeTessellationFactor + 1);
-//             auto it = hashMap.find(vertexID);
+    // compute index and vertex buffer
+    for (int i = 0; i < triangleCount; ++i) {
+        cbt_Node node = {(uint64_t)(triangleCount + i), (uint64_t)2 * m_patchSubDiv};
+        float attribArray[][3] = { {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f} };
 
-//             if (it != hashMap.end()) {
-//                 indexBuffer.push_back(it->second);
-//             } else {
-//                 uint16_t newIndex = (uint16_t)vertexBuffer.size();
+        m_longesEdgeBisection->decodeNodeAttributeArray(node, 2, attribArray);
 
-//                 indexBuffer.push_back(newIndex);
-//                 hashMap.insert(std::pair<uint32_t, uint16_t>(vertexID, newIndex));
-//                 vertexBuffer.push_back(glm::vec2(attribArray[0][j], attribArray[1][j]));
-//             }
-//         }
-//     }
+        for (int j = 0; j < 3; ++j) {
+            uint32_t vertexID = attribArray[0][j] * (edgeTessellationFactor + 1)
+                              + attribArray[1][j] * (edgeTessellationFactor + 1) * (edgeTessellationFactor + 1);
+            auto it = hashMap.find(vertexID);
 
-//     if (glIsBuffer(m_bufferMeshletVertices))
-//         glDeleteBuffers(1, &m_bufferMeshletVertices);
+            if (it != hashMap.end()) {
+                indexBuffer.push_back(it->second);
+            } else {
+                uint16_t newIndex = (uint16_t)vertexBuffer.size();
 
-//     if (glIsBuffer(m_bufferMeshletIndices))
-//         glDeleteBuffers(1, &m_bufferMeshletIndices);
+                indexBuffer.push_back(newIndex);
+                hashMap.insert(std::pair<uint32_t, uint16_t>(vertexID, newIndex));
+                vertexBuffer.push_back(glm::vec2(attribArray[0][j], attribArray[1][j]));
+            }
+        }
+    }
 
-//     LOG_INFO("Loading Meshlet-Buffers\n");
+    if (glIsBuffer(m_bufferMeshletVertices))
+        glDeleteBuffers(1, &m_bufferMeshletVertices);
 
-//     glGenBuffers(1, &m_bufferMeshletIndices);
-//     glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_bufferMeshletIndices);
-//     glBufferData(GL_SHADER_STORAGE_BUFFER,
-//                  sizeof(indexBuffer[0]) * indexBuffer.size(),
-//                  &indexBuffer[0],
-//                  GL_STATIC_DRAW);
-//     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    if (glIsBuffer(m_bufferMeshletIndices))
+        glDeleteBuffers(1, &m_bufferMeshletIndices);
 
-//     glGenBuffers(1, &m_bufferMeshletVertices);
-//     glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_bufferMeshletVertices);
-//     glBufferData(GL_SHADER_STORAGE_BUFFER,
-//                  sizeof(vertexBuffer[0]) * vertexBuffer.size(),
-//                  &vertexBuffer[0],
-//                  GL_STATIC_DRAW);
-//     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    LOG_INFO("Loading Meshlet-Buffers");
 
-//     HANDLE_GL_ERRORS("setting up meshlet buffers for LEB");
-// }
+    glGenBuffers(1, &m_bufferMeshletIndices);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_bufferMeshletIndices);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,
+                 sizeof(indexBuffer[0]) * indexBuffer.size(),
+                 &indexBuffer[0],
+                 GL_STATIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    glGenBuffers(1, &m_bufferMeshletVertices);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_bufferMeshletVertices);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,
+                 sizeof(vertexBuffer[0]) * vertexBuffer.size(),
+                 &vertexBuffer[0],
+                 GL_STATIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    HANDLE_GL_ERRORS("setting up meshlet buffers for LEB");
+}

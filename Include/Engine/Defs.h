@@ -26,12 +26,17 @@
 #define LOG_ERROR(error)  std::cerr << "Error in " << __FILE__ << "(" << __LINE__ << "): " << error << std::endl
 #define LOG_SHADER_ERROR(shader, error)  std::cerr << "Error in " << shader << ": " << error << std::endl
 
+// Pseudo-Macro for clearing all errors in the error buffer
+static inline void CLEAR_GL_ERRORS() {
+    while (glGetError() != GL_NO_ERROR);
+}
+
 // Pseudo-Macro for handling errors at the end of opengl operations
 // place_of_occurrence should allow to trace back where the error occured
 static inline void HANDLE_GL_ERRORS(std::string place_of_occurrence) {
     GLenum err;
     if ((err = glGetError()) != GL_NO_ERROR)
     {
-        LOG_ERROR("Error while " << place_of_occurrence << " :" << err);
+        LOG_ERROR("Error while " << place_of_occurrence << ": " << err);
     }
 }
