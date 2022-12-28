@@ -5,6 +5,11 @@
 
 #include "Engine/LongestEdgeBisection.h"
 
+LongestEdgeBisection::LongestEdgeBisection() 
+{
+    //
+}
+
 // Decodes node attributes
 void LongestEdgeBisection::decodeNodeAttributeArray(const cbt_Node node, int64_t attributeArraySize, float attributeArray[][3])
 {

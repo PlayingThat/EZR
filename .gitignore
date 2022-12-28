@@ -27,6 +27,7 @@ Dependencies/glfw/src/glfw3Config.cmake
 Dependencies/glfw/src/glfw3ConfigVersion.cmake
 Dependencies/glfw/src/libglfw3.a
 Dependencies/glfw/tests/
+Dependencies/assimp/generated/
 
 ### CMake Patch ###
 # External projects
@@ -52,3 +53,4 @@ Dependencies/assimp/revision.h
 Dependencies/glm/.ninja_deps
 Dependencies/glm/.ninja_log
 Dependencies/assimp/contrib/zlib/libzlibstatic.a
+Dependencies/assimp/cmake_uninstall.cmake

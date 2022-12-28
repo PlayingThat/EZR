@@ -18,8 +18,8 @@ ConcurrentBinaryTree::~ConcurrentBinaryTree()
 // Setup tree buffer
 void ConcurrentBinaryTree::createAtDepth(int64_t maxDepth, int64_t depth)
 {
-    if(maxDepth < 5)
-        LOG_WARNING("maxDepth must be at least 5");
+    if(maxDepth < 6)
+        LOG_WARNING("maxDepth must be at least 6");
     if(maxDepth > 58)
         LOG_WARNING("maxDepth must be at most 58");  // (dont try, it'll break)
     m_tree = (cbt_Tree *)malloc(sizeof(*m_tree));

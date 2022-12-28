@@ -21,7 +21,6 @@ class LongestEdgeBisection
 {
 public:
     LongestEdgeBisection();
-    ~LongestEdgeBisection();
 
     void decodeNodeAttributeArray(const cbt_Node node, int64_t attributeArraySize, float attributeArray[][3]);
 
