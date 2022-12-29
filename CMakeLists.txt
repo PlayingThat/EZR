@@ -80,21 +80,36 @@ target_link_libraries(${PROJECT_NAME} "glad" "${CMAKE_DL_LIBS}")
 #add_library("assimp" "${GLAD_DIR}/src/glad.c")
 #target_link_libraries(${PROJECT_NAME} "assimp" "${CMAKE_CURRENT_LIST_DIR}/Dependencies/assimp/lib/libassimp.a")
 
-target_link_libraries(
+if (UNIX)
+    target_link_libraries(
         ${PROJECT_NAME}
         ${OpenGL3_LIBRARIES}
         GLFW3::glfw3
         GLM::glm
-        opengl32
+        GL
         ${ASSIMP_LIBRARIES}
-        glad
-        imm32)
+        glad)
+endif()
 
-# Copy Assets
-add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_SOURCE_DIR}/Dependencies/assimp/bin/libassimp-5.dll
-                ${CMAKE_BINARY_DIR}/libassimp.dll)
+
+if (WIN32)
+    target_link_libraries(
+            ${PROJECT_NAME}
+            ${OpenGL3_LIBRARIES}
+            GLFW3::glfw3
+            GLM::glm
+            opengl32
+            ${ASSIMP_LIBRARIES}
+            glad
+            imm32)
+
+
+    # Copy Assets
+    add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+                    ${CMAKE_SOURCE_DIR}/Dependencies/assimp/bin/libassimp-5.dll
+                    ${CMAKE_BINARY_DIR}/libassimp.dll)
+endif()
 
 # Copy ASSIMP
 add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
