@@ -61,3 +61,21 @@ void State::setTime(double mTime)
 {
     m_time = mTime;
 }
+
+void State::attachWindowSizeChangeCallback(SizeCallbackSubscriber* observer)
+{
+    m_sizeCallbackSubscribers.push_back(observer);
+}
+
+void State::detachWindowSizeChangeCallback(SizeCallbackSubscriber* observer)
+{
+    m_sizeCallbackSubscribers.erase(std::remove(m_sizeCallbackSubscribers.begin(), m_sizeCallbackSubscribers.end(), observer), m_sizeCallbackSubscribers.end());
+}
+
+void State::notifyWindowSizeChange(int width, int height)
+{
+    for (SizeCallbackSubscriber* observer : m_sizeCallbackSubscribers)
+    {
+        observer->onSizeChanged(width, height);
+    }
+}

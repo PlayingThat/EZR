@@ -4,9 +4,13 @@
 
 #include "Objects/Terrain.h"
 
-Terrain::Terrain()
+Terrain::Terrain(std::shared_ptr<State> state)
 {
+    m_state = state;
     create();
+
+    // Subscribe to size change events
+    m_state->attachWindowSizeChangeCallback(this);
 }
 
 Terrain::~Terrain()
@@ -16,7 +20,22 @@ Terrain::~Terrain()
 
 void Terrain::draw()
 {
-    drawGUI();
+    // drawGUI();
+
+    // glBindFramebuffer(GL_FRAMEBUFFER, m_bufferTerrainDraw);
+    // glViewport(0, 0, g_framebuffer.w, g_framebuffer.h);
+    // glClearColor(0.5, 0.5, 0.5, 1.0);
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // renderScene();
+
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // glViewport(0, 0, g_app.viewer.w, g_app.viewer.h);
+    // glClearColor(0, 0, 0, 0);
+    // glClear(GL_COLOR_BUFFER_BIT);
+    // renderViewer();
+
+
+    // ++g_app.frame;
 }
 
 // Draw GUI controls for terrain arguments
@@ -25,6 +44,13 @@ void Terrain::drawGUI()
     ImGui::Begin("Terrain");
     ImGui::SliderInt("Max Depth", &m_maxDepth, 1, 30);
     ImGui::End();
+}
+
+// Callback for size change will need to recreate the buffers
+void Terrain::onSizeChanged(int width, int height)
+{
+    setupBuffers();
+    LOG_INFO("Size changed to: " + std::to_string(width) + "x" + std::to_string(height));
 }
 
 void Terrain::create()

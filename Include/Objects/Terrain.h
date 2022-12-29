@@ -17,14 +17,19 @@
 #include <string>
 
 
-class Terrain : public Drawable
+class Terrain : public Drawable, public SizeCallbackSubscriber
 {
 public:
-    Terrain();
+    Terrain(std::shared_ptr<State> state);
     ~Terrain();
 
     void draw();
 
+protected:
+    void renderScene();
+    void renderViewer();
+
+    void onSizeChanged(int width, int height);
 
 private:
     void drawGUI(); 
@@ -84,4 +89,9 @@ private:
 
     // Patch subdivision level to be sent to GPU
     int m_patchSubDiv = 0;
+
+    //////////////////////////////////////////////////////////
+    // Misc Engine Elements
+    std::shared_ptr<State> m_state;
+
 };

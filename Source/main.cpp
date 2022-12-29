@@ -23,6 +23,9 @@ const int HEIGHT = 768;
 
 const bool FULLSCREEN = false;
 
+// Init state system
+std::shared_ptr<State> state = std::make_shared<State>(WIDTH, HEIGHT);
+
 // context creation callback
 void errorCallback(int error, const char *description)
 {
@@ -32,6 +35,7 @@ void errorCallback(int error, const char *description)
 void sizeCallback(GLFWwindow *window, int width, int height)
 {
     glViewport(0, 0, width, height);
+    state->notifyWindowSizeChange(width, height);
 }
 
 // open gl error callback
@@ -164,9 +168,6 @@ int main()
     // enable docking
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigDockingWithShift = false;
-
-    // Init state system
-    std::shared_ptr<State> state = std::make_shared<State>(WIDTH, HEIGHT);
 
     // screen filling quad
     std::unique_ptr<ScreenFillingQuad> sfq = std::make_unique<ScreenFillingQuad>(state);
