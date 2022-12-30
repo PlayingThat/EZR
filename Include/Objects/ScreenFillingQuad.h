@@ -14,7 +14,7 @@
 class ScreenFillingQuad : public Drawable
 {
 public:
-    ScreenFillingQuad(std::shared_ptr<State> state);
+    ScreenFillingQuad(std::shared_ptr<Scene> scene);
 
     ~ScreenFillingQuad();
 

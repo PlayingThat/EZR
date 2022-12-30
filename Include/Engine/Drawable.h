@@ -7,12 +7,17 @@
 #include "Defs.h"
 #include <vector>
 
+// Forward declaration
+class Scene;
+
 class Drawable
 {
 public:
-    Drawable(glm::vec3 position = glm::vec3(0.0f), 
-             glm::vec3 rotation = glm::vec3(0.0f), 
+    Drawable(std::shared_ptr<Scene> scene,
+             glm::vec3 position = glm::vec3(0.0f), 
+             glm::vec3 rotation = glm::vec3(0.0f, 1.0f, 0.0f), 
              glm::vec3 scale = glm::vec3(1.0f));
+    ~Drawable();
 
     void createBuffers();
 
@@ -41,9 +46,12 @@ protected:
     std::vector<unsigned int> m_index; 
     std::vector<glm::vec3> m_tangents;
 
+    std::shared_ptr<Scene> m_scene;
+
 private:
     glm::vec3 m_position; 
     glm::vec3 m_rotation;
     glm::vec3 m_scale;
     glm::vec4 m_modelMatrix;
+
 };

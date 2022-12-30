@@ -7,13 +7,13 @@
 #include "../Engine/Shader.h"
 #include "../Engine/ShaderProgram.h"
 #include "../Engine/Drawable.h"
-#include "../Engine/State.h"
+#include "../Engine/Scene.h"
 #include "../Objects/Triangle.h"
 
 class ColorfullTriangle : public Drawable
 {
 public:
-    ColorfullTriangle();
+    ColorfullTriangle(std::shared_ptr<Scene> scene);
     ~ColorfullTriangle();
 
     void draw();

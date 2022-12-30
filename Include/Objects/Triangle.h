@@ -9,7 +9,7 @@
 class Triangle : public Drawable
 {
 public:
-    Triangle();
+    Triangle(std::shared_ptr<Scene> scene);
 
 private:
     void create(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 na, glm::vec3 nb, glm::vec3 nc, glm::vec2 tca,

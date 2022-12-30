@@ -3,26 +3,40 @@
 //
 
 #include "Engine/Scene.h"
+// Needed to resolve forward declaration
+#include "Engine/Drawable.h"
 
 Scene::Scene(std::shared_ptr<State> state)
+{
+    m_state = state;
+
+}
+
+void Scene::setup(std::shared_ptr<Scene> scene)
 {
     m_drawables = std::vector<std::shared_ptr<Drawable>>();
     m_backgroundColor = std::make_unique<float[]>(3); 
 
-    m_state = state;
-
     // Setup objects
-    m_triangle = std::make_shared<ColorfullTriangle>();
+    m_triangle = std::make_shared<ColorfullTriangle>(scene);
 
-    m_terrain = std::make_shared<Terrain>(m_state);
+    m_terrain = std::make_shared<Terrain>(scene);
+
+    m_rockAndStone = std::make_shared<RockAndStone>(scene);
 
     addObject(m_triangle);
     addObject(m_terrain);
+    addObject(m_rockAndStone);
 }
 
 Scene::~Scene()
 {
 
+}
+
+std::shared_ptr<State> Scene::getState() const
+{
+    return m_state;
 }
 
 void Scene::update(float deltaTime)

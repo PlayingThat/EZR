@@ -4,13 +4,13 @@
 
 #include "Objects/Terrain.h"
 
-Terrain::Terrain(std::shared_ptr<State> state)
+Terrain::Terrain(std::shared_ptr<Scene> scene) : Drawable(scene)
 {
-    m_state = state;
+    m_scene = scene;
     create();
 
     // Subscribe to size change events
-    m_state->attachWindowSizeChangeCallback(this);
+    m_scene->getState()->attachWindowSizeChangeCallback(this);
 }
 
 Terrain::~Terrain()

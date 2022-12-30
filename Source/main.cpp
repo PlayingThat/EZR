@@ -169,9 +169,6 @@ int main()
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigDockingWithShift = false;
 
-    // screen filling quad
-    std::unique_ptr<ScreenFillingQuad> sfq = std::make_unique<ScreenFillingQuad>(state);
-
     double startTime = glfwGetTime();
 
     // FBO for rendering the scene
@@ -179,7 +176,11 @@ int main()
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneFBO->getColorAttachment(0), 0);
 
     // Create scene manager object 
-    std::unique_ptr<Scene> scene = std::make_unique<Scene>(state);
+    std::shared_ptr<Scene> scene = std::make_unique<Scene>(state);
+    scene->setup(scene);
+
+    // screen filling quad
+    std::unique_ptr<ScreenFillingQuad> sfq = std::make_unique<ScreenFillingQuad>(scene);
 
     while(!glfwWindowShouldClose(window))
     {

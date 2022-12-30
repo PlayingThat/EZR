@@ -3,15 +3,23 @@
 //
 
 #include "Engine/Drawable.h"
+// Needed to resolve forward declaration
+#include "Engine/Scene.h"
 
-Drawable::Drawable(glm::vec3 position, 
+Drawable::Drawable(std::shared_ptr<Scene> scene,
+                   glm::vec3 position, 
                    glm::vec3 rotation, 
                    glm::vec3 scale)
 {
+    m_scene = scene;
     m_position = position;
     m_rotation = rotation;
     m_scale = scale;
 };
+
+Drawable::~Drawable()
+{
+}
 
 void Drawable::draw()
 {
@@ -115,6 +123,12 @@ void Drawable::setScale(glm::vec3 scale)
 
 glm::mat4 Drawable::getModelMatrix()
 {
+
+    glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), this->m_position);
+
+     modelMatrix = glm::rotate(modelMatrix, 0.0f, this->m_rotation);
+
+     modelMatrix = glm::scale(modelMatrix, this->m_rotation);
     return glm::scale(
             glm::rotate(
               glm::translate(glm::mat4(1.0f), this->m_position), 0.0f, this->m_rotation), this->m_scale);

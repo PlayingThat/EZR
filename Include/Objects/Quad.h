@@ -9,7 +9,7 @@
 class Quad : public Drawable
 {
 public:
-    Quad();
+    Quad(std::shared_ptr<Scene> scene);
 
 private:
     void create();

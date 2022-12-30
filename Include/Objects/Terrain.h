@@ -8,6 +8,7 @@
 #include "../Engine/ShaderProgram.h"
 #include "../Engine/Drawable.h"
 #include "../Engine/State.h"
+#include "../Engine/Scene.h"
 #include "../Engine/Defs.h"
 
 #include "../Engine/ConcurrentBinaryTree.h"
@@ -20,7 +21,7 @@
 class Terrain : public Drawable, public SizeCallbackSubscriber
 {
 public:
-    Terrain(std::shared_ptr<State> state);
+    Terrain(std::shared_ptr<Scene> scene);
     ~Terrain();
 
     void draw();
@@ -92,6 +93,6 @@ private:
 
     //////////////////////////////////////////////////////////
     // Misc Engine Elements
-    std::shared_ptr<State> m_state;
+    std::shared_ptr<Scene> m_scene;
 
 };

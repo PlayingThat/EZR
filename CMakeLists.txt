@@ -57,7 +57,9 @@ set(SRC_LIST Include/stb_image.h
         Include/Engine/ConcurrentBinaryTree.h
         Source/Engine/ConcurrentBinaryTree.cpp
         Include/Engine/LongestEdgeBisection.h
-        Source/Engine/LongestEdgeBisection.cpp)
+        Source/Engine/LongestEdgeBisection.cpp
+        Include/Objects/RockAndStone.h
+        Source/Objects/RockAndStone.cpp)
         
 
 add_executable(${PROJECT_NAME} ${SRC_LIST} )

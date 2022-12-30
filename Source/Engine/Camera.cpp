@@ -46,7 +46,7 @@ Camera::Camera(float width, float height, float fov, float nearClippingPlane, fl
     m_width = width;
     m_height = height;
 
-    m_speed = 10.0f;
+    m_speed = 1.0f;
     m_sensitivity = 0.5f;
 
     m_viewmatrix = glm::lookAt(m_center + m_cameraPos, m_center, m_up);
@@ -135,7 +135,7 @@ void Camera::update(GLFWwindow *window)
         speedUp = 100.0f;
 
     speedUp *= m_speed;
-
+    
     // handle camera movement
     if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         m_cameraPos += m_speed * speedUp * m_cameraFront * m_deltaTime;

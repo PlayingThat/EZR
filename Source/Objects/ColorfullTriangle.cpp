@@ -4,9 +4,9 @@
 
 #include "Objects/ColorfullTriangle.h"
 
-ColorfullTriangle::ColorfullTriangle()
+ColorfullTriangle::ColorfullTriangle(std::shared_ptr<Scene> scene) : Drawable(scene)
 {
-    m_triangle = std::make_shared<Triangle>();
+    m_triangle = std::make_shared<Triangle>(scene);
 
     // Shader setup
     m_basicVertexShader = std::make_shared<Shader>("./Assets/Shader/Basic.vert");
@@ -41,7 +41,7 @@ void ColorfullTriangle::draw()
 
     // Keep in screen space 
     m_basicShaderProgram->setMat4("projectionMatrix", glm::mat4(1.0f));
-    m_basicShaderProgram->setMat4("viewMatrix", glm::mat4(1.0f));
+    m_basicShaderProgram->setMat4("viewMatrix", *m_scene->getState()->getCamera()->getViewMatrix());
     m_basicShaderProgram->setMat4("modelMatrix", glm::mat4(1.0f));
     m_triangle->draw();
     m_basicShaderProgram->setMat4("modelMatrix", glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 1.0f, 0.0f)));

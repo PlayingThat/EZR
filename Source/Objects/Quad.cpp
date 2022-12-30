@@ -4,7 +4,7 @@
 
 #include "Objects/Quad.h"
 
-Quad::Quad()
+Quad::Quad(std::shared_ptr<Scene> scene) : Drawable(scene)
 {
     create();
 }
