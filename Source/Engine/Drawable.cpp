@@ -24,7 +24,8 @@ Drawable::~Drawable()
 void Drawable::draw()
 {
     glBindVertexArray(m_vao);
-    glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
+    // glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
+    glDrawElements(GL_TRIANGLES, m_index.size(), GL_UNSIGNED_INT, 0);
 }
 
 void Drawable::createBuffers()

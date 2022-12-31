@@ -29,14 +29,22 @@ bool ModelLoader::loadModel(std::string path,
     for (unsigned int i = 0; i < scene->mNumMeshes; i++)
     {
         aiMesh *mesh = scene->mMeshes[i];
-
-        // Indices
-        int index = mesh->mNumFaces*3;
-        m_index.push_back(index);
+        std::string test(mesh->mName.C_Str());
         
+        // Extract indices from the mesh
+        for (unsigned int j = 0; j < mesh->mNumFaces; j++)
+        {
+            aiFace face = mesh->mFaces[j];
+            for (unsigned int k = 0; k < face.mNumIndices; k++)
+            {
+                m_index.push_back(face.mIndices[k]);
+            }
+        }
+
         // Extract the vertices, normals, and textures from the mesh
         for (unsigned int j = 0; j < mesh->mNumVertices; j++)
         {
+            
             // Vertices
             aiVector3D vertex = mesh->mVertices[j];
             glm::vec4 vertexElem = glm::vec4(vertex.x, vertex.y, vertex.z, 1.0f);
