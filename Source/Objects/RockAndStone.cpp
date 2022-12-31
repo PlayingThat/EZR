@@ -20,13 +20,11 @@ RockAndStone::RockAndStone(std::shared_ptr<Scene> scene) : Drawable(scene)
     m_basicShaderProgram->addShader(m_basicFragmentShader);
 
     m_basicShaderProgram->link();
-
-    Drawable::setPosition(glm::vec3(0.2f, -0.2f, -1.2f));
 }
 
 void RockAndStone::create()
 {
-    m_modelLoader->loadModel("Assets/Models/rock_and_stone.obj", m_vertices, m_normals, m_uvs, m_index, m_tangents);
+    m_modelLoader->loadModel("Assets/Models/Ghost.fbx", m_vertices, m_normals, m_uvs, m_index, m_tangents);
     createBuffers();
 
     // Silence is golden
@@ -34,6 +32,8 @@ void RockAndStone::create()
 
 void RockAndStone::draw()
 {
+    Drawable::setRotation(glm::vec3(1.0f, 0.0f, 0.0f), 90.0f);
+
     m_basicShaderProgram->setMat4("projectionMatrix", *m_scene->getState()->getCamera()->getProjectionMatrix());
     m_basicShaderProgram->setMat4("viewMatrix", *m_scene->getState()->getCamera()->getViewMatrix());
     m_basicShaderProgram->setMat4("modelMatrix", Drawable::getModelMatrix());

@@ -15,6 +15,8 @@ Drawable::Drawable(std::shared_ptr<Scene> scene,
     m_position = position;
     m_rotation = rotation;
     m_scale = scale;
+
+    m_rotationAngle = 0.0f;
 };
 
 Drawable::~Drawable()
@@ -24,8 +26,8 @@ Drawable::~Drawable()
 void Drawable::draw()
 {
     glBindVertexArray(m_vao);
-    // glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
-    glDrawElements(GL_TRIANGLES, m_index.size(), GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
+    //glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(m_index.size()), GL_UNSIGNED_INT, 0);
 }
 
 void Drawable::createBuffers()
@@ -112,9 +114,10 @@ void Drawable::setPosition(glm::vec3 position)
     m_position = position;
 }
 
-void Drawable::setRotation(glm::vec3 rotation)
+void Drawable::setRotation(glm::vec3 rotation, float angle)
 {
     m_rotation = rotation;
+    m_rotationAngle = angle;
 }
 
 void Drawable::setScale(glm::vec3 scale)
@@ -124,13 +127,7 @@ void Drawable::setScale(glm::vec3 scale)
 
 glm::mat4 Drawable::getModelMatrix()
 {
-
-    glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), this->m_position);
-
-     modelMatrix = glm::rotate(modelMatrix, 0.0f, this->m_rotation);
-
-     modelMatrix = glm::scale(modelMatrix, this->m_rotation);
-    return glm::scale(
-            glm::rotate(
-              glm::translate(glm::mat4(1.0f), this->m_position), 0.0f, this->m_rotation), this->m_scale);
+    return glm::translate(
+                glm::rotate(
+                    glm::scale(glm::mat4(1.0f), this->m_scale), 0.01745f * m_rotationAngle, this->m_rotation), this->m_position);
 }

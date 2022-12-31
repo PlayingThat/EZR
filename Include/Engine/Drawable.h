@@ -25,6 +25,7 @@ public:
 
     void setPosition(glm::vec3 position);
     void setRotation(glm::vec3 rotation);
+    void setRotation(glm::vec3 rotation, float angle);
     void setScale(glm::vec3 scale);
 
     glm::mat4 getModelMatrix();
@@ -51,6 +52,7 @@ protected:
 private:
     glm::vec3 m_position; 
     glm::vec3 m_rotation;
+    float m_rotationAngle;
     glm::vec3 m_scale;
     glm::vec4 m_modelMatrix;
 
