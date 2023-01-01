@@ -10,7 +10,7 @@
 
 #include "Objects/ColorfullTriangle.h"
 #include "Objects/Terrain.h"
-#include "Objects/RockAndStone.h"
+#include "Objects/Ghost.h"
 
 // Forward declaration
 class Drawable;

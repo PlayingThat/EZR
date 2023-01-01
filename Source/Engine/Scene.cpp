@@ -22,7 +22,7 @@ void Scene::setup(std::shared_ptr<Scene> scene)
 
     m_terrain = std::make_shared<Terrain>(scene);
 
-    m_rockAndStone = std::make_shared<RockAndStone>(scene);
+    m_rockAndStone = std::make_shared<Ghost>(scene);
 
     addObject(m_triangle);
     addObject(m_terrain);

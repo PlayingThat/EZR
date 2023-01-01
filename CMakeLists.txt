@@ -58,8 +58,8 @@ set(SRC_LIST Include/stb_image.h
         Source/Engine/ConcurrentBinaryTree.cpp
         Include/Engine/LongestEdgeBisection.h
         Source/Engine/LongestEdgeBisection.cpp
-        Include/Objects/RockAndStone.h
-        Source/Objects/RockAndStone.cpp)
+        Include/Objects/Ghost.h
+        Source/Objects/Ghost.cpp)
         
 
 add_executable(${PROJECT_NAME} ${SRC_LIST} )
@@ -107,15 +107,18 @@ if (WIN32)
 
 
     # Copy Assets
+    file(GLOB ASSIMP_DLL
+        "${CMAKE_SOURCE_DIR}/Dependencies/assimp/bin/*.dll"
+    )
     add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy
-                    ${CMAKE_SOURCE_DIR}/Dependencies/assimp/bin/libassimp-5.dll
-                    ${CMAKE_BINARY_DIR}/libassimp.dll)
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    ${ASSIMP_DLL}
+                    ${CMAKE_BINARY_DIR})
 endif()
 
 # Copy ASSIMP
 add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 ${CMAKE_SOURCE_DIR}/Assets
                 ${CMAKE_BINARY_DIR}/Assets)
 
