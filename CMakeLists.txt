@@ -114,10 +114,12 @@ if (WIN32)
 endif()
 
 # Copy ASSIMP
-add_custom_command(TARGET ${PROJECT_NAME}  POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
+add_custom_target(
+    copyAssets
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
                 ${CMAKE_SOURCE_DIR}/Assets
                 ${CMAKE_BINARY_DIR}/Assets)
+add_dependencies(${PROJECT_NAME} copyAssets)
 
 # prevent console from opening
 #list(APPEND CMAKE_CXX_FLAGS "-mwindows")
