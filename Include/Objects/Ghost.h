@@ -26,6 +26,6 @@ private:
     std::unique_ptr<ShaderProgram> m_basicShaderProgram;
 
     // Texture handle
-    GLUint m_texture;
+    GLuint m_texture;
 };
 
