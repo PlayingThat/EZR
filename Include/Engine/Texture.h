@@ -8,6 +8,8 @@
 #include <string>
 #include <stb_image.h>
 
+GLuint createTextureFromFile(const char* path);
+
 GLuint createTexture2D(std::size_t width, std::size_t height);
 GLuint createGroundTexture2D(std::size_t width, std::size_t height);
 

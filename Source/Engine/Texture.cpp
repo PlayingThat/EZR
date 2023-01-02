@@ -4,6 +4,49 @@
 
 #include "Engine/Texture.h"
 
+GLuint createTextureFromFile(const char* path)
+{
+    // Load image from file
+    int width, height, nrComponents;
+    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
+
+    // OpenGL texture handle
+    GLuint texHandle;
+    glGenTextures(1, &texHandle);
+
+    if (data)
+    {
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, texHandle);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        // Free image memory
+        stbi_image_free(data);
+    }
+    else
+    {
+        LOG_ERROR("Texture failed to load at path: " << path);
+        // Free image memory
+        stbi_image_free(data);
+    }
+
+    return texHandle;
+}
+
+
 GLuint createTexture2D(std::size_t width, std::size_t height)
 {
     GLuint texHandle;
