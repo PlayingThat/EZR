@@ -38,13 +38,12 @@ void Ghost::create()
 void Ghost::draw()
 {
     Drawable::setRotation(glm::vec3(1.0f, 0.0f, 0.0f), 90.0f);
+    m_basicShaderProgram->use();
 
     m_basicShaderProgram->setMat4("projectionMatrix", *m_scene->getState()->getCamera()->getProjectionMatrix());
     m_basicShaderProgram->setMat4("viewMatrix", *m_scene->getState()->getCamera()->getViewMatrix());
     m_basicShaderProgram->setMat4("modelMatrix", Drawable::getModelMatrix());
-
     m_basicShaderProgram->setVec3("vColor", glm::vec3(0.3f, 0.4f, 0.0f));
-    m_basicShaderProgram->use();
-
+    
     Drawable::draw();
 }

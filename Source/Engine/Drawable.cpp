@@ -112,11 +112,6 @@ void Drawable::createBuffers()
 
     glBindVertexArray(m_vao);
 
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
-    glDisableVertexAttribArray(3);
-    glDisableVertexAttribArray(4);
-
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vertexbuffer);
 }
 
