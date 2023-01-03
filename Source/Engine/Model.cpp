@@ -2,17 +2,17 @@
 // Created by maxbr on 21.11.2022.
 //
 
-#include "Engine/ModelLoader.h"
+#include "Engine/Model.h"
 
 // Resolve forward declaration
 #include "Engine/Mesh.h"
 
-ModelLoader::ModelLoader(std::shared_ptr<Scene> scene)
+Model::Model(std::shared_ptr<Scene> scene)
 {
     m_scene = scene;
 }
 
-bool ModelLoader::loadModel(std::string path,
+bool Model::loadModel(std::string path,
                             std::vector<glm::vec4>& m_vertices,
                             std::vector<glm::vec3>& m_normals,
                             std::vector<glm::vec2>& m_uvs,
@@ -97,12 +97,12 @@ bool ModelLoader::loadModel(std::string path,
     return true;
 }
 
-void ModelLoader::loadTextures(std::string path)
+void Model::loadTextures(std::string path)
 {
     
 }
 
-ModelLoader::~ModelLoader()
+Model::~Model()
 {
     
 }

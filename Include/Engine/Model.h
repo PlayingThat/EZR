@@ -12,11 +12,11 @@
 class Mesh;
 class Scene;
 
-class ModelLoader
+class Model
 {
 public:
-    ModelLoader(std::shared_ptr<Scene> scene);
-    ~ModelLoader();
+    Model(std::shared_ptr<Scene> scene);
+    ~Model();
 
     /**
      * @brief Loads a model from a file. Any of the formats supported by Assimp can be loaded. 

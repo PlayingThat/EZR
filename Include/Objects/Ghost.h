@@ -6,7 +6,7 @@
 
 #include "../Engine/Scene.h"
 #include "../Engine/Drawable.h"
-#include "../Engine/ModelLoader.h"
+#include "../Engine/Model.h"
 #include "../Engine/Texture.h"
 
 class Ghost : public Drawable
@@ -19,7 +19,7 @@ public:
 private:
     void create();
     
-    std::unique_ptr<ModelLoader> m_modelLoader;
+    std::unique_ptr<Model> m_model;
 
     std::shared_ptr<Shader> m_basicVertexShader;
     std::shared_ptr<Shader> m_textureFragmentShader;

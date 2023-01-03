@@ -49,7 +49,7 @@ set(SRC_LIST Include/stb_image.h
         Source/Objects/Quad.cpp
         Source/Engine/State.cpp
         Source/Engine/Scene.cpp
-        Source/Engine/ModelLoader.cpp
+        Source/Engine/Model.cpp
         Source/Objects/ColorfullTriangle.cpp
         
         Include/Objects/Terrain.h

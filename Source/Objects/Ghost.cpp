@@ -26,7 +26,7 @@ Ghost::Ghost(std::shared_ptr<Scene> scene) : Drawable(scene)
 void Ghost::create()
 {
     // Load model
-    m_modelLoader->loadModel("Assets/Models/Ghost.fbx", m_vertices, m_normals, m_uvs, m_indices, m_tangents);
+    m_model->loadModel("Assets/Models/Ghost.fbx", m_vertices, m_normals, m_uvs, m_indices, m_tangents);
     createBuffers();
 
     // Load texture
