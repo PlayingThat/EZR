@@ -40,6 +40,6 @@ private:
     // Objects
     std::shared_ptr<Drawable> m_triangle;
     std::shared_ptr<Drawable> m_terrain;
-    std::shared_ptr<Drawable> m_rockAndStone;
+    std::shared_ptr<Drawable> m_ghost;
 
 };
