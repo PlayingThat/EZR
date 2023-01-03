@@ -58,6 +58,8 @@ set(SRC_LIST Include/stb_image.h
         Source/Engine/ConcurrentBinaryTree.cpp
         Include/Engine/LongestEdgeBisection.h
         Source/Engine/LongestEdgeBisection.cpp
+        Include/Engine/Mesh.h
+        Source/Engine/Mesh.cpp
         Include/Objects/Ghost.h
         Source/Objects/Ghost.cpp)
         
