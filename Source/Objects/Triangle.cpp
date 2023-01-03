@@ -28,9 +28,9 @@ void Triangle::create(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 na, glm::
 
     m_numberOfPoints = 3;
 
-    m_index.push_back(0);
-    m_index.push_back(1);
-    m_index.push_back(2);
+    m_indices.push_back(0);
+    m_indices.push_back(1);
+    m_indices.push_back(2);
 
     m_numberOfIndices = 3;
 

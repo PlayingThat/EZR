@@ -16,7 +16,7 @@ bool ModelLoader::loadModel(std::string path,
                             std::vector<glm::vec4>& m_vertices,
                             std::vector<glm::vec3>& m_normals,
                             std::vector<glm::vec2>& m_uvs,
-                            std::vector<unsigned int>& m_index,
+                            std::vector<unsigned int>& m_indices,
                             std::vector<glm::vec3>& m_tangents)
 {
     Assimp::Importer importer;
@@ -51,7 +51,7 @@ bool ModelLoader::loadModel(std::string path,
             aiFace face = mesh->mFaces[j];
             for (unsigned int k = 0; k < face.mNumIndices; k++)
             {
-                m_index.push_back(face.mIndices[k]);
+                m_indices.push_back(face.mIndices[k]);
             }
         }
 
@@ -91,8 +91,8 @@ bool ModelLoader::loadModel(std::string path,
 
         GLuint textureID = 0;
         // Create a new mesh and add it to the list of meshes
-        // std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(m_vertices, norm, uvs, ind, tang,
-        // textureID, textureID, textureID, textureID, textureID);
+        std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(m_vertices, m_normals, m_uvs, m_indices, m_tangents,
+        textureID, textureID, textureID, textureID, textureID);
     }
     return true;
 }

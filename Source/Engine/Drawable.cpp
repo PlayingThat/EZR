@@ -44,7 +44,7 @@ void Drawable::draw()
 void Drawable::createBuffers()
 {
     m_numberOfPoints = m_vertices.size();
-    m_numberOfIndices = m_index.size();
+    m_numberOfIndices = m_indices.size();
 
     // create the buffers and bind the data
     if(m_numberOfPoints > 0)
@@ -80,11 +80,11 @@ void Drawable::createBuffers()
     }
 
     // Generate a buffer for the indices as well
-    if(m_indexlist == 0 && !m_index.empty())
+    if(m_indexlist == 0 && !m_indices.empty())
     {
         glGenBuffers(1, &m_indexlist);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexlist);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_numberOfIndices * sizeof(unsigned int), &m_index[0], GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_numberOfIndices * sizeof(unsigned int), &m_indices[0], GL_STATIC_DRAW);
     }
 
     if(m_vao == 0)

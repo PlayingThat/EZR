@@ -19,7 +19,7 @@ Mesh::Mesh(std::vector<glm::vec4> vertices,
     m_vertices = vertices;
     m_normals = normals;
     m_uvs = uvs;
-    m_index = indices;
+    m_indices = indices;
     m_tangents = tangents;
 
     // Set texture information
@@ -54,7 +54,7 @@ void Mesh::draw()
     m_shaderProgram->setMat4("model", glm::mat4(1.0f));
 
     // Draw the triangles
-    glDrawElements(GL_TRIANGLES, m_index.size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
 
     // Unbind the vertex array object
     glBindVertexArray(0);
