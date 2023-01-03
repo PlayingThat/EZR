@@ -19,6 +19,17 @@ Drawable::Drawable(std::shared_ptr<Scene> scene,
     m_rotationAngle = 0.0f;
 };
 
+Drawable::Drawable(glm::vec3 position, 
+                   glm::vec3 rotation, 
+                   glm::vec3 scale)
+{
+    m_position = position;
+    m_rotation = rotation;
+    m_scale = scale;
+
+    m_rotationAngle = 0.0f;
+}
+
 Drawable::~Drawable()
 {
 }

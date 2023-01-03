@@ -9,10 +9,13 @@
 #include <assimp/scene.h>       // Output data structure
 #include <assimp/postprocess.h> // Post processing flags
 
+class Mesh;
+class Scene;
+
 class ModelLoader
 {
 public:
-    ModelLoader();
+    ModelLoader(std::shared_ptr<Scene> scene);
     ~ModelLoader();
 
     /**
@@ -30,5 +33,10 @@ public:
                     std::vector<unsigned int>& m_index,
                     std::vector<glm::vec3>& m_tangents);
 
+    void loadTextures(std::string path);
+
 private:
+
+    std::shared_ptr<Scene> m_scene;
+    std::vector<Mesh> m_Meshes;
 };

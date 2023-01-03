@@ -4,9 +4,12 @@
 
 #include "Engine/ModelLoader.h"
 
-ModelLoader::ModelLoader()
+// Resolve forward declaration
+#include "Engine/Mesh.h"
+
+ModelLoader::ModelLoader(std::shared_ptr<Scene> scene)
 {
-    //
+    m_scene = scene;
 }
 
 bool ModelLoader::loadModel(std::string path,
@@ -29,7 +32,18 @@ bool ModelLoader::loadModel(std::string path,
     for (unsigned int i = 0; i < scene->mNumMeshes; i++)
     {
         aiMesh *mesh = scene->mMeshes[i];
-        std::string test(mesh->mName.C_Str());
+        
+        aiMaterial* test = scene->mMaterials[mesh->mMaterialIndex];    
+        // loop over textures count
+        for (unsigned int j = 0; j < test->GetTextureCount(aiTextureType_DIFFUSE); j++)
+        {
+            aiString str;
+
+            scene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
+            std::string texturePath = str.C_Str();
+            printf("Texture path");
+        }
+        
         
         // Extract indices from the mesh
         for (unsigned int j = 0; j < mesh->mNumFaces; j++)
@@ -74,8 +88,18 @@ bool ModelLoader::loadModel(std::string path,
             m_tangents.push_back(tangentElem);
             // If the mesh contains tangents, it automatically also contains bitangents.
         }
+
+        GLuint textureID = 0;
+        // Create a new mesh and add it to the list of meshes
+        // std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(m_vertices, norm, uvs, ind, tang,
+        // textureID, textureID, textureID, textureID, textureID);
     }
     return true;
+}
+
+void ModelLoader::loadTextures(std::string path)
+{
+    
 }
 
 ModelLoader::~ModelLoader()
