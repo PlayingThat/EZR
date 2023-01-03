@@ -13,11 +13,11 @@ uniform mat4 modelMatrix;           //model coordinates to world coordinates
 uniform mat4 viewMatrix;            //world coordinates to camera coordinate
 uniform mat4 projectionMatrix;      //camera coordinates to homogenous coordinates
 
-uniform vec3 lightPosition = vec4(0, 10, 4);
+vec3 lightPosition = vec3(0, 10, 4);
 
-out vec3 reflecVec      //reflection vector
-out vec3 viewVec        //view vector
-out float NdotL         //lighting value
+out vec3 reflecVec;      //reflection vector
+out vec3 viewVec;        //view vector
+out float NdotL;         //lighting value
 
 void main()
 {
@@ -25,7 +25,7 @@ void main()
     vec3 ecPos = vec3 (vertex[0], vertex[1], vertex[2]);
     vec3 lightVec = normalize(lightPosition - ecPos);
 
-    ReflecVec = normalize(reflect(-lightVec, vNormal));
+    reflecVec = normalize(reflect(-lightVec, vNormal));
     viewVec = normalize(-ecPos);
     NdotL = (dot(lightVec, vNormal) + 1.0) * 0.5;
 

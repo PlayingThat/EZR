@@ -4,8 +4,8 @@ uniform vec3 vColor;        //color of the vertex
 
 float DiffuseCool = 0.3;
 float DiffuseWarm = 0.3;
-vec3 CoolColor = vec3(0, 0, 0.6, 1);    //blue color
-vec3 WarmColor = vec3(0.6, 0, 0, 1);    //red color
+vec3 CoolColor = vec3(0, 0, 0.6);    //blue color
+vec3 WarmColor = vec3(0.6, 0, 0);    //red color
 
 in vec3 reflecVec;
 in vec3 viewVec;
@@ -27,9 +27,5 @@ void main()
     vec3 nView = normalize(viewVec);
     float spec = pow(max(dot(nRefl, nView), 0.0), 32.0);
  
-    if (gl_FrontFacing) {                               //if front face: shade smoothly
-        result = vec4(min(kfinal + spec, 1.0), 1.0);    
-    } else {                                            //if back face: black color
-        result = vec4(0, 0, 0, 1);
-    } 
+    result = vec4(min(final + spec, 1.0), 1.0);
 }

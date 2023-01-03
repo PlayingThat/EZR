@@ -43,5 +43,8 @@ void Ghost::draw()
     m_basicShaderProgram->setMat4("viewMatrix", *m_scene->getState()->getCamera()->getViewMatrix());
     m_basicShaderProgram->setMat4("modelMatrix", Drawable::getModelMatrix());
 
+    m_basicShaderProgram->setVec3("vColor", glm::vec3(0.3f, 0.4f, 0.0f));
+    m_basicShaderProgram->use();
+
     Drawable::draw();
 }
