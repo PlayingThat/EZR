@@ -31,6 +31,9 @@ public:
 
     void getViewMatrix(glm::vec3 *x, glm::vec3 *y, glm::vec3 *z, glm::vec3 *pos);
 
+    // Getter for position
+    glm::vec3 getPosition();
+
     void setViewMatrix(glm::mat4 *view);
 
     void setWidthHeight(int width, int height);

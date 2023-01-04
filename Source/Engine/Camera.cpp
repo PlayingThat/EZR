@@ -171,6 +171,11 @@ void Camera::getViewMatrix(glm::vec3 *x, glm::vec3 *y, glm::vec3 *z,
     *pos = -mat_inv * *pos;
 }
 
+glm::vec3 Camera::getPosition()
+{
+    return m_cameraPos;
+}
+
 glm::mat4 *Camera::getProjectionMatrix()
 { return &m_projectionMatrix; }
 
