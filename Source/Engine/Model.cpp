@@ -20,7 +20,11 @@ bool Model::loadModel(std::string path,
                             std::vector<glm::vec3>& m_tangents)
 {
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path, aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
+    const aiScene* scene = importer.ReadFile(path, aiProcess_GenSmoothNormals | 
+                                                    aiProcess_FlipUVs | 
+                                                    aiProcess_CalcTangentSpace | 
+                                                    aiProcess_Triangulate | 
+                                                    aiProcess_ConvertToLeftHanded);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {

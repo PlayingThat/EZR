@@ -182,12 +182,18 @@ int main()
     // screen filling quad
     std::unique_ptr<ScreenFillingQuad> sfq = std::make_unique<ScreenFillingQuad>(scene);
 
+    // Enable depth test
+    glEnable(GL_DEPTH_TEST);
+
     while(!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
 
         if(glfwGetKey(window, GLFW_KEY_ESCAPE))
             exit(0);
+
+        // Clear the screen
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
