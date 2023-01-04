@@ -10,6 +10,8 @@
 Model::Model(std::shared_ptr<Scene> scene)
 {
     m_scene = scene;
+
+    m_meshes = std::vector<std::shared_ptr<Mesh>>();
 }
 
 bool Model::loadModel(std::string path,
@@ -35,6 +37,13 @@ bool Model::loadModel(std::string path,
     // Iterate over all meshes in the model
     for (unsigned int i = 0; i < scene->mNumMeshes; i++)
     {
+        std::vector<glm::vec4> vertices;
+        std::vector<glm::vec3> normals;
+        std::vector<glm::vec2> uvs; 
+        std::vector<unsigned int> indices; 
+        std::vector<glm::vec3> tangents;
+        
+
         aiMesh *mesh = scene->mMeshes[i];
         
         aiMaterial* test = scene->mMaterials[mesh->mMaterialIndex];    
@@ -55,7 +64,7 @@ bool Model::loadModel(std::string path,
             aiFace face = mesh->mFaces[j];
             for (unsigned int k = 0; k < face.mNumIndices; k++)
             {
-                m_indices.push_back(face.mIndices[k]);
+                indices.push_back(face.mIndices[k]);
             }
         }
 
@@ -66,37 +75,39 @@ bool Model::loadModel(std::string path,
             // Vertices
             aiVector3D vertex = mesh->mVertices[j];
             glm::vec4 vertexElem = glm::vec4(vertex.x, vertex.y, vertex.z, 1.0f);
-            m_vertices.push_back(vertexElem);
+            vertices.push_back(vertexElem);
             
             // Normals
             aiVector3D normal = mesh->mNormals[j];
             glm::vec3 normalElem = glm::vec3(normal.x, normal.y, normal.z);
-            m_normals.push_back(normalElem);
+            normals.push_back(normalElem);
             
             // Textures
             if (mesh->mTextureCoords[0])
             {
                 aiVector3D texCoord = mesh->mTextureCoords[0][j];
                 glm::vec2 texElem = glm::vec2(texCoord.x, texCoord.y);
-                m_uvs.push_back(texElem);
+                uvs.push_back(texElem);
             }
             else
             {
                 // If the mesh does not have texture coordinates, use a default value of (0,0)
-                m_uvs.push_back(glm::vec2(0.0f, 0.0f));
+                uvs.push_back(glm::vec2(0.0f, 0.0f));
             }
 
             // Tangents (what if they don't exist?)
             aiVector3D tangent = mesh->mTangents[j];
             glm::vec3 tangentElem = glm::vec3(tangent.x, tangent.y, tangent.z);
-            m_tangents.push_back(tangentElem);
+            tangents.push_back(tangentElem);
             // If the mesh contains tangents, it automatically also contains bitangents.
         }
 
         GLuint textureID = 0;
         // Create a new mesh and add it to the list of meshes
-        std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(m_vertices, m_normals, m_uvs, m_indices, m_tangents,
+        std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(vertices, normals, uvs, indices, tangents,
         textureID, textureID, textureID, textureID, textureID);
+
+        m_meshes.push_back(newMesh);
     }
     return true;
 }
@@ -104,6 +115,14 @@ bool Model::loadModel(std::string path,
 void Model::loadTextures(std::string path)
 {
     
+}
+
+void Model::draw()
+{
+    for (std::shared_ptr<Mesh> mesh : m_meshes)
+    {
+        mesh->draw();
+    }
 }
 
 Model::~Model()

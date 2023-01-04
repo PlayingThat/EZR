@@ -9,6 +9,7 @@
 
 Ghost::Ghost(std::shared_ptr<Scene> scene) : Drawable(scene)
 {
+    m_model = std::make_unique<Model>(m_scene);
     create();
 
     // Shader setup
@@ -48,5 +49,5 @@ void Ghost::draw()
     m_basicShaderProgram->setMat4("modelMatrix", Drawable::getModelMatrix());
     m_basicShaderProgram->setVec3("vColor", glm::vec3(0.3f, 0.4f, 0.0f));
 
-    Drawable::draw();
+    m_model->draw();
 }

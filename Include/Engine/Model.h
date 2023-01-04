@@ -35,8 +35,11 @@ public:
 
     void loadTextures(std::string path);
 
+    void draw();
+
 private:
 
+
     std::shared_ptr<Scene> m_scene;
-    std::vector<Mesh> m_Meshes;
+    std::vector<std::shared_ptr<Mesh>> m_meshes;
 };

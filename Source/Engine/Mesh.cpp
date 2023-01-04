@@ -22,6 +22,8 @@ Mesh::Mesh(std::vector<glm::vec4> vertices,
     m_indices = indices;
     m_tangents = tangents;
 
+    Drawable::createBuffers();
+
     // Set texture information
     m_diffuseTexture = diffuseTexture;
     m_specularTexture = specularTexture;
@@ -33,30 +35,25 @@ Mesh::Mesh(std::vector<glm::vec4> vertices,
 void Mesh::draw()
 {
     // Bind the shader program
-    m_shaderProgram->use();
+    //m_shaderProgram->use();
 
-    // Bind the vertex array object
-    glBindVertexArray(m_vao);
+    // // Bind the textures
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, m_diffuseTexture);
+    // glActiveTexture(GL_TEXTURE1);
+    // glBindTexture(GL_TEXTURE_2D, m_specularTexture);
+    // glActiveTexture(GL_TEXTURE2);
+    // glBindTexture(GL_TEXTURE_2D, m_smoothnessTexture);
+    // glActiveTexture(GL_TEXTURE3);
+    // glBindTexture(GL_TEXTURE_2D, m_heightTexture);
+    // glActiveTexture(GL_TEXTURE4);
+    // glBindTexture(GL_TEXTURE_2D, m_ambientOcculsionTexture);
 
-    // Bind the textures
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_diffuseTexture);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, m_specularTexture);
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, m_smoothnessTexture);
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, m_heightTexture);
-    glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_2D, m_ambientOcculsionTexture);
+    Drawable::draw();
 
-    // Bind the model matrix
-    m_shaderProgram->setMat4("model", glm::mat4(1.0f));
+}
 
-    // Draw the triangles
-    glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
-
-    // Unbind the vertex array object
-    glBindVertexArray(0);
-
+void Mesh::setShaderProgram(std::shared_ptr<ShaderProgram> shaderProgram)
+{
+    m_shaderProgram = shaderProgram;
 }
