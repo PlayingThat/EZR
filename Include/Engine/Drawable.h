@@ -27,11 +27,19 @@ public:
 
     virtual void draw();
 
-    void setPosition(glm::vec3 position);
-    void setRotation(glm::vec3 rotation);
-    void setRotation(glm::vec3 rotation, float angle);
-    void setScale(glm::vec3 scale);
+    // For initial setup of the object i.e. to make sure the object is upright
+    void setBasePosition(glm::vec3 position);
+    void setBaseRotation(float angle);
+    void setBaseRotation(glm::vec3 rotation, float angle);
+    void setBaseScale(glm::vec3 scale);
 
+    // For moving the object around
+    void translate(glm::vec3 translation);
+    void rotate(glm::vec3 rotation, float angle);
+    void rotate(float angle);
+    void scale(glm::vec3 scale);
+
+    glm::mat4 getBaseModelMatrix();
     glm::mat4 getModelMatrix();
 protected:
 
@@ -54,10 +62,18 @@ protected:
     std::shared_ptr<Scene> m_scene;
 
 private:
-    glm::vec3 m_position; 
+    void setupMemers();
+
+    glm::vec3 m_basePosition; 
+    glm::vec3 m_baseRotation;
+    float m_baseRotationAngle;
+    glm::vec3 m_baseScale;
+    glm::vec4 m_modelMatrix;
+
+    glm::vec3 m_position;
     glm::vec3 m_rotation;
     float m_rotationAngle;
     glm::vec3 m_scale;
-    glm::vec4 m_modelMatrix;
+
 
 };

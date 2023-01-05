@@ -12,6 +12,10 @@ Model::Model(std::shared_ptr<Scene> scene)
     m_scene = scene;
 
     m_meshes = std::vector<std::shared_ptr<Mesh>>();
+
+    m_texturePath = "./Assets/Relevant-Textures/";
+
+    m_textureMap = std::map<std::string, GLuint>();
 }
 
 bool Model::loadModel(std::string path,
@@ -23,7 +27,6 @@ bool Model::loadModel(std::string path,
 {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_GenSmoothNormals | 
-                                                    aiProcess_FlipUVs | 
                                                     aiProcess_CalcTangentSpace | 
                                                     aiProcess_Triangulate | 
                                                     aiProcess_ConvertToLeftHanded);
@@ -44,19 +47,9 @@ bool Model::loadModel(std::string path,
         std::vector<glm::vec3> tangents;
         
 
-        aiMesh *mesh = scene->mMeshes[i];
+        aiMesh* mesh = scene->mMeshes[i];
         
-        aiMaterial* test = scene->mMaterials[mesh->mMaterialIndex];    
-        // loop over textures count
-        for (unsigned int j = 0; j < test->GetTextureCount(aiTextureType_DIFFUSE); j++)
-        {
-            aiString str;
-
-            scene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
-            std::string texturePath = str.C_Str();
-            printf("Texture path");
-        }
-        
+        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];    
         
         // Extract indices from the mesh
         for (unsigned int j = 0; j < mesh->mNumFaces; j++)
@@ -102,19 +95,42 @@ bool Model::loadModel(std::string path,
             // If the mesh contains tangents, it automatically also contains bitangents.
         }
 
+        // Extract the textures from the mesh
+
+
+        
+        GLuint diffuse = 0;
+
+        if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+        {
+            // Get the texture filename
+            aiString str;
+            scene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
+
+            std::string textureFileName = std::filesystem::path(str.C_Str()).filename().string();
+            std::string texturePath = m_texturePath + textureFileName;
+
+            // Check if tex has already been loaded
+            if (m_textureMap.find(textureFileName) != m_textureMap.end())
+            {
+                diffuse = m_textureMap[textureFileName];
+            }   
+            else
+            {
+                LOG_INFO("Mesh ID " + std::to_string(i) + ", Loading texture: " + texturePath);
+                diffuse = createTextureFromFile(texturePath);
+                m_textureMap[textureFileName] = diffuse;
+            }
+        }
+
         GLuint textureID = 0;
         // Create a new mesh and add it to the list of meshes
         std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(vertices, normals, uvs, indices, tangents,
-        textureID, textureID, textureID, textureID, textureID);
+                                                               diffuse, textureID, textureID, textureID, textureID);
 
         m_meshes.push_back(newMesh);
     }
     return true;
-}
-
-void Model::loadTextures(std::string path)
-{
-    
 }
 
 void Model::draw()

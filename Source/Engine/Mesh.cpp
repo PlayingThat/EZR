@@ -37,9 +37,9 @@ void Mesh::draw()
     // Bind the shader program
     //m_shaderProgram->use();
 
-    // // Bind the textures
-    // glActiveTexture(GL_TEXTURE0);
-    // glBindTexture(GL_TEXTURE_2D, m_diffuseTexture);
+    // Bind the textures
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_diffuseTexture);
     // glActiveTexture(GL_TEXTURE1);
     // glBindTexture(GL_TEXTURE_2D, m_specularTexture);
     // glActiveTexture(GL_TEXTURE2);

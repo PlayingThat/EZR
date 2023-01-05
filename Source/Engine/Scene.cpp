@@ -24,6 +24,9 @@ void Scene::setup(std::shared_ptr<Scene> scene)
 
     m_ghost = std::make_shared<Ghost>(scene);
 
+    // Set camera position
+    m_state->getCamera()->setPosition(glm::vec3(0.0f, 1.7f, 2.7f));
+
     //addObject(m_triangle);
     //addObject(m_terrain);
     addObject(m_ghost);

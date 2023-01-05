@@ -12,22 +12,31 @@ Drawable::Drawable(std::shared_ptr<Scene> scene,
                    glm::vec3 scale)
 {
     m_scene = scene;
-    m_position = position;
-    m_rotation = rotation;
-    m_scale = scale;
+    m_basePosition = position;
+    m_baseRotation = rotation;
+    m_baseScale = scale;
 
-    m_rotationAngle = 0.0f;
+    setupMemers();
 };
 
 Drawable::Drawable(glm::vec3 position, 
                    glm::vec3 rotation, 
                    glm::vec3 scale)
 {
-    m_position = position;
-    m_rotation = rotation;
-    m_scale = scale;
+    m_basePosition = position;
+    m_baseRotation = rotation;
+    m_baseScale = scale;
 
-    m_rotationAngle = 0.0f;
+    setupMemers();
+}
+
+void Drawable::setupMemers()
+{
+    m_baseRotationAngle = 0.0f;
+ 
+    m_position = glm::vec3(0.0f);
+    m_rotation = glm::vec3(0.0f, 1.0f, 0.0f);
+    m_scale = glm::vec3(1.0f);
 }
 
 Drawable::~Drawable()
@@ -115,25 +124,58 @@ void Drawable::createBuffers()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vertexbuffer);
 }
 
-void Drawable::setPosition(glm::vec3 position)
+void Drawable::setBasePosition(glm::vec3 position)
 {
-    m_position = position;
+    m_basePosition = position;
 }
 
-void Drawable::setRotation(glm::vec3 rotation, float angle)
+void Drawable::setBaseRotation(float angle)
+{
+    m_baseRotationAngle = angle;
+}
+
+void Drawable::setBaseRotation(glm::vec3 rotation, float angle)
+{
+    m_baseRotation = rotation;
+    m_baseRotationAngle = angle;
+}
+
+void Drawable::setBaseScale(glm::vec3 scale)
+{
+    m_baseScale = scale;
+}
+
+void Drawable::translate(glm::vec3 translation)
+{
+    m_position = translation;
+}
+
+void Drawable::rotate(float angle)
+{
+    m_rotationAngle = angle;
+}
+
+void Drawable::rotate(glm::vec3 rotation, float angle)
 {
     m_rotation = rotation;
     m_rotationAngle = angle;
 }
 
-void Drawable::setScale(glm::vec3 scale)
+void Drawable::scale(glm::vec3 scale)
 {
     m_scale = scale;
+}
+
+glm::mat4 Drawable::getBaseModelMatrix()
+{
+    return glm::translate(
+                glm::rotate(
+                    glm::scale(glm::mat4(1.0f), this->m_baseScale), 0.01745f * m_baseRotationAngle, this->m_baseRotation), this->m_basePosition);
 }
 
 glm::mat4 Drawable::getModelMatrix()
 {
     return glm::translate(
                 glm::rotate(
-                    glm::scale(glm::mat4(1.0f), this->m_scale), 0.01745f * m_rotationAngle, this->m_rotation), this->m_position);
+                    glm::scale(getBaseModelMatrix(), this->m_scale), 0.01745f * m_rotationAngle, this->m_rotation), this->m_position);
 }

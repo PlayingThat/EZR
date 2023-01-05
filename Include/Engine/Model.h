@@ -3,7 +3,10 @@
 //
 
 #include "Defs.h"
+#include "Texture.h"
 #include <vector>
+#include <filesystem>
+#include <map>
 
 #include <assimp/Importer.hpp>  // C++ importer interface
 #include <assimp/scene.h>       // Output data structure
@@ -33,13 +36,17 @@ public:
                     std::vector<unsigned int>& m_indices,
                     std::vector<glm::vec3>& m_tangents);
 
-    void loadTextures(std::string path);
+    GLuint loadTexture(std::string path);
 
     void draw();
 
 private:
-
-
     std::shared_ptr<Scene> m_scene;
     std::vector<std::shared_ptr<Mesh>> m_meshes;
+
+    // Path to main texture folder
+    std::string m_texturePath;
+
+    // Map between texture names and texture IDs
+    std::map<std::string, GLuint> m_textureMap;
 };
