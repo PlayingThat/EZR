@@ -6,6 +6,9 @@
 
 #include <cstdlib>
 #include "Defs.h"
+#include "State.h"
+
+class Scene;
 
 GLuint createFBO();
 
@@ -21,12 +24,12 @@ GLuint createTextureAttachment(size_t width, size_t height);
 
 GLuint createDepthBufferAttachment(size_t width, size_t height);
 
-class FBO
+class FBO : public SizeCallbackSubscriber
 {
 public:
-    FBO(size_t width, size_t height);
+    FBO(std::shared_ptr<Scene> scene);
 
-    FBO(size_t width, size_t height, size_t numberOfColorAttachments);
+    FBO(std::shared_ptr<Scene> scene, size_t numberOfColorAttachments);
 
     ~FBO();
 
@@ -37,10 +40,17 @@ public:
     GLuint getColorAttachment(size_t i);
 
 private:
+    void setupBuffers(int numberOfColorAttachments);
+
+    void onSizeChanged(int width, int height);
+
     size_t m_width, m_height;
     GLuint m_fboID;
 
     size_t m_numberOfColorAttachments;
     GLuint *m_colorAttachments;
+
+    // Scene
+    std::shared_ptr<Scene> m_scene;
 
 };

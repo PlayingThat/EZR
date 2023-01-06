@@ -4,6 +4,8 @@
 
 #include "Engine/FBO.h"
 
+#include "Engine/Scene.h"
+
 void bindFBO(GLuint fboID, size_t width, size_t height)
 {
     // unbind textures that may already be bound
@@ -29,6 +31,9 @@ GLuint createFBO()
 GLuint *createColorAttachments(size_t width, size_t height, GLuint numberOfColorAttachments)
 {
     GLuint *colorAttachments = new GLuint[numberOfColorAttachments];
+
+    unsigned int *attachments = new unsigned int[numberOfColorAttachments];
+
     glGenTextures(numberOfColorAttachments, colorAttachments);
 
     for(GLuint i = 0; i < numberOfColorAttachments; i++)
@@ -40,7 +45,11 @@ GLuint *createColorAttachments(size_t width, size_t height, GLuint numberOfColor
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorAttachments[i], 0);
+
+        attachments[i] = GL_COLOR_ATTACHMENT0 + i;
     }
+    
+    glDrawBuffers(numberOfColorAttachments, attachments);
     return colorAttachments;
 }
 
@@ -77,30 +86,44 @@ GLuint createDepthBufferAttachment(size_t width, size_t height)
     return depthAttachement;
 }
 
-FBO::FBO(size_t width, size_t height)
+FBO::FBO(std::shared_ptr<Scene> scene)
 {
-    m_width = width;
-    m_height = height;
+    m_scene = scene;
+    // Subscribe to size change events
+    m_scene->getState()->attachWindowSizeChangeCallback(this);
 
-    m_fboID = createFBO();
-    m_numberOfColorAttachments = 0;
-    m_colorAttachments = NULL;
+    setupBuffers(0);
 }
 
-FBO::FBO(size_t width, size_t height, size_t numberOfColorAttachments)
+FBO::FBO(std::shared_ptr<Scene> scene, size_t numberOfColorAttachments) 
 {
-    m_width = width;
-    m_height = height;
+    m_scene = scene;
+    // Subscribe to size change events
+    m_scene->getState()->attachWindowSizeChangeCallback(this);
+
+    setupBuffers(numberOfColorAttachments);
+}
+
+void FBO::setupBuffers(int numberOfColorAttachments)
+{
+    m_width = m_scene->getState()->getCamera()->getWidth();
+    m_height = m_scene->getState()->getCamera()->getHeight();
 
     m_fboID = createFBO();
     m_numberOfColorAttachments = numberOfColorAttachments;
     m_colorAttachments = createColorAttachments(m_width, m_height, m_numberOfColorAttachments);
-
 }
 
 FBO::~FBO()
 {
 
+}
+
+// Callback for size change will need to recreate the buffers
+void FBO::onSizeChanged(int width, int height)
+{
+    setupBuffers(m_numberOfColorAttachments);
+    LOG_INFO("Size changed to: " + std::to_string(width) + "x" + std::to_string(height));
 }
 
 void FBO::bind()

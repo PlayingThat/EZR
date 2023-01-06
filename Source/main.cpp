@@ -171,10 +171,6 @@ int main()
 
     double startTime = glfwGetTime();
 
-    // FBO for rendering the scene
-    std::unique_ptr<FBO> sceneFBO = std::make_unique<FBO>(WIDTH, HEIGHT, 2);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneFBO->getColorAttachment(0), 0);
-
     // Create scene manager object 
     std::shared_ptr<Scene> scene = std::make_unique<Scene>(state);
     scene->setup(scene);

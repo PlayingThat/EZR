@@ -6,6 +6,8 @@
 
 #include "Defs.h"
 #include "State.h"
+#include "FBO.h"
+#include "Objects/ScreenFillingQuad.h"
 #include <vector>
 
 #include "Objects/ColorfullTriangle.h"
@@ -31,15 +33,31 @@ public:
     void addObject(std::shared_ptr<Drawable> object);
 
 private:
+    void drawGeometry();
+    void drawSFQuad();
+
     std::shared_ptr<Scene> m_scene;
 
     std::vector<std::shared_ptr<Drawable>> m_drawables;
     std::unique_ptr<float[]> m_backgroundColor;   
     std::shared_ptr<State> m_state;
 
+    // SFQ for post processing
+    std::shared_ptr<ScreenFillingQuad> m_sfq;
+
+    // GBuffer
+    std::unique_ptr<FBO> m_gBufferFBO;
+
+    // GBuffer shader
+    std::shared_ptr<Shader> m_gBufferVertexShader;
+    std::shared_ptr<Shader> m_gBufferFragmentShader;
+    std::unique_ptr<ShaderProgram> m_gBufferShaderProgram;
+
     // Objects
     std::shared_ptr<Drawable> m_triangle;
     std::shared_ptr<Drawable> m_terrain;
     std::shared_ptr<Drawable> m_ghost;
+
+
 
 };

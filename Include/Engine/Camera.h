@@ -43,6 +43,10 @@ public:
 
     void getWidthHeight(int *width, int *height);
 
+    int getWidth();
+
+    int getHeight();
+
     glm::vec3 *getCameraPosition();
 
     void lookAt(glm::vec3 position, glm::vec3 center, glm::vec3 up);
