@@ -5,7 +5,6 @@
 #include "Defs.h"
 #include "Texture.h"
 #include <vector>
-#include <filesystem>
 #include <map>
 
 #include <assimp/Importer.hpp>  // C++ importer interface
