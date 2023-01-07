@@ -36,6 +36,9 @@ private:
     void drawGeometry();
     void drawSFQuad();
 
+    // Setup NPR effect shaders
+    void setupNPREffects();
+
     std::shared_ptr<Scene> m_scene;
 
     std::vector<std::shared_ptr<Drawable>> m_drawables;
@@ -46,13 +49,24 @@ private:
     std::shared_ptr<ScreenFillingQuad> m_sfq;
 
     // GBuffer
-    std::unique_ptr<FBO> m_gBufferFBO;
+    std::shared_ptr<FBO> m_gBufferFBO;
 
     // GBuffer shader
     std::shared_ptr<Shader> m_gBufferVertexShader;
     std::shared_ptr<Shader> m_gBufferFragmentShader;
-    std::unique_ptr<ShaderProgram> m_gBufferShaderProgram;
+    std::shared_ptr<ShaderProgram> m_gBufferShaderProgram;
 
+    // Vector of NP effect shader programs
+    std::vector<std::shared_ptr<ShaderProgram>> m_NPREffectShaderPrograms;
+
+    //////////////////////////////////////////
+    // NPR shader effects
+    std::shared_ptr<Shader> m_basicVertexShader;
+    std::shared_ptr<Shader> m_basicFragmentShader;
+    std::shared_ptr<ShaderProgram> m_basicShaderProgram;
+
+
+    //////////////////////////////////////////
     // Objects
     std::shared_ptr<Drawable> m_triangle;
     std::shared_ptr<Drawable> m_terrain;

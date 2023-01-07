@@ -111,7 +111,18 @@ void FBO::setupBuffers(int numberOfColorAttachments)
 
     m_fboID = createFBO();
     m_numberOfColorAttachments = numberOfColorAttachments;
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fboID);
     m_colorAttachments = createColorAttachments(m_width, m_height, m_numberOfColorAttachments);
+
+    // Create depth buffer
+    unsigned int rboDepth;
+    glGenRenderbuffers(1, &rboDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_width, m_height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        LOG_ERROR("Framebuffer not complete");
 }
 
 FBO::~FBO()
