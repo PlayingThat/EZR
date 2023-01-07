@@ -14,6 +14,14 @@
 #include "Objects/Terrain.h"
 #include "Objects/Ghost.h"
 
+// Struct for NPR effects
+typedef struct 
+{
+    std::shared_ptr<ShaderProgram> shaderProgram;
+    std::string name;
+    bool enabled;
+} NPREffect;
+
 // Forward declaration
 class Drawable;
 
@@ -36,8 +44,14 @@ private:
     void drawGeometry();
     void drawSFQuad();
 
+    void addNPREffect(std::shared_ptr<ShaderProgram> nprEffectProgram, bool enabledByDefault = false);
+
+    void drawNPRDragAndDrop();
+    void recalculateNPRDragAndDrop();
+
     // Setup NPR effect shaders
     void setupNPREffects();
+
 
     std::shared_ptr<Scene> m_scene;
 
@@ -56,14 +70,21 @@ private:
     std::shared_ptr<Shader> m_gBufferFragmentShader;
     std::shared_ptr<ShaderProgram> m_gBufferShaderProgram;
 
-    // Vector of NP effect shader programs
-    std::vector<std::shared_ptr<ShaderProgram>> m_NPREffectShaderPrograms;
+    // Vector of NP effect shader effects
+    std::vector<std::shared_ptr<NPREffect>> m_NPREffects;
+    std::vector<std::string> m_nprEffectNames;
 
     //////////////////////////////////////////
     // NPR shader effects
+    // Basic FBO drawing shader
     std::shared_ptr<Shader> m_basicVertexShader;
     std::shared_ptr<Shader> m_basicFragmentShader;
     std::shared_ptr<ShaderProgram> m_basicShaderProgram;
+
+    // Gooch shader
+    std::shared_ptr<Shader> m_goochVertexShader;
+    std::shared_ptr<Shader> m_goochFragmentShader;
+    std::shared_ptr<ShaderProgram> m_goochShaderProgram;
 
 
     //////////////////////////////////////////
