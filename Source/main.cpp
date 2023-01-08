@@ -175,9 +175,6 @@ int main()
     std::shared_ptr<Scene> scene = std::make_unique<Scene>(state);
     scene->setup(scene);
 
-    // screen filling quad
-    std::unique_ptr<ScreenFillingQuad> sfq = std::make_unique<ScreenFillingQuad>(scene);
-
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
 

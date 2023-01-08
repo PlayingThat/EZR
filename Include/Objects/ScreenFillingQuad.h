@@ -20,13 +20,13 @@ public:
 
     std::shared_ptr<ShaderProgram> getShaderProgram();
 
-    void draw(const GLuint fboBufferID = 0);
+    void draw();
 
 private:
     std::shared_ptr<State> m_state;
     std::shared_ptr<Shader> m_fragmentShader;
     std::shared_ptr<Shader> m_drawFBOShader;
     std::shared_ptr<ShaderProgram> m_shaderProgram;
-    std::unique_ptr<Quad> m_quad;
+    std::shared_ptr<Quad> m_quad;
 
 };
