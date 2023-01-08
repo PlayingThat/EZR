@@ -19,8 +19,8 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     m_backgroundColor = std::make_unique<float[]>(3); 
 
     // Create FBO for GBuffer and SFQ
-    m_gBufferFBO = std::make_shared<FBO>(m_scene, 3);
-    m_sfq = std::make_shared<ScreenFillingQuad>(m_scene);
+    m_gBufferFBO = std::make_shared<FBO>(scene, 3);
+    m_sfq = std::make_shared<ScreenFillingQuad>(scene);
 
     // Setup shaders for GBuffer
     m_gBufferVertexShader = std::make_shared<Shader>("./Assets/Shader/GBuffer.vert");
@@ -48,14 +48,14 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     setupNPRFBOs();
 
     // Setup objects
-    m_triangle = std::make_shared<ColorfullTriangle>(m_scene);
+    m_triangle = std::make_shared<ColorfullTriangle>(scene);
 
-    m_terrain = std::make_shared<Terrain>(m_scene);
+    m_terrain = std::make_shared<Terrain>(scene);
 
-    m_ghost = std::make_shared<Ghost>(m_scene);
+    m_ghost = std::make_shared<Ghost>(scene);
 
     // Set camera position
-    getState()->getCamera()->setPosition(glm::vec3(0.0f, 1.7f, 2.7f));
+    m_state->getCamera()->setPosition(glm::vec3(0.0f, 1.7f, 2.7f));
 
     //addObject(m_triangle);
     //addObject(m_terrain);
@@ -69,7 +69,7 @@ Scene::~Scene()
 
 std::shared_ptr<State> Scene::getState() const
 {
-    return m_scene->m_state;
+    return m_state;
 }
 
 void Scene::update(float deltaTime)
@@ -168,8 +168,6 @@ void Scene::drawSFQuad()
             m_sfq->draw();
         }
     }
-
-    // Render to screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -178,7 +176,11 @@ void Scene::drawSFQuad()
     m_compositingShaderProgram->setVec2("screenSize", glm::vec2(getState()->getCamera()->getWidth(),
                                                                      getState()->getCamera()->getHeight()));
     m_compositingShaderProgram->setInt("numberOfEnabledEffects", m_enabledNPREffectCount);
+
     // Set shader uniforms
+
+                                                                
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_gBufferFBO->getColorAttachment(0));  // position
     glActiveTexture(GL_TEXTURE1);
