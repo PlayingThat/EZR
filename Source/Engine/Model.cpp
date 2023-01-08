@@ -107,7 +107,8 @@ bool Model::loadModel(std::string path,
             aiString str;
             scene->mMaterials[mesh->mMaterialIndex]->GetTexture(aiTextureType_DIFFUSE, 0, &str);
 
-            std::string textureFileName = std::filesystem::path(str.C_Str()).filename().string();
+            std::string texturePathCString(str.C_Str());
+            std::string textureFileName = texturePathCString.substr(texturePathCString.find_last_of("/\\") + 1);
             std::string texturePath = m_texturePath + textureFileName;
 
             // Check if tex has already been loaded

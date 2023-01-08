@@ -2,10 +2,11 @@
 
 in vec2 uvCoords;
 uniform sampler2D fbo;
+uniform vec2 screenSize;
 
-out vec4 fragmentColor;
+out vec4 FragColor;
 
 void main()
 {
-    fragmentColor = texture(fbo, gl_FragCoord.xy);
+    FragColor = texture(fbo, gl_FragCoord.xy / screenSize);
 }

@@ -21,6 +21,8 @@ public:
 
     GLuint getID();
 
+    std::string getName();
+
     void addShader(std::shared_ptr<Shader> shader);
 
     void setFloat(std::string name, float value) const;

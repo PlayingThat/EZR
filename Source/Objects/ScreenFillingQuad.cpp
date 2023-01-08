@@ -29,8 +29,8 @@ std::shared_ptr<ShaderProgram> ScreenFillingQuad::getShaderProgram()
 
 void ScreenFillingQuad::draw(const GLuint fboBufferID)
 {
-    m_shaderProgram->use();
+    //m_shaderProgram->use();
     //m_shaderProgram->setVec2("resolution", glm::vec2(m_scene->getWidth(), m_scene->getHeight()));
-    m_shaderProgram->setSampler2D("fbo", fboBufferID, 0);
+    //m_shaderProgram->setSampler2D("fbo", fboBufferID, 0);
     m_quad->draw();
 }

@@ -20,7 +20,7 @@ public:
 
     std::shared_ptr<ShaderProgram> getShaderProgram();
 
-    void draw(const GLuint fboBufferID);
+    void draw(const GLuint fboBufferID = 0);
 
 private:
     std::shared_ptr<State> m_state;

@@ -48,6 +48,11 @@ GLuint ShaderProgram::getID()
     return m_id;
 }
 
+std::string ShaderProgram::getName()
+{
+    return m_name;
+}
+
 void ShaderProgram::addShader(std::shared_ptr<Shader> shader)
 {
     // make sure that a compute shader program always just contains exactly one compute shader
