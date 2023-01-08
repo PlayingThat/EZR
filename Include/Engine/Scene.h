@@ -9,6 +9,7 @@
 #include "FBO.h"
 #include "Objects/ScreenFillingQuad.h"
 #include <vector>
+#include <map>
 
 #include "Objects/ColorfullTriangle.h"
 #include "Objects/Terrain.h"
@@ -52,6 +53,9 @@ private:
     // Setup NPR effect shaders
     void setupNPREffects();
 
+    // Setup NPR effect FBOs
+    void setupNPRFBOs();
+
 
     std::shared_ptr<Scene> m_scene;
 
@@ -65,10 +69,19 @@ private:
     // GBuffer
     std::shared_ptr<FBO> m_gBufferFBO;
 
+    // NPR Shader effect FBOs
+    std::map<std::string, std::shared_ptr<FBO>> m_nprEffectFBOs;
+    int m_enabledNPREffectCount = 0;
+
     // GBuffer shader
     std::shared_ptr<Shader> m_gBufferVertexShader;
     std::shared_ptr<Shader> m_gBufferFragmentShader;
     std::shared_ptr<ShaderProgram> m_gBufferShaderProgram;
+
+    // Compositing shader
+    std::shared_ptr<Shader> m_compositingVertexShader;
+    std::shared_ptr<Shader> m_compositingFragmentShader;
+    std::shared_ptr<ShaderProgram> m_compositingShaderProgram;
 
     // Vector of NP effect shader effects
     std::vector<std::shared_ptr<NPREffect>> m_NPREffects;

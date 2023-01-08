@@ -14,6 +14,7 @@ Scene::Scene(std::shared_ptr<State> state)
 
 void Scene::setup(std::shared_ptr<Scene> scene)
 {
+    m_scene = scene;
     m_drawables = std::vector<std::shared_ptr<Drawable>>();
     m_backgroundColor = std::make_unique<float[]>(3); 
 
@@ -29,10 +30,22 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     m_gBufferShaderProgram->addShader(m_gBufferFragmentShader);
     m_gBufferShaderProgram->link();
 
+    // Setup shaders for compositing
+    m_compositingVertexShader = std::make_shared<Shader>("./Assets/Shader/DrawFBO.vert");
+    m_compositingFragmentShader = std::make_shared<Shader>("./Assets/Shader/DrawFBO.frag");
+    m_compositingShaderProgram = std::make_shared<ShaderProgram>("Compositing");
+    m_compositingShaderProgram->addShader(m_compositingVertexShader);
+    m_compositingShaderProgram->addShader(m_compositingFragmentShader);
+    m_compositingShaderProgram->link();
+
     // Setup shader program for NP effects
     m_NPREffects = std::vector<std::shared_ptr<NPREffect>>();
     m_nprEffectNames = std::vector<std::string>();
     setupNPREffects();
+
+    // Setup FBOs for NPR effects
+    m_nprEffectFBOs = std::map<std::string, std::shared_ptr<FBO>>();
+    setupNPRFBOs();
 
     // Setup objects
     m_triangle = std::make_shared<ColorfullTriangle>(scene);
@@ -123,14 +136,50 @@ void Scene::drawGeometry()
 
 void Scene::drawSFQuad()
 {
+    m_enabledNPREffectCount = 0;
+
+    // Render NPR effects to their corresponding FBOs
+    for (int i = 0; i < m_NPREffects.size(); i++)
+    {
+        if (m_NPREffects.at(i)->enabled)
+        {
+            m_enabledNPREffectCount++;
+
+            glBindFramebuffer(GL_FRAMEBUFFER, m_nprEffectFBOs.at(m_NPREffects.at(i)->name)->getID());
+            glClearColor(0.0, 0.0, 0.0, 1.0);  // clear previous frame
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            m_NPREffects.at(i)->shaderProgram->use();
+
+            // Set shader uniforms
+            m_NPREffects.at(i)->shaderProgram->setVec2("screenSize", glm::vec2(getState()->getCamera()->getWidth(),
+                                                                              getState()->getCamera()->getHeight()));
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, m_gBufferFBO->getColorAttachment(0));  // position
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, m_gBufferFBO->getColorAttachment(1));  // normal
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, m_gBufferFBO->getColorAttachment(2));  // albedo
+            // glActiveTexture(GL_TEXTURE3);
+            // glBindTexture(GL_TEXTURE_2D, m_gBufferFBO->getColorAttachment(3));  // specular
+
+            // Draw quad
+            m_sfq->draw();
+        }
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_NPREffects.at(0)->shaderProgram->use();
+
+    m_compositingShaderProgram->use();
+    m_compositingShaderProgram->setVec2("screenSize", glm::vec2(getState()->getCamera()->getWidth(),
+                                                                     getState()->getCamera()->getHeight()));
+    m_compositingShaderProgram->setInt("numberOfEnabledEffects", m_enabledNPREffectCount);
 
     // Set shader uniforms
-    m_NPREffects.at(0)->shaderProgram->setVec2("screenSize", glm::vec2(getState()->getCamera()->getWidth(),
-                                                                     getState()->getCamera()->getHeight()));
+
+                                                                
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_gBufferFBO->getColorAttachment(0));  // position
@@ -218,5 +267,14 @@ void Scene::recalculateNPRDragAndDrop()
     for (int i = 0; i < m_NPREffects.size(); i++)
     {
         m_nprEffectNames[i] = m_NPREffects.at(i)->name;
+    }
+}
+
+void Scene::setupNPRFBOs()
+{
+    for (int i = 0; i < m_NPREffects.size(); i++) 
+    {
+        std::shared_ptr<FBO> fbo = std::make_shared<FBO>(m_scene, 3);
+        m_nprEffectFBOs.insert(std::pair<std::string, std::shared_ptr<FBO>>(m_NPREffects.at(i)->name, fbo));
     }
 }
