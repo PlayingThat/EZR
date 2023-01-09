@@ -1,9 +1,12 @@
 #version 450 core
 
+uniform sampler2D positions;
+uniform sampler2D normals;
+
 uniform sampler2D colorDiffuse;
 uniform vec2 screenSize;
 
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
 
 void main()
 {

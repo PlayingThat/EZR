@@ -1,4 +1,4 @@
-#version 330
+#version 450
 
 uniform mat4 viewMatrix;            //world coordinates to camera coordinate
 
@@ -7,6 +7,8 @@ uniform sampler2D normals;
 
 uniform sampler2D colorDiffuse;
 uniform vec2 screenSize;
+
+uniform bool textured = false;
 
 uniform vec3 vColor;        //color of the vertex
 
@@ -36,10 +38,13 @@ void main()
     float NdotL = (dot(lightVec, tNorm) + 1.0) * 0.5;
 
 
+    //get the color from the texture
+    vec4 texColor = texture(colorDiffuse, gl_FragCoord.xy / screenSize);
+    vec3 diffuseColor = texColor.rgb;
 
     //combine cool / warm color with vertex color
-    vec3 cool = min(CoolColor + DiffuseCool * vColor, 1.0);
-    vec3 warm = min(WarmColor + DiffuseWarm * vColor, 1.0);
+    vec3 cool = min(CoolColor + DiffuseCool * diffuseColor, 1.0);
+    vec3 warm = min(WarmColor + DiffuseWarm * diffuseColor, 1.0);
 
     //interpolate using the dot product of normal & lightvector
     vec3 final = mix(cool, warm, NdotL);
@@ -48,7 +53,6 @@ void main()
     vec3 nRefl = normalize(reflecVec);
     vec3 nView = normalize(viewVec);
     float spec = pow(max(dot(nRefl, nView), 0.0), 32.0);
- 
-    // result = vec4(min(final + spec, 1.0), 1.0);
-    result = vec4(1,0,0,1);
+
+    result = vec4(min(final + spec, 1.0), 1.0);
 }

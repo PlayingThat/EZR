@@ -48,14 +48,10 @@ private:
 
     void addNPREffect(std::shared_ptr<ShaderProgram> nprEffectProgram, bool enabledByDefault = false);
 
-    void drawNPRDragAndDrop();
+    void drawNPRPanel();
 
     // Setup NPR effect shaders
     void setupNPREffects();
-
-    // Setup NPR effect FBOs
-    void setupNPRFBOs();
-
 
     std::shared_ptr<Scene> m_scene;
 

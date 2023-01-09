@@ -133,9 +133,9 @@ void ShaderProgram::setMat4(std::string name, glm::mat4 value) const
 
 void ShaderProgram::setSampler2D(std::string name, GLuint texture, int idGl) const
 {
-    glActiveTexture(GL_TEXTURE0 + idGl);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    this->setInt(name, idGl);
+    glActiveTexture(GL_TEXTURE0 + texture);
+    glBindTexture(GL_TEXTURE_2D, idGl);
+    this->setInt(name, texture);
 }
 
 void ShaderProgram::setSampler3D(std::string name, GLuint texture, int idGl) const
