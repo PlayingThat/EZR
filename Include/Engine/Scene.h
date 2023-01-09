@@ -19,6 +19,7 @@
 typedef struct 
 {
     std::shared_ptr<ShaderProgram> shaderProgram;
+    std::shared_ptr<FBO> fbo;
     std::string name;
     bool enabled;
 } NPREffect;
@@ -48,7 +49,6 @@ private:
     void addNPREffect(std::shared_ptr<ShaderProgram> nprEffectProgram, bool enabledByDefault = false);
 
     void drawNPRDragAndDrop();
-    void recalculateNPRDragAndDrop();
 
     // Setup NPR effect shaders
     void setupNPREffects();
@@ -70,7 +70,7 @@ private:
     std::shared_ptr<FBO> m_gBufferFBO;
 
     // NPR Shader effect FBOs
-    std::map<std::string, std::shared_ptr<FBO>> m_nprEffectFBOs;
+    // std::map<std::string, std::shared_ptr<FBO>> m_nprEffectFBOs;
     int m_enabledNPREffectCount = 0;
 
     // GBuffer shader
@@ -85,7 +85,7 @@ private:
 
     // Vector of NP effect shader effects
     std::vector<std::shared_ptr<NPREffect>> m_NPREffects;
-    std::vector<std::string> m_nprEffectNames;
+    // std::vector<std::string> m_nprEffectNames;
 
     //////////////////////////////////////////
     // NPR shader effects

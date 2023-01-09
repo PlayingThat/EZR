@@ -1,9 +1,11 @@
 #version 450 core
 
-uniform vec3 color;
+uniform sampler2D colorDiffuse;
+uniform vec2 screenSize;
+
 out vec4 FragColor;
 
 void main()
 {
-    FragColor = vec4(color, 1);
+    FragColor = texture(colorDiffuse, gl_FragCoord.xy / screenSize);
 }
