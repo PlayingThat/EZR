@@ -54,7 +54,7 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     getState()->getCamera()->setPosition(glm::vec3(0.0f, 1.7f, 2.7f));
 
     //addObject(m_triangle);
-    //addObject(m_terrain);
+    addObject(m_terrain);
     addObject(m_ghost);
 }
 
@@ -101,17 +101,40 @@ void Scene::setupNPREffects()
     m_goochShaderProgram->addShader(m_goochFragmentShader);
     m_goochShaderProgram->link();
     addNPREffect(m_goochShaderProgram, false);
+    addNPRProperty("Gooch", "textured", &m_goochPropertyTextured, true);
 }
 
 void Scene::addNPREffect(std::shared_ptr<ShaderProgram> nprEffectProgram, bool enabledByDefault)
 {
     std::shared_ptr<NPREffect> nprEffect = std::make_shared<NPREffect>();
     std::shared_ptr<FBO> nprFBO = std::make_shared<FBO>(m_scene, 1);
+    std::vector<NPRProperty> nprProperties = std::vector<NPRProperty>();
     nprEffect->shaderProgram = nprEffectProgram;
     nprEffect->enabled = enabledByDefault;
     nprEffect->name = nprEffectProgram->getName();
     nprEffect->fbo = nprFBO;
+    nprEffect->properties = nprProperties;
     m_NPREffects.push_back(nprEffect);
+}
+
+void Scene::addNPRProperty(std::string effectName, std::string propertyName, std::variant<glm::vec2*, glm::vec3*, glm::vec4*, float*, int*, bool*, GLuint*> value, bool showInGUI)
+{
+    // Iterate over all effects
+    for (int i = 0; i < m_NPREffects.size(); i++)
+    {
+        // Find the effect with the given name
+        if (m_NPREffects[i]->name == effectName)
+        {
+            // Add the property to the effect
+            NPRProperty nprProperty = NPRProperty();
+            nprProperty.name = propertyName;
+            nprProperty.value = value;
+            nprProperty.showInGUI = showInGUI;
+            m_NPREffects[i]->properties.push_back(nprProperty);
+            return;
+        }
+    }
+
 }
 
 void Scene::drawGeometry()
@@ -152,6 +175,15 @@ void Scene::drawSFQuad()
             m_NPREffects.at(i)->shaderProgram->setSampler2D("positions", 0, m_gBufferFBO->getColorAttachment(0));  // color diffuse
             m_NPREffects.at(i)->shaderProgram->setSampler2D("normals", 1, m_gBufferFBO->getColorAttachment(1));  // color diffuse
             m_NPREffects.at(i)->shaderProgram->setSampler2D("colorDiffuse", 2, m_gBufferFBO->getColorAttachment(2));  // color diffuse
+
+            // Set NPR properties
+            // Iterate over npr effect properties
+            for(int effectPropertyIndex = 0; effectPropertyIndex < m_NPREffects.at(i)->properties.size(); effectPropertyIndex++)
+            {
+                setNPREffectProperty(m_NPREffects.at(i)->shaderProgram, 
+                                     m_NPREffects.at(i)->properties.at(effectPropertyIndex).name,
+                                     m_NPREffects.at(i)->properties.at(effectPropertyIndex).value);
+            }
             
             // Draw quad
             m_sfq->draw();
@@ -212,7 +244,20 @@ void Scene::drawNPRPanel()
     {
         //ImGui::Selectable(names[n]);
         ImGui::Checkbox(m_NPREffects.at(n)->name.c_str(), &m_NPREffects.at(n)->enabled);
-        
+
+        // Draw properties for each effect
+        if (m_NPREffects.at(n)->properties.size() > 0) {
+            ImGui::Indent();
+            for(int effectPropertyIndex = 0; effectPropertyIndex < m_NPREffects.at(n)->properties.size(); effectPropertyIndex++)
+            {
+                // Only draw effect if it should be drawn to GUI
+                if (m_NPREffects.at(n)->properties.at(effectPropertyIndex).showInGUI)
+                    drawNPREffectProperty(m_NPREffects.at(n)->properties.at(effectPropertyIndex));
+            }
+            ImGui::Unindent();
+        }
+
+
 
         // ImGuiDragDropFlags src_flags = 0;
         // src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;     // Keep the source displayed as hovered
@@ -254,4 +299,75 @@ void Scene::drawNPRPanel()
     //     ImGui::SetDragDropPayload("DND_NPR_EFFECTS", &move_to, sizeof(int)); // Update payload immediately so on the next frame if we move the mouse to an earlier item our index payload will be correct. This is odd and showcase how the DnD api isn't best presented in this example.
     // }
     ImGui::End();
+}
+
+void Scene::setNPREffectProperty(std::shared_ptr<ShaderProgram> shaderProgram, 
+                                 std::string propertyName, 
+                                 std::variant<glm::vec2*, glm::vec3*, glm::vec4*, float*, int*, bool*, GLuint*> value)
+{
+    if (std::holds_alternative<glm::vec2*>(value))
+    {
+        shaderProgram->setVec2(propertyName, *std::get<glm::vec2*>(value));
+    }
+    else if (std::holds_alternative<glm::vec3*>(value))
+    {
+        shaderProgram->setVec3(propertyName, *std::get<glm::vec3*>(value));
+    }
+    else if (std::holds_alternative<glm::vec4*>(value))
+    {
+        shaderProgram->setVec4(propertyName, *std::get<glm::vec4*>(value));
+    }
+    else if (std::holds_alternative<float*>(value))
+    {
+        shaderProgram->setFloat(propertyName, *std::get<float*>(value));
+    }
+    else if (std::holds_alternative<int*>(value))
+    {
+        shaderProgram->setInt(propertyName, *std::get<int*>(value));
+    }
+    else if (std::holds_alternative<bool*>(value))
+    {
+        shaderProgram->setBool(propertyName, *std::get<bool*>(value));
+    }
+    else if (std::holds_alternative<GLuint*>(value))
+    {
+        shaderProgram->setSampler2D(propertyName, 0, *std::get<GLuint*>(value));
+    }
+
+}
+
+void Scene::drawNPREffectProperty(NPRProperty property)
+{
+    std::variant<glm::vec2*, glm::vec3*, glm::vec4*, float*, int*, bool*, GLuint*> value = property.value;
+    std::string propertyName = property.name;
+
+    // if (std::holds_alternative<glm::vec2*>(value))
+    // {
+    //     shaderProgram->setVec2(propertyName, *std::get<glm::vec2*>(value));
+    //     ImGUI
+    // }
+    // else if (std::holds_alternative<glm::vec3*>(value))
+    // {
+    //     shaderProgram->setVec3(propertyName, *std::get<glm::vec3*>(value));
+    // }
+    // else if (std::holds_alternative<glm::vec4*>(value))
+    // {
+    //     shaderProgram->setVec4(propertyName, *std::get<glm::vec4*>(value));
+    // }
+    // else if (std::holds_alternative<float*>(value))
+    // {
+    //     shaderProgram->setFloat(propertyName, *std::get<float*>(value));
+    // }
+    // else if (std::holds_alternative<int*>(value))
+    // {
+    //     shaderProgram->setInt(propertyName, *std::get<int*>(value));
+    // }
+    if (std::holds_alternative<bool*>(value))
+    {
+        ImGui::Checkbox(propertyName.c_str(), std::get<bool*>(value));
+    }
+    // else if (std::holds_alternative<GLuint*>(value))
+    // {
+    //     shaderProgram->setSampler2D(propertyName, 0, *std::get<GLuint*>(value));
+    // }
 }

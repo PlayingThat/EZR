@@ -9,17 +9,26 @@
 #include "FBO.h"
 #include "Objects/ScreenFillingQuad.h"
 #include <vector>
-#include <map>
+#include <variant>
 
 #include "Objects/ColorfullTriangle.h"
 #include "Objects/Terrain.h"
 #include "Objects/Ghost.h"
+
+// Struct for NPR properties
+typedef struct
+{
+    std::string name;
+    std::variant<glm::vec2*, glm::vec3*, glm::vec4*, float*, int*, bool*, GLuint*> value;
+    bool showInGUI = false;
+} NPRProperty;
 
 // Struct for NPR effects
 typedef struct 
 {
     std::shared_ptr<ShaderProgram> shaderProgram;
     std::shared_ptr<FBO> fbo;
+    std::vector<NPRProperty> properties;
     std::string name;
     bool enabled;
 } NPREffect;
@@ -47,6 +56,16 @@ private:
     void drawSFQuad();
 
     void addNPREffect(std::shared_ptr<ShaderProgram> nprEffectProgram, bool enabledByDefault = false);
+
+    // Add NPR property to NPR effect
+    // effectName specifies the NPR effect to add the property to
+    // propertyName specifies the name of the property, corresponding to the uniform name in the shader
+    void addNPRProperty(std::string effectName, std::string propertyName, std::variant<glm::vec2*, glm::vec3*, glm::vec4*, float*, int*, bool*, GLuint*> value, bool showInGUI = false);
+    // Internal method to set the uniforms in the loop. don't call this!
+    void setNPREffectProperty(std::shared_ptr<ShaderProgram> shaderProgram, std::string propertyName, std::variant<glm::vec2*, glm::vec3*, glm::vec4*, float*, int*, bool*, GLuint*> value);
+
+    // Draw NPR property to GUI
+    void drawNPREffectProperty(NPRProperty property);
 
     void drawNPRPanel();
 
@@ -94,6 +113,8 @@ private:
     std::shared_ptr<Shader> m_goochVertexShader;
     std::shared_ptr<Shader> m_goochFragmentShader;
     std::shared_ptr<ShaderProgram> m_goochShaderProgram;
+    // Gooch properties
+    bool m_goochPropertyTextured = false;  // wether to use a texture or not
 
 
     //////////////////////////////////////////

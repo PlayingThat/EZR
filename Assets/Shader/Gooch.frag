@@ -8,7 +8,7 @@ uniform sampler2D normals;
 uniform sampler2D colorDiffuse;
 uniform vec2 screenSize;
 
-uniform bool textured = false;
+uniform bool textured;
 
 uniform vec3 vColor;        //color of the vertex
 
@@ -38,9 +38,15 @@ void main()
     float NdotL = (dot(lightVec, tNorm) + 1.0) * 0.5;
 
 
-    //get the color from the texture
-    vec4 texColor = texture(colorDiffuse, gl_FragCoord.xy / screenSize);
-    vec3 diffuseColor = texColor.rgb;
+    vec4 texColor;
+    vec3 diffuseColor = vColor;
+    
+    if (textured) {
+        //get the color from the texture
+        texColor = texture(colorDiffuse, gl_FragCoord.xy / screenSize);
+        diffuseColor = texColor.rgb;
+    }
+
 
     //combine cool / warm color with vertex color
     vec3 cool = min(CoolColor + DiffuseCool * diffuseColor, 1.0);
@@ -53,6 +59,6 @@ void main()
     vec3 nRefl = normalize(reflecVec);
     vec3 nView = normalize(viewVec);
     float spec = pow(max(dot(nRefl, nView), 0.0), 32.0);
-
+    
     result = vec4(min(final + spec, 1.0), 1.0);
 }

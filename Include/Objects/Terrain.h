@@ -59,6 +59,13 @@ private:
 
     void loadCBTNodeCountBuffer();
 
+    // Setup vertex array objects
+    void setupVAOs();
+
+    void loadVAOEmpty();
+
+    void loadVAOTriangleMeshlet();
+
     //////////////////////////////////////////////////////////
     // GL Buffer
 
@@ -80,6 +87,11 @@ private:
 
     GLuint m_bufferCBTNodeCount = 0;
     GLuint m_bufferCBTNodeCountIndex = 0;
+
+    // VAO for empty buffer
+    GLuint m_vaoEmpty = 0;
+    // VAO for triangle meshlet
+    GLuint m_vaoTriangleMeshlet = 0;
 
 
     //////////////////////////////////////////////////////////

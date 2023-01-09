@@ -222,3 +222,38 @@ void Terrain::loadTriangleMeshletBuffers()
 
     HANDLE_GL_ERRORS("setting up meshlet buffers for LEB");
 }
+
+void Terrain::setupVAOs()
+{
+    loadVAOEmpty();
+    loadVAOTriangleMeshlet();
+}
+
+void Terrain::loadVAOEmpty()
+{
+    LOG_INFO("loading Empty-VertexArray");
+    if (glIsVertexArray(m_vaoEmpty))
+        glDeleteVertexArrays(1, &m_vaoEmpty);
+
+    glGenVertexArrays(1, &m_vaoEmpty);
+    glBindVertexArray(m_vaoEmpty);
+    glBindVertexArray(0);
+    HANDLE_GL_ERRORS("loading VAO for empty terrain");
+}
+
+void Terrain::loadVAOTriangleMeshlet()
+{
+    LOG_INFO("loading VAO for triangle meshlet");
+    if (glIsVertexArray(m_vaoTriangleMeshlet))
+        glDeleteVertexArrays(1, &m_vaoTriangleMeshlet);
+
+    glGenVertexArrays(1, &m_vaoTriangleMeshlet);
+
+    glBindVertexArray(m_vaoTriangleMeshlet);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, m_bufferMeshletVertices);
+    glVertexAttribPointer(0, 2, GL_FLOAT, 0, 0, ((char *)NULL + (0)));
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufferMeshletIndices);
+    glBindVertexArray(0);
+    HANDLE_GL_ERRORS("loading VAO for triangle meshlet");
+}
