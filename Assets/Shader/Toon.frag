@@ -8,6 +8,7 @@ vec3 lightPosition = vec3(0, 10, 4); //light position in world coordinates
 
 uniform sampler2D positions;
 uniform sampler2D normals;
+uniform sampler2D depth;
 
 uniform sampler2D colorDiffuse;
 uniform vec2 screenSize;
@@ -18,6 +19,11 @@ uniform vec3 vColor;        //color of the vertex
 
 void main(void) 
 {
+	// Discard if no geometry is present
+    if (texture(depth, gl_FragCoord.xy / screenSize).x == 1.0f) {
+        discard;
+    }
+
 	// Deferred shading (usually in vertex shader)
     vec4 vPosition = texture(positions, gl_FragCoord.xy / screenSize);
     vec4 vertex = vPosition;

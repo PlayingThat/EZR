@@ -5,6 +5,7 @@ uniform mat4 projectionMatrix;            //world coordinates to camera coordina
 
 uniform sampler2D positions;
 uniform sampler2D normals;
+uniform sampler2D depth;
 
 uniform sampler2D colorDiffuse;
 uniform vec2 screenSize;
@@ -24,6 +25,11 @@ layout (location = 0) out vec4 result;
 
 void main()
 {
+    // Discard if no geometry is present
+    if (texture(depth, gl_FragCoord.xy / screenSize).x == 1.0f) {
+        discard;
+    }
+
     // Deferred shading (usually in vertex shader)
     vec4 vPosition = texture(positions, gl_FragCoord.xy / screenSize);
     vec4 vertex = vPosition;
