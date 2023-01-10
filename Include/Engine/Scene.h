@@ -116,6 +116,13 @@ private:
     // Gooch properties
     bool m_goochPropertyTextured = false;  // wether to use a texture or not
 
+    // Toon shader
+    std::shared_ptr<Shader> m_toonVertexShader;
+    std::shared_ptr<Shader> m_toonFragmentShader;
+    std::shared_ptr<ShaderProgram> m_toonShaderProgram;
+    // Toon properties
+    bool m_toonPropertyTextured = false;  // wether to use a texture or not
+
 
     //////////////////////////////////////////
     // Objects

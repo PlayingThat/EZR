@@ -102,6 +102,16 @@ void Scene::setupNPREffects()
     m_goochShaderProgram->link();
     addNPREffect(m_goochShaderProgram, false);
     addNPRProperty("Gooch", "textured", &m_goochPropertyTextured, true);
+
+    // Setup Toon
+    m_toonVertexShader = std::make_shared<Shader>("./Assets/Shader/Toon.vert");
+    m_toonFragmentShader = std::make_shared<Shader>("./Assets/Shader/Toon.frag");
+    m_toonShaderProgram = std::make_shared<ShaderProgram>("Toon");
+    m_toonShaderProgram->addShader(m_toonVertexShader);
+    m_toonShaderProgram->addShader(m_toonFragmentShader);
+    m_toonShaderProgram->link();
+    addNPREffect(m_toonShaderProgram, false);
+    addNPRProperty("Toon", "textured", &m_toonPropertyTextured, false);
 }
 
 void Scene::addNPREffect(std::shared_ptr<ShaderProgram> nprEffectProgram, bool enabledByDefault)
