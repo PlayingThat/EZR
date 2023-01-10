@@ -39,6 +39,8 @@ public:
 
     GLuint getColorAttachment(size_t i);
 
+    GLuint getDepthAttachment();
+
 private:
     void setupBuffers(int numberOfColorAttachments);
 
@@ -49,6 +51,7 @@ private:
 
     size_t m_numberOfColorAttachments;
     GLuint *m_colorAttachments;
+    GLuint m_depthAttachment;
 
     // Scene
     std::shared_ptr<Scene> m_scene;

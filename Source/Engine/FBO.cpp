@@ -115,13 +115,23 @@ void FBO::setupBuffers(int numberOfColorAttachments)
     m_colorAttachments = createColorAttachments(m_width, m_height, m_numberOfColorAttachments);
 
     // Create depth buffer
-    unsigned int rboDepth;
-    glGenRenderbuffers(1, &rboDepth);
-    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_width, m_height);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+    // unsigned int m_depthAttachment;
+    // glGenRenderbuffers(1, &m_depthAttachment);
+    // glBindRenderbuffer(GL_RENDERBUFFER, m_depthAttachment);
+    // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_width, m_height);
+    // glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthAttachment);
 
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    glGenTextures(1, &m_depthAttachment);
+    glBindTexture(GL_TEXTURE_2D, m_depthAttachment);
+    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthAttachment, 0);  
+
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT)
         LOG_ERROR("Framebuffer not complete");
 }
 
@@ -155,4 +165,9 @@ GLuint FBO::getColorAttachment(size_t i)
         return 0;
     }
     return m_colorAttachments[i];
+}
+
+GLuint FBO::getDepthAttachment()
+{
+    return m_depthAttachment;
 }

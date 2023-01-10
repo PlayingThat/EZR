@@ -43,11 +43,16 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     // m_nprEffectNames = std::vector<std::string>();
     setupNPREffects();
 
+    /////////////////////////////////////////////
     // Setup objects
     m_triangle = std::make_shared<ColorfullTriangle>(m_scene);
 
     m_terrain = std::make_shared<Terrain>(m_scene);
 
+    m_clouds = std::make_shared<Clouds>(m_scene);
+    m_cloudColorTexture = std::shared_ptr<Clouds>(m_clouds, reinterpret_cast<Clouds *>(m_clouds.get()))->getCloudTexture();
+
+    // Setup scene objects
     m_ghost = std::make_shared<Ghost>(m_scene);
 
     // Set camera position
@@ -55,6 +60,7 @@ void Scene::setup(std::shared_ptr<Scene> scene)
 
     //addObject(m_triangle);
     addObject(m_terrain);
+    addObject(m_clouds);
     addObject(m_ghost);
 }
 
@@ -185,6 +191,7 @@ void Scene::drawSFQuad()
             m_NPREffects.at(i)->shaderProgram->setSampler2D("positions", 0, m_gBufferFBO->getColorAttachment(0));  // color diffuse
             m_NPREffects.at(i)->shaderProgram->setSampler2D("normals", 1, m_gBufferFBO->getColorAttachment(1));  // color diffuse
             m_NPREffects.at(i)->shaderProgram->setSampler2D("colorDiffuse", 2, m_gBufferFBO->getColorAttachment(2));  // color diffuse
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("depth", 3, m_gBufferFBO->getDepthAttachment());  // depth
 
             // Set NPR properties
             // Iterate over npr effect properties
@@ -208,6 +215,8 @@ void Scene::drawSFQuad()
     m_compositingShaderProgram->setVec2("screenSize", glm::vec2(getState()->getCamera()->getWidth(),
                                                                      getState()->getCamera()->getHeight()));
     m_compositingShaderProgram->setInt("numberOfEnabledEffects", m_enabledNPREffectCount);
+    m_compositingShaderProgram->setSampler2D("fboClouds", 8, m_cloudColorTexture);  // color diffuse
+    m_compositingShaderProgram->setSampler2D("depth", 9, m_gBufferFBO->getDepthAttachment());  // depth
 
     // Set shader uniforms
     int shaderFBOOffset = 0;
@@ -232,8 +241,9 @@ void Scene::renderDrawables()
 {
     for (std::shared_ptr<Drawable> d : m_drawables)
     {
-        // Terrain and clouds may change the FBO
+        // Terrain and clouds may change the FBO and shader
         glBindFramebuffer(GL_FRAMEBUFFER, m_gBufferFBO->getID());
+        m_gBufferShaderProgram->use();
 
         m_gBufferShaderProgram->setMat4("modelMatrix", d->getModelMatrix());
         m_gBufferShaderProgram->setMat3("normalMatrix", glm::mat3(

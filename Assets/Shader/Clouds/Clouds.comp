@@ -1,0 +1,417 @@
+#version 450 core
+
+// local group size
+layout(local_size_x = 16, local_size_y = 16) in;
+
+// layouts for fbo output
+layout(rgba8, binding = 0) uniform restrict writeonly image2D fragColorImage;
+
+layout(binding = 1) uniform sampler3D perlinWorleySampler;
+layout(binding = 2) uniform sampler3D worleySampler;
+layout(binding = 3) uniform sampler3D weatherSampler;
+layout(binding = 4) uniform sampler3D weatherSampler2;
+
+uniform mat4 inverseProjectionMatrix;
+uniform mat4 inverseViewMatrix;
+
+uniform vec2 resolution = vec2(1200, 800);
+uniform vec3 cameraPosition;
+uniform uint interlaceIndex;
+
+uniform vec3 sunPosition = vec3(1000.0, 1000.0, 1000.0);
+uniform vec3 sunColor;
+uniform vec3 ambientColor;
+uniform vec3 backgroundColor;
+
+uniform float cloudScale = 1500.0f;
+uniform float lightAbsorption = 0.035f;
+uniform float curliness = 1.0f;
+uniform float coverageFactor = 1.0f;
+uniform float fogMultiplier = 1.0f;
+uniform bool useComplexWeather = true;
+
+uniform float time = 1.0f;
+uniform float timeOfDay;
+uniform float windSpeed;
+uniform float earthRadius = 600000.0f;
+uniform float innerRadius = 5000.0f + 600000.0f;
+uniform float outerRadius = 5000.0f + 600000.0f + 25000.0f;
+
+
+const float PI = 3.1415927410125732421875f;
+const float PI_RADIANS = 0.3183098f;
+
+float remap(float value, float low1, float high1, float low2, float high2)
+{
+    return low2 + (value - low1) * (high2 - low2) / (high1 - low1);
+}
+
+// returns a pseudo random float based on the input vector
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(14.2893,19.1242))) * 13183.1293);
+}
+
+// Henyey-Greenstein phase function
+// calculates the in/out scattering of the cloud.
+// costheta is cosine of the angle between the sun's light direction and the ray direction from the camera.
+// g specifies the type of scattering (back-, isotropic-, in-scattering)
+float HG(float costheta, float g) {
+    return 1.25f * PI_RADIANS * (1 - pow(g, 2.0f)) / pow((1 + pow(g, 2.0f) - 2 * g * costheta), 1.5f) + 0.5f;
+}
+
+// calulates the phase using the Henyey-Greenstein function
+float phase(vec3 inLight, vec3 inView, float g) {
+    float costheta = dot(inLight, inView) / length(inLight) / length(inView);
+    return HG(-costheta, g);
+}
+
+// fixed coverage mapping
+float coverage(float t) {
+    return smoothstep(0.1, 0.8, t) * t;
+}
+
+// use parabola to round off clouds at the top
+float heightModifier(vec3 v)
+{
+    float oneOverHeight = 1.0f / v.y;
+    float altitudeDiff = v.y - 500.0f;
+    return altitudeDiff * (altitudeDiff - v.y) * oneOverHeight * oneOverHeight * -16.0f;
+}
+
+// calculates the position of the ray hitting the sphere and writes it to startPos
+bool raySphereintersection(vec3 ro, vec3 rd, float radius, out vec3 startPos){
+    float t;
+
+    vec3 earthCenter = vec3(0, -earthRadius, 0);
+    earthCenter.xz = cameraPosition.xz;
+
+    float radius2 = radius*radius;
+
+    vec3 L = ro - earthCenter;
+    float a = dot(rd, rd);
+    float b = 2.0f * dot(rd, L);
+    float c = dot(L,L) - radius2;
+
+    float discr = b*b - 4.0 * a * c;
+
+    if(discr < 0.0f) return false;
+
+    t = max(0.0f, (-b + sqrt(discr)) / 2.0f);
+    if(t == 0.0f){
+        return false;
+    }
+    startPos = ro + rd*t;
+
+    return true;
+}
+
+// used to calculate ray
+vec3 coordinateToNDC(vec2 fragCoord)
+{
+    vec2 normalizedDeviceCoord = 2.0f * vec2(fragCoord.xy) / resolution.xy - 1.0f;
+    return vec3(normalizedDeviceCoord, 1.0f);
+}
+
+vec3 _betaR = vec3(1.95e-2, 1.1e-1, 2.94e-1);
+vec3 _betaM = vec3(4e-2, 4e-2, 4e-2);
+
+vec3 calcScatter(float rayleigh, float mie, out vec3 extinction, float cosine)
+{
+    float g = -0.93f;
+
+    extinction = exp(-(_betaR * rayleigh + _betaM * mie) * 0.2f);
+
+    // scattering phase
+    float g2 = g * g;
+    float fcos2 = cosine * cosine;
+    float miePhase = pow(1. + g2 + 2. * g * cosine, -1.5) * (1. - g2) / (2. + g2);
+    //g = 0;
+    float rayleighPhase = 1.0f;
+
+    vec3 inScatter = (1. + fcos2) * vec3(rayleighPhase + _betaM / _betaR * miePhase);
+
+    return inScatter;
+}
+
+// calculates the color of the sky at the ray intersection
+vec3 skyColorFromRay(vec3 rayStart, vec3 rayEnd)
+{
+    vec3 ray = rayEnd - rayStart;
+    float skyPosition = gl_GlobalInvocationID.y / resolution.x;
+//    float atmosphere = 1.0f - skyPosition;
+//    vec3 skyColor = vec3(0.42f, 0.7f, 1.2f);
+//
+//    skyColor = mix(skyColor,  vec3(-0.5f, -0.6f, -0.2f), smoothstep(0.0f, 700.0f, timeOfDay));
+//    skyColor = mix(skyColor, vec3(0.1f, 0.1f, 0.25f), smoothstep(700.0f, 1100.0f, timeOfDay));
+//    skyColor = mix(skyColor, vec3(0.5f, 0.5f, 0.7f), smoothstep(1100.0f, 2300.0f, timeOfDay));
+//    skyColor = mix(skyColor, vec3(0.42f, 0.7f, 0.92f), smoothstep(2300.0f, 2700.0f, timeOfDay));
+//    skyColor = mix(skyColor, vec3(0.1f, 0.1f, 0.25f), smoothstep(2700.0f, 2900.0f, timeOfDay));
+//    skyColor = mix(skyColor,  vec3(-0.5f, -0.6f, -0.2f), smoothstep(2900.0f, 3610.0f, timeOfDay));
+
+//    float scatter = pow(ray.y / (100.0f * gl_GlobalInvocationID.y), 1.0f / 15.0f);
+//    scatter = 1.0f - clamp(scatter, 0.8, 1.0f);
+//
+//    vec3 scatterColor = mix(vec3(1.0f), vec3(1.0f, 0.3f, 0.3f), scatter);
+//    return mix(skyColor, scatterColor, atmosphere);
+//    vec3 skyColor = vec3(0);
+    float timeRadians = timeOfDay / 1800.0f * PI;
+    vec3 sundir = vec3(-cos(timeRadians) * 10000.0f, sin(timeRadians) * 10000.0f, -10000.0f);
+//    vec3 color;
+//    int steps = 16;
+//
+//    for(int i = 0; i < steps; i++)
+//    {
+//
+//    }
+
+    vec3 atmospherePosition = rayEnd - cameraPosition + 10000.0f;
+
+    vec3 extinction;
+    float timeFactor =  (1.0f + sin(timeRadians)) * 0.5f;
+
+    float zenith = max(0.0f, normalize(atmospherePosition).y) * timeFactor;
+    float sunDot = clamp(dot(normalize(atmospherePosition), normalize(sundir)), 0.0f, 1.0f);
+
+    float rayleigh = 1.0f / zenith;
+    float mie = 1.2f / zenith;
+
+    vec3 scatter = calcScatter(rayleigh, mie, extinction, sunDot);
+
+    // apply exposure
+    vec3 color = scatter * (1.0f - extinction) * timeFactor;
+
+    // add sun
+    color += 0.47f * vec3(1.6f, 1.4f, 1.0f) * pow(sunDot, 350.0f) * extinction;
+
+    // add sun halo
+    color += 0.4f * vec3(0.8f, 0.9f, 1.0f) * pow(sunDot, 2.0f) * extinction;
+
+    return color;
+}
+
+float sampleCloud(vec3 v, float lod) {
+    float heightFactor = heightModifier(v);
+    vec3 samplePosition;
+
+    if(useComplexWeather)
+    samplePosition = v / cloudScale;
+    else
+    samplePosition = vec3((v.xy / innerRadius + 0.5f) / cloudScale, heightFactor);
+
+    vec3 weatherSamplePoint = v / cloudScale;
+
+    vec4 perlinWorley = textureLod(perlinWorleySampler, v / cloudScale * 8.0f, lod);
+    vec4 worley = textureLod(worleySampler, samplePosition * 8.0f * curliness, lod);
+    // float weatherSample = textureLod(weatherSampler, weatherSamplePoint, lod).y;
+    float weatherSample = 0.5f;
+
+    //    float coverage = coverage(perlinWorley.r);
+
+    float lowFrequency = dot(perlinWorley.gba, vec3(0.7f, 0.2f, 0.1f));
+    float base = remap(perlinWorley.x, -(1.0f - lowFrequency), 1.0f, 0.0f, 1.0f);
+
+    float density = base * weatherSample * coverageFactor;
+
+    // modify for rain clouds
+    if(useComplexWeather) {
+        vec4 humiditySample = textureLod(weatherSampler2, weatherSamplePoint, lod);
+        density += remap(humiditySample.y, 0.0f, 20.0f, 0.0f, 1.0f);
+    }
+
+    // add details using worley noise
+    float highFrequency = dot(worley.xyz, vec3(0.7, 0.2, 0.1));
+    highFrequency = mix(highFrequency, 1.0 - highFrequency, clamp(heightFactor * 10.0, 0.0, 1.0));
+
+    density = density - highFrequency * (1.0f - density);
+
+    return density;
+}
+
+float computeFogAmount(vec3 startPos, float factor){
+    float dist = length(startPos - cameraPosition);
+    float radius = (cameraPosition.y - (-earthRadius));
+    float alpha = (dist / radius);
+
+    return (1.-exp(-dist * alpha * factor));
+}
+
+float castRayToSun(vec3 origin, vec3 dir, float t) {
+    float steps = 4.0f;
+    vec3 deltaDirection = dir - origin;
+    float delta = length(deltaDirection) / steps * 1.5f;
+
+    vec3 samplePoint = vec3(0.0f);
+    float density = 0.0f;
+    float sigmaDensity = -0.1f * lightAbsorption;
+    float transmittance = 1.0f;
+
+    float phase = phase(dir, vec3(cameraPosition - origin), 0.08f);
+
+    for (float t = 0.0; t < steps; t += delta) {
+        samplePoint = origin + deltaDirection * t;
+        density = sampleCloud(samplePoint, t / 8);
+
+        float Tr = exp(sigmaDensity * density);
+        transmittance *= Tr;
+    }
+
+    return transmittance;
+}
+
+vec4 sampleDensity(vec3 origin, vec3 dir, vec3 sky) {
+    vec3 samplePoint = vec3(0.0f);
+    vec4 color = vec4(0.0f);
+
+    vec3 path = dir - origin;
+
+    // adjust deltas to path length
+    float len = length(path);
+    int steps = 16;
+    float ds = len/steps;
+    path /= len;
+    float sigmaDensity = -ds * 0.0002f;
+
+    float deltaLarge = ds;
+    float deltaSmall = ds / 4.0f;
+
+    float energy;
+
+    // base transmittance: 100% of the light passes through the cloud (no cloud)
+    float transmittance = 1.0f;
+
+    vec3 cloudBright = vec3(0.08, 0.09, 0.12);//vec3(4.95, 4.8, 4.75);
+    vec3 cloudDark = vec3(0.87, 0.85, 1.0);//vec3(0.416, 0.518, 0.694); //vec3(0.671, 0.725, 0.753);
+
+    // adaptive sampling based on wether the ray is inside a cloud or not
+    bool inCloud = false;
+    bool searchForCloud = true;
+
+    float delta = deltaLarge;
+    for(int t = 0; t < steps; t++)
+    {
+        // Calculate new sample point
+        samplePoint = origin + path * t * delta;
+
+        vec3 lightPath = sunPosition - samplePoint;
+        vec3 samplePointOrigin = samplePoint;
+
+        // cheap animation
+        samplePoint.xz += vec2(time, time / 2) * windSpeed;
+
+        float density = sampleCloud(samplePoint, t / 8.0f);
+        if (density > 0.0f || !searchForCloud)
+        {
+            // found cloud
+            searchForCloud = false;
+
+            // use adaptive sampling (in cloud vs outside cloud)
+            if(!inCloud)
+            {
+                inCloud = true;
+                delta = deltaSmall;
+            }
+
+            energy = exp(-castRayToSun(samplePoint, normalize(lightPath), t));
+            float lightDotEye = dot(normalize(sunPosition), normalize((samplePointOrigin)));
+
+            float scattering = mix(HG(lightDotEye, -0.08f), HG(lightDotEye, 0.08f), clamp(lightDotEye * 0.5f + 0.5f, 0.0f, 1.0f));
+
+            float powder = 1.0f - exp(-2.0f * density);
+
+            vec3 S = 6.0f * (mix(mix(sky, ambientColor, 0.5f), 2.0f * scattering * sunColor, energy * powder)) * density + (sky * exp(-density));
+            float Tr = exp(density * sigmaDensity);
+            vec3 Sint = (S - S * Tr) * (1.0f / exp(density));
+            color.rgb += transmittance * Sint;
+            transmittance *= Tr;
+        }
+        else
+        {
+            delta = deltaLarge;
+            searchForCloud = true;
+        }
+
+        // early exit if transmittance is low
+        if(transmittance < 0.01f)
+            break;
+
+    }
+
+    if(transmittance < 0.99f)
+        color.a = 1.0f - transmittance;
+    else {
+        color.a = smoothstep(0.9f, 1.0f, transmittance);
+        color.rgb = sky;
+    }
+
+    color.rgb = mix(sky, color.rgb, color.a);
+
+    return color;
+}
+
+
+void main()
+{
+    // start and end position of ray marching
+    vec3 startPos, endPos, fogRay;
+
+    // calculate fragment position
+    ivec2 fragCoord = ivec2(gl_GlobalInvocationID.xy);
+    vec4 rayNDC = vec4(coordinateToNDC(fragCoord), 1.0);
+
+    // calculate ray in world space
+    vec4 rayView = inverseProjectionMatrix * rayNDC;
+    rayView = vec4(rayView.xy, -1.0, 0.0);
+    vec3 rayWorld = (inverseViewMatrix * rayView).xyz;
+    rayWorld = normalize(rayWorld);
+
+    // determine the start and end position of the ray in the atmosphere
+    if(cameraPosition.y < innerRadius - earthRadius) {
+        // camera below clouds
+        raySphereintersection(cameraPosition, rayWorld, innerRadius, startPos);
+        raySphereintersection(cameraPosition, rayWorld, outerRadius, endPos);
+        fogRay = startPos;
+    }   else if(cameraPosition.y > innerRadius - earthRadius && cameraPosition.y < outerRadius - earthRadius) {
+        // camera inside clouds
+        startPos = cameraPosition;
+        raySphereintersection(cameraPosition, rayWorld, outerRadius, endPos);
+        bool hit = raySphereintersection(cameraPosition, rayWorld, innerRadius, fogRay);
+        if(!hit)
+            raySphereintersection(cameraPosition, rayWorld, innerRadius, endPos);
+        fogRay = startPos;
+    }   else {
+        // camera above clouds
+        bool hit1 = raySphereintersection(cameraPosition, rayWorld, outerRadius, startPos);
+        bool hit2 = raySphereintersection(cameraPosition, rayWorld, innerRadius, endPos);
+        if(!(hit1 && hit2))
+            fogRay = cameraPosition;
+        else
+            raySphereintersection(cameraPosition, rayWorld, outerRadius, fogRay);
+
+    }
+
+    vec3 skyColor = skyColorFromRay(startPos, endPos);
+
+    float fogAmount = computeFogAmount(fogRay, 0.0002f);
+
+    // early exit
+    if(fogAmount > 0.95f){
+        vec4 fragColor = vec4(skyColor * 0.8f, 1);
+        imageStore(fragColorImage, fragCoord, fragColor);
+        return;
+    }
+
+    // early exit for clouds below the planet
+    if(length(startPos - cameraPosition) > 600000.0) {
+        imageStore(fragColorImage, fragCoord, vec4(skyColor, 1));
+        return;
+    }
+
+    // trigger ray marching
+    vec4 color = sampleDensity(startPos, endPos, skyColor);
+
+    vec3 fogColor = mix(vec3(0.9f, 0.9f, 0.9f), skyColor, fogAmount);
+    color = mix(color, vec4(fogColor, fogAmount), fogAmount);
+
+    imageStore(fragColorImage, fragCoord, color);
+}
+

@@ -8,6 +8,10 @@ uniform sampler2D fbo4;
 uniform sampler2D fbo5;
 uniform sampler2D fbo6;
 uniform sampler2D fbo7;
+uniform sampler2D fboClouds;
+
+// mask for clouds
+uniform sampler2D depth;
 
 uniform vec2 screenSize;
 uniform int numberOfEnabledEffects;
@@ -37,5 +41,12 @@ void main()
     if (numberOfEnabledEffects > 7)
         color += texture(fbo7, gl_FragCoord.xy / screenSize) * effectPercentage;
 
-    FragColor = color;
+    vec4 depthFrag = texture(depth, gl_FragCoord.xy / screenSize);
+    vec3 clouds;
+    if (depthFrag.r == 1.0f) {
+        clouds = texture(fboClouds, gl_FragCoord.xy / screenSize).rgb;
+        FragColor = vec4(clouds, 1.0f);
+    }
+    else
+        FragColor = color;
 }

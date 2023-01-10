@@ -1,0 +1,50 @@
+#version 450
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+layout (rgba8, binding = 0) uniform image2D fboOut;
+uniform sampler2D cloudFBO;
+
+uniform vec2 resolution;
+
+const int radius = 9;
+
+// single-pass gaussian blur
+vec4 gaussianBlur(vec2 texel) {
+    vec4 bluredColor = vec4(0.0f);
+
+    float offsetX = 1.0f / resolution.x;
+    float offsetY = 1.0f / resolution.y;
+
+    vec2 offsets[9] = vec2[](
+        vec2(-offsetX,  offsetY),
+        vec2( 0.0f,    offsetY),
+        vec2( offsetX,  offsetY),
+        vec2(-offsetX,  0.0f),
+        vec2( 0.0f,    0.0f),
+        vec2( offsetX,  0.0f),
+        vec2(-offsetX, -offsetY),
+        vec2( 0.0f,   -offsetY),
+        vec2( offsetX, -offsetY)
+    );
+
+    float kernel[9] = float[](
+    1.0f / 16.0f, 2.0f / 16.0f, 1.0f / 16.0f,
+    2.0f / 16.0f, 4.0f / 16.0f, 2.0f / 16.0f,
+    1.0f / 16.0f, 2.0f / 16.0f, 1.0f / 16.0f
+    );
+
+    for(int i = 0; i < radius; i++) {
+        vec2 pos = texel + offsets[i];
+        bluredColor += texture(cloudFBO, texel) * kernel[i];
+    }
+    return bluredColor;
+}
+
+void main()
+{
+    ivec2 fragCoord = ivec2(gl_GlobalInvocationID.xy);
+    vec2 texel = vec2(fragCoord.x / resolution.x, fragCoord.y / resolution.y);
+
+    imageStore(fboOut, fragCoord, gaussianBlur(texel));
+}

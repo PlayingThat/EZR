@@ -13,6 +13,7 @@
 
 #include "Objects/ColorfullTriangle.h"
 #include "Objects/Terrain.h"
+#include "Objects/Clouds.h"
 #include "Objects/Ghost.h"
 
 // Struct for NPR properties
@@ -97,6 +98,7 @@ private:
     std::shared_ptr<Shader> m_compositingVertexShader;
     std::shared_ptr<Shader> m_compositingFragmentShader;
     std::shared_ptr<ShaderProgram> m_compositingShaderProgram;
+    GLuint m_cloudColorTexture = 0;
 
     // Vector of NP effect shader effects
     std::vector<std::shared_ptr<NPREffect>> m_NPREffects;
@@ -128,6 +130,7 @@ private:
     // Objects
     std::shared_ptr<Drawable> m_triangle;
     std::shared_ptr<Drawable> m_terrain;
+    std::shared_ptr<Drawable> m_clouds;
     std::shared_ptr<Drawable> m_ghost;
 
 
