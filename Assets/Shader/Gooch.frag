@@ -1,6 +1,7 @@
 #version 450
 
 uniform mat4 viewMatrix;            //world coordinates to camera coordinate
+uniform mat4 projectionMatrix;            //world coordinates to camera coordinate
 
 uniform sampler2D positions;
 uniform sampler2D normals;
@@ -25,13 +26,15 @@ void main()
 {
     // Deferred shading (usually in vertex shader)
     vec4 vPosition = texture(positions, gl_FragCoord.xy / screenSize);
-    vec4 vertex = viewMatrix * vPosition;
+    vec4 vertex = vPosition;
     vec3 ecPos = vertex.xyz;
 
     vec3 tNorm = texture(normals, gl_FragCoord.xy / screenSize).xyz;
 
     //vec3 lightPosition = vec3(gl_LightSource[0].position);
-    vec3 lightVec = normalize(lightPosition - ecPos);
+    
+	vec4 lightPositionSpace = projectionMatrix * viewMatrix * vec4(lightPosition, 1.0f);
+    vec3 lightVec = normalize(lightPositionSpace.xyz - ecPos);
 
     vec3 reflecVec = normalize(reflect(-lightVec, tNorm));
     vec3 viewVec = normalize(-ecPos);
