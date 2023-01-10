@@ -131,6 +131,13 @@ private:
     std::shared_ptr<ShaderProgram> m_cbtNodeCountShaderProgram;
     std::shared_ptr<Shader> m_cbtNodeCountVertexShader;
 
+    std::shared_ptr<ShaderProgram> m_lebReductionPerpassShaderProgram;
+    std::shared_ptr<Shader> m_lebReductionPerpassVertexShader;
+
+    //////////////////////////////////////////////////////////
+    // Misc terrain variables
+    uint32_t m_cbtNodeCount = 0;
+
     //////////////////////////////////////////////////////////
     // GUI Elements
 

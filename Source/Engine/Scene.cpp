@@ -232,6 +232,9 @@ void Scene::renderDrawables()
 {
     for (std::shared_ptr<Drawable> d : m_drawables)
     {
+        // Terrain and clouds may change the FBO
+        glBindFramebuffer(GL_FRAMEBUFFER, m_gBufferFBO->getID());
+
         m_gBufferShaderProgram->setMat4("modelMatrix", d->getModelMatrix());
         m_gBufferShaderProgram->setMat3("normalMatrix", glm::mat3(
                                                 glm::inverseTranspose(*getState()->getCamera()->getViewMatrix() * 

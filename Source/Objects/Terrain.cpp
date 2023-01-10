@@ -69,7 +69,7 @@ void Terrain::retrieveCBTNodeCount()
     if (isReady) {
         GLuint *buffer = &m_bufferCBTNodeCount;
 
-        g_terrain.nodeCount = *(uint32_t *)
+        m_cbtNodeCount = *(uint32_t *)
             glMapNamedBuffer(*buffer, GL_READ_ONLY | GL_MAP_UNSYNCHRONIZED_BIT);
         glUnmapNamedBuffer(m_bufferCBTNodeCount);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
@@ -78,7 +78,7 @@ void Terrain::retrieveCBTNodeCount()
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
                          m_subdivionBufferIndex,
                          m_subdivisionBuffer);
-        glUseProgram(g_gl.programs[PROGRAM_CBT_NODE_COUNT]);
+        m_cbtNodeCountShaderProgram->use();
         glDispatchCompute(1, 1, 1);
         glMemoryBarrier(GL_ALL_BARRIER_BITS);
         glQueryCounter(*query, GL_TIMESTAMP);
@@ -320,9 +320,24 @@ void Terrain::setupShaderPrograms()
     loadCBTNodeCountShader();
 }
 
-void Terrain:loadLEBReductionProgram()
+void Terrain::loadLEBReductionProgram()
 {
-    
+
+}
+
+void Terrain::LoadLebReductionPrepassProgram()
+{
+
+}
+
+void Terrain::loadBatchProgram()
+{
+
+}
+
+void Terrain::loadCBTNodeCountShader()
+{
+
 }
 
 void Terrain::loadTerrainFramebuffer()
