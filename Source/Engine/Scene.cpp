@@ -111,7 +111,7 @@ void Scene::setupNPREffects()
     m_toonShaderProgram->addShader(m_toonFragmentShader);
     m_toonShaderProgram->link();
     addNPREffect(m_toonShaderProgram, false);
-    addNPRProperty("Toon", "textured", &m_toonPropertyTextured, false);
+    addNPRProperty("Toon", "Textured", &m_toonPropertyTextured, true);
 }
 
 void Scene::addNPREffect(std::shared_ptr<ShaderProgram> nprEffectProgram, bool enabledByDefault)

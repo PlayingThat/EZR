@@ -1,7 +1,8 @@
 #version 450 core
 
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
 uniform mat4 viewMatrix;            //world coordinates to camera coordinate
+uniform mat4 projectionMatrix;
 
 vec3 lightPosition = vec3(0, 10, 4); //light position in world coordinates
 
@@ -11,7 +12,7 @@ uniform sampler2D normals;
 uniform sampler2D colorDiffuse;
 uniform vec2 screenSize;
 
-uniform bool textured;
+uniform bool Textured;
 
 uniform vec3 vColor;        //color of the vertex
 
@@ -19,21 +20,22 @@ void main(void)
 {
 	// Deferred shading (usually in vertex shader)
     vec4 vPosition = texture(positions, gl_FragCoord.xy / screenSize);
-    vec4 vertex = viewMatrix * vPosition;
+    vec4 vertex = vPosition;
     vec3 position = vertex.xyz;
 
     vec3 tNorm = texture(normals, gl_FragCoord.xy / screenSize).xyz;
 
     //vec3 lightPosition = vec3(gl_LightSource[0].position);
-    vec3 lightVec = normalize(lightPosition - position);
+	vec4 lightPositionSpace = vec4(lightPosition, 1.0f);
+    vec3 lightVec = normalize(lightPositionSpace.xyz - position);
 
     vec3 reflecVec = normalize(reflect(-lightVec, tNorm));
     vec3 viewVec = normalize(-position);
 
     vec4 texColor;
-    vec3 diffuseColor = vColor;
+    vec3 diffuseColor = vec3(0.0f, 1.0f, 0.2f);
     
-    if (textured) {
+    if (Textured) {
         //get the color from the texture
         texColor = texture(colorDiffuse, gl_FragCoord.xy / screenSize);
         diffuseColor = texColor.rgb;
@@ -41,7 +43,7 @@ void main(void)
 	
 //-------------------------------------------------------------------------------------
 
-	vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
+	vec3 lightColor = vec3(1.0f, 1.0f, 0.2f);
 	
 	//ambient lighting
 	float Kamb = 0.7;
@@ -78,7 +80,8 @@ void main(void)
 		float scale_origin = 0.5;
 		float scale = scale_origin + edge_thresh;
 		float factor = (visiblity + scale_origin)/scale;
-		final_color = factor * ambient * diffuseColor;
+		final_color = 1 * ambient * diffuseColor;
 	}
+	// FragColor = vec4(final_color, 1.0f);
 	FragColor = vec4(final_color, 1.0f);
 }
