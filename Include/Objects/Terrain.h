@@ -10,6 +10,8 @@
 #include "../Engine/State.h"
 #include "../Engine/Scene.h"
 #include "../Engine/Defs.h"
+#include "../Engine/FBO.h"
+#include "../Engine/Texture.h"
 
 #include "../Engine/ConcurrentBinaryTree.h"
 #include "../Engine/LongestEdgeBisection.h"
@@ -44,6 +46,15 @@ private:
     std::unique_ptr<ConcurrentBinaryTree> m_concurrentBinaryTree;
     std::unique_ptr<LongestEdgeBisection> m_longesEdgeBisection;
 
+    //////////////////////////////////////////////////////////
+    // Render functions
+    void drawScene();
+
+    void drawTerrain();
+
+    void retrieveCBTNodeCount();
+
+
     // base buffers
     void create();
 
@@ -59,12 +70,26 @@ private:
 
     void loadCBTNodeCountBuffer();
 
+    // Setup framebuffers
+    void loadTerrainFramebuffer();
+
+    //////////////////////////////////////////////////////////
     // Setup vertex array objects
     void setupVAOs();
-
     void loadVAOEmpty();
-
     void loadVAOTriangleMeshlet();
+
+    //////////////////////////////////////////////////////////
+    // Load Queries
+    void setupQueries();
+
+    //////////////////////////////////////////////////////////
+    // Shader programs
+    void setupShaderPrograms();
+    void loadLEBReductionProgram();
+    void LoadLebReductionPrepassProgram();
+    void loadBatchProgram();
+    void loadCBTNodeCountShader();
 
     //////////////////////////////////////////////////////////
     // GL Buffer
@@ -93,6 +118,18 @@ private:
     // VAO for triangle meshlet
     GLuint m_vaoTriangleMeshlet = 0;
 
+    // Framebuffer for terrain
+    GLuint m_framebufferTerrain = 0;
+    GLuint m_framebufferTerrainColorTexture = 0;
+    GLuint m_framebufferTerrainDepthTexture = 0;
+
+    // Queries
+    GLuint m_queryCBTNodeCount = 0;
+
+    //////////////////////////////////////////////////////////
+    // Shaders
+    std::shared_ptr<ShaderProgram> m_cbtNodeCountShaderProgram;
+    std::shared_ptr<Shader> m_cbtNodeCountVertexShader;
 
     //////////////////////////////////////////////////////////
     // GUI Elements

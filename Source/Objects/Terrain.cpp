@@ -22,20 +22,15 @@ void Terrain::draw()
 {
     // drawGUI();
 
-    // glBindFramebuffer(GL_FRAMEBUFFER, m_bufferTerrainDraw);
-    // glViewport(0, 0, g_framebuffer.w, g_framebuffer.h);
-    // glClearColor(0.5, 0.5, 0.5, 1.0);
-    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // renderScene();
+    glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrain);
+    glClearColor(0.5, 0.5, 0.5, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    drawScene();
 
     // glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    // glViewport(0, 0, g_app.viewer.w, g_app.viewer.h);
     // glClearColor(0, 0, 0, 0);
     // glClear(GL_COLOR_BUFFER_BIT);
     // renderViewer();
-
-
-    // ++g_app.frame;
 }
 
 // Draw GUI controls for terrain arguments
@@ -53,6 +48,49 @@ void Terrain::onSizeChanged(int width, int height)
     LOG_INFO("Size changed to: " + std::to_string(width) + "x" + std::to_string(height));
 }
 
+void Terrain::drawScene()
+{
+    drawTerrain();
+
+}
+
+void Terrain::drawTerrain()
+{
+
+}
+
+void Terrain::retrieveCBTNodeCount()
+{
+    static GLint isReady = GL_FALSE;
+    const GLuint *query = &m_queryCBTNodeCount;
+
+    glGetQueryObjectiv(*query, GL_QUERY_RESULT_AVAILABLE, &isReady);
+
+    if (isReady) {
+        GLuint *buffer = &m_bufferCBTNodeCount;
+
+        g_terrain.nodeCount = *(uint32_t *)
+            glMapNamedBuffer(*buffer, GL_READ_ONLY | GL_MAP_UNSYNCHRONIZED_BIT);
+        glUnmapNamedBuffer(m_bufferCBTNodeCount);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                         m_bufferCBTNodeCountIndex,
+                         m_bufferCBTNodeCount);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                         m_subdivionBufferIndex,
+                         m_subdivisionBuffer);
+        glUseProgram(g_gl.programs[PROGRAM_CBT_NODE_COUNT]);
+        glDispatchCompute(1, 1, 1);
+        glMemoryBarrier(GL_ALL_BARRIER_BITS);
+        glQueryCounter(*query, GL_TIMESTAMP);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                         m_bufferCBTNodeCountIndex,
+                         0);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                         m_subdivionBufferIndex,
+                         0);
+    }
+}
+
 void Terrain::create()
 {
 /*     // Load shaders
@@ -67,6 +105,12 @@ void Terrain::create()
 
     // Load buffers
     setupBuffers();
+
+    // Load framebuffer
+    loadTerrainFramebuffer();
+
+    // Load Vertex attribute objects
+    setupVAOs();
 }
 
 void Terrain::setupBuffers()
@@ -256,4 +300,61 @@ void Terrain::loadVAOTriangleMeshlet()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufferMeshletIndices);
     glBindVertexArray(0);
     HANDLE_GL_ERRORS("loading VAO for triangle meshlet");
+}
+
+void Terrain::setupQueries()
+{
+    GLuint *query = &m_queryCBTNodeCount;
+
+    glGenQueries(1, query);
+    glQueryCounter(*query, GL_TIMESTAMP);
+
+    HANDLE_GL_ERRORS("setting up terrain cbt node count queries");
+}
+
+void Terrain::setupShaderPrograms()
+{
+    loadLEBReductionProgram();
+    LoadLebReductionPrepassProgram();
+    loadBatchProgram();
+    loadCBTNodeCountShader();
+}
+
+void Terrain:loadLEBReductionProgram()
+{
+    
+}
+
+void Terrain::loadTerrainFramebuffer()
+{
+    LOG_INFO("loading terrain framebuffer");
+    if (glIsFramebuffer(m_framebufferTerrain))
+        glDeleteFramebuffers(1, &m_framebufferTerrain);
+
+    glGenFramebuffers(1, &m_framebufferTerrain);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrain);
+
+    GLuint *temp = createColorAttachments(m_scene->getState()->getCamera()->getWidth(),
+                           m_scene->getState()->getCamera()->getHeight(),
+                           2);
+    m_framebufferTerrainColorTexture = temp[0];
+    m_framebufferTerrainDepthTexture = temp[1];
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D,
+        m_framebufferTerrainColorTexture,
+        0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER,
+        GL_DEPTH_STENCIL_ATTACHMENT,
+        GL_TEXTURE_2D,
+        m_framebufferTerrainDepthTexture,
+        0);
+
+    glDrawBuffer(GL_COLOR_ATTACHMENT0);
+    if (GL_FRAMEBUFFER_COMPLETE != glCheckFramebufferStatus(GL_FRAMEBUFFER)) {
+        LOG_ERROR("Error setting up terrain render framebuffer");
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
