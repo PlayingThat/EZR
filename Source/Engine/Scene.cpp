@@ -193,6 +193,8 @@ void Scene::drawSFQuad()
             m_NPREffects.at(i)->shaderProgram->setSampler2D("colorDiffuse", 2, m_gBufferFBO->getColorAttachment(2));  // color diffuse
             m_NPREffects.at(i)->shaderProgram->setSampler2D("depth", 3, m_gBufferFBO->getDepthAttachment());  // depth
 
+            m_NPREffects.at(i)->shaderProgram->setVec3("cameraPosition", glm::vec3(getState()->getCamera()->getPosition()));  // camera
+
             // Set NPR properties
             // Iterate over npr effect properties
             for(int effectPropertyIndex = 0; effectPropertyIndex < m_NPREffects.at(i)->properties.size(); effectPropertyIndex++)
