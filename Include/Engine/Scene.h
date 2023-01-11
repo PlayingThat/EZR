@@ -117,13 +117,26 @@ private:
     std::shared_ptr<ShaderProgram> m_goochShaderProgram;
     // Gooch properties
     bool m_goochPropertyTextured = false;  // wether to use a texture or not
+    //vec3 m_goochPropertyCoolColor = vec3(0.35, 0.45, 0.95);    //cold blue color
+    //vec3 m_goochPropertyWarmColor = vec3(1, 0.59, 0.4);        //warm orange color
 
-    // Toon shader
+    // Toon shader (by Alyssa)
     std::shared_ptr<Shader> m_toonVertexShader;
     std::shared_ptr<Shader> m_toonFragmentShader;
     std::shared_ptr<ShaderProgram> m_toonShaderProgram;
     // Toon properties
     bool m_toonPropertyTextured = false;  // wether to use a texture or not
+
+    // Toon shader (by Jessica)
+    std::shared_ptr<Shader> m_JtoonVertexShader;
+    std::shared_ptr<Shader> m_JtoonFragmentShader;
+    std::shared_ptr<ShaderProgram> m_JtoonShaderProgram;
+    // Toon properties
+    bool m_JtoonPropertyTextured = false;  // wether to use a texture or not
+    int m_JtoonPropertyColorLevels = 5;           // adjustable number of different color levels
+    float m_JtoonPropertyLevelBrightness = 0.4;   // parameter to brighten the result 
+
+
 
     // Rim Lighting shader
     std::shared_ptr<Shader> m_rimLVertexShader;

@@ -108,6 +108,8 @@ void Scene::setupNPREffects()
     m_goochShaderProgram->link();
     addNPREffect(m_goochShaderProgram, false);
     addNPRProperty("Gooch", "textured", &m_goochPropertyTextured, true);
+    //addNPRProperty("Gooch", "CoolColor", &m_goochPropertyCoolColor, true);
+    //addNPRProperty("Gooch", "WarmColor", &m_goochPropertyWarmColor, true);
 
     // Setup Toon
     m_toonVertexShader = std::make_shared<Shader>("./Assets/Shader/Toon.vert");
@@ -118,6 +120,18 @@ void Scene::setupNPREffects()
     m_toonShaderProgram->link();
     addNPREffect(m_toonShaderProgram, false);
     addNPRProperty("Toon", "Textured", &m_toonPropertyTextured, true);
+
+    // Setup Alternative Toon by Jess
+    m_JtoonVertexShader = std::make_shared<Shader>("./Assets/Shader/JToon.vert");
+    m_JtoonFragmentShader = std::make_shared<Shader>("./Assets/Shader/JToon.frag");
+    m_JtoonShaderProgram = std::make_shared<ShaderProgram>("JToon");
+    m_JtoonShaderProgram->addShader(m_JtoonVertexShader);
+    m_JtoonShaderProgram->addShader(m_JtoonFragmentShader);
+    m_JtoonShaderProgram->link();
+    addNPREffect(m_JtoonShaderProgram, false);
+    addNPRProperty("JToon", "textured", &m_JtoonPropertyTextured, true);
+    addNPRProperty("JToon", "colorLevels", &m_JtoonPropertyColorLevels, true);
+    addNPRProperty("JToon", "levelBrightness", &m_JtoonPropertyLevelBrightness, true);
 
     // Setup Rim Lighting
     m_rimLVertexShader = std::make_shared<Shader>("./Assets/Shader/RimLighting.vert");
@@ -382,23 +396,33 @@ void Scene::drawNPREffectProperty(NPRProperty property)
     //     shaderProgram->setVec2(propertyName, *std::get<glm::vec2*>(value));
     //     ImGUI
     // }
-    // else if (std::holds_alternative<glm::vec3*>(value))
-    // {
-    //     shaderProgram->setVec3(propertyName, *std::get<glm::vec3*>(value));
-    // }
+    if (std::holds_alternative<glm::vec3*>(value))
+    {
+          //ImGui::ColorPicker3(propertyName.c_str(), m_backgroundColor.get());
+    }
+
     // else if (std::holds_alternative<glm::vec4*>(value))
     // {
     //     shaderProgram->setVec4(propertyName, *std::get<glm::vec4*>(value));
     // }
-    // else if (std::holds_alternative<float*>(value))
-    // {
-    //     shaderProgram->setFloat(propertyName, *std::get<float*>(value));
-    // }
-    // else if (std::holds_alternative<int*>(value))
-    // {
-    //     shaderProgram->setInt(propertyName, *std::get<int*>(value));
-    // }
-    if (std::holds_alternative<bool*>(value))
+
+    else if (std::holds_alternative<float*>(value))
+    {
+        float min = 0.0f;
+        float max = 1.0f; 
+
+        ImGui::SliderFloat(propertyName.c_str(), std::get<float*>(value), min, max);
+    }
+
+    else if (std::holds_alternative<int*>(value))
+    {
+        int min = 1;
+        int max = 20; 
+
+         ImGui::SliderInt(propertyName.c_str(), std::get<int*>(value), min, max);
+    }
+
+    else if (std::holds_alternative<bool*>(value))
     {
         ImGui::Checkbox(propertyName.c_str(), std::get<bool*>(value));
     }
