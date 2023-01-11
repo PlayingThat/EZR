@@ -12,6 +12,7 @@ uniform sampler2D depth;
 
 uniform vec3 cameraPosition;
 
+uniform sampler2D textureDiffuse;
 uniform sampler2D colorDiffuse;
 uniform vec2 screenSize;
 
@@ -31,20 +32,19 @@ void main(void) {
 
 	vec3 tNorm = texture(normals, gl_FragCoord.xy / screenSize).xyz;
     //vec3 lightPosition = vec3(gl_LightSource[0].position);
-	vec4 lightPositionSpace = vec4(lightPosition, 1.0f);
 	
 	vec3 viewVec = normalize(cameraPosition.xyz - position);
 
-	vec3 lightVec = normalize(lightPositionSpace.xyz - position);
+	vec3 lightVec = normalize(lightPosition.xyz - position);
 
 	vec3 reflecVec = reflect(-lightVec, tNorm);
 
     vec4 texColor;
-    vec3 color = vec3(0.05f, 0.0f, 1.0f);
+    vec3 color = texture(colorDiffuse, gl_FragCoord.xy / screenSize).rgb;
     
     if (Textured) {
         //get the color from the texture
-        texColor = texture(colorDiffuse, gl_FragCoord.xy / screenSize);
+        texColor = texture(textureDiffuse, gl_FragCoord.xy / screenSize);
     	color = texColor.rgb;
     }
 	
