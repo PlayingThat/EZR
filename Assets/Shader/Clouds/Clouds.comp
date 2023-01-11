@@ -28,7 +28,7 @@ uniform float lightAbsorption = 0.035f;
 uniform float curliness = 1.0f;
 uniform float coverageFactor = 1.0f;
 uniform float fogMultiplier = 1.0f;
-uniform bool useComplexWeather = true;
+uniform bool useComplexWeather = false;
 
 uniform float time = 1.0f;
 uniform float timeOfDay;
