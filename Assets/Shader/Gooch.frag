@@ -1,7 +1,11 @@
+//
+// Created by jesbu on 03.01.2023.
+//
+
 #version 450
 
 uniform mat4 viewMatrix;            //world coordinates to camera coordinate
-uniform mat4 projectionMatrix;            //world coordinates to camera coordinate
+uniform mat4 projectionMatrix;      //world coordinates to camera coordinate
 
 uniform sampler2D positions;
 uniform sampler2D normals;
@@ -16,8 +20,8 @@ uniform bool textured;
 
 float DiffuseCool = 0.3;
 float DiffuseWarm = 0.3;
-vec3 CoolColor = vec3(0, 0, 0.6);    //blue color
-vec3 WarmColor = vec3(0.6, 0, 0);    //red color
+vec3 CoolColor = vec3(0.35, 0.45, 0.95);    //cold blue color
+vec3 WarmColor = vec3(1, 0.59, 0.4);        //warm orange color
 
 vec3 lightPosition = vec3(0, 10, 4); //light position in world coordinates
 

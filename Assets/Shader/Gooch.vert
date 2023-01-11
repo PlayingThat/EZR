@@ -1,6 +1,12 @@
-//shader for Gooch Shading
-//Gooch shading: non-realistic rendering
+//shader for Toon Shading
+//Toon shading: non-realistic rendering
+//Based on cold & warm colors
 //Designed by Amy & Bruce Gooch
+
+//
+// Created by jesbu on 03.01.2023.
+//
+
 
 #version 450
 
