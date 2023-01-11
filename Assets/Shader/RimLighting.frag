@@ -11,11 +11,9 @@ uniform sampler2D depth;
 uniform sampler2D colorDiffuse;
 uniform vec2 screenSize;
 
-uniform bool textured;
+uniform bool Textured;
 
 uniform vec3 vColor;        //color of the vertex
-
-vec3 lightPosition = vec3(0, 10, 4); //light position in world coordinates
 
 layout (location = 0) out vec4 FragColor;
 
@@ -33,9 +31,6 @@ void main(void)
 
     vec3 tNorm = texture(normals, gl_FragCoord.xy / screenSize).xyz;
 
-    vec4 texColor;
-    vec3 diffuseColor = vColor;
-
 	vec3 eye = normalize(cameraPosition-position);
 
 	// higher "strength" makes the rim lighting weaker (1.0 -> strong rim lighting)
@@ -43,17 +38,14 @@ void main(void)
 	float rim = pow(1 - max(dot(tNorm, eye), 0), strength);
 
 	// final color for object
-	if (textured) {
+	vec4 texColor;
+    vec3 color = vColor;
+    
+    if (Textured) {
         //get the color from the texture
         texColor = texture(colorDiffuse, gl_FragCoord.xy / screenSize);
-        diffuseColor = texColor.rgb;
+    	color = texColor.rgb;
     }
 
-    if (textured) {
-        //get the color from the texture
-        texColor = texture(colorDiffuse, gl_FragCoord.xy / screenSize);
-        diffuseColor = texColor.rgb;
-    }
-
-	FragColor = rim * vec4(1.0f) + vec4(diffuseColor, 1.0f);
+	FragColor = rim * vec4(1.0f) + vec4(color, 1.0f);
 }
