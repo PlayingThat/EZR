@@ -24,10 +24,10 @@ public:
          std::vector<glm::vec3> tangents,
          glm::vec4 diffuseColor,
          GLuint diffuseTexture,
-         GLuint specularTexture,
          GLuint smoothnessTexture,
          GLuint heightTexture,
-         GLuint ambientOcculsionTexture);
+         GLuint ambientOcculsionTexture,
+         GLuint metallicTexture);
 
     void draw();
 
@@ -42,8 +42,8 @@ private:
 
     // Texture handles
     GLuint m_diffuseTexture;
-    GLuint m_specularTexture;
     GLuint m_smoothnessTexture;
     GLuint m_heightTexture;
     GLuint m_ambientOcculsionTexture;
+    GLuint m_metallicTexture;
 };

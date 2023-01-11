@@ -11,10 +11,10 @@ Mesh::Mesh(std::vector<glm::vec4> vertices,
            std::vector<glm::vec3> tangents,
            glm::vec4 diffuseColor,
            GLuint diffuseTexture,
-           GLuint specularTexture,
            GLuint smoothnessTexture,
            GLuint heightTexture,
-           GLuint ambientOcculsionTexture) : Drawable()
+           GLuint ambientOcculsionTexture,
+           GLuint metallicTexture) : Drawable()
 {
     // Set geometry information
     m_vertices = vertices;
@@ -30,10 +30,10 @@ Mesh::Mesh(std::vector<glm::vec4> vertices,
 
     // Set texture information
     m_diffuseTexture = diffuseTexture;
-    m_specularTexture = specularTexture;
     m_smoothnessTexture = smoothnessTexture;
     m_heightTexture = heightTexture;
     m_ambientOcculsionTexture = ambientOcculsionTexture;
+    m_metallicTexture = metallicTexture;
 }
 
 void Mesh::draw()
@@ -45,15 +45,15 @@ void Mesh::draw()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_diffuseTexture);
     // glActiveTexture(GL_TEXTURE1);
-    // glBindTexture(GL_TEXTURE_2D, m_specularTexture);
-    // glActiveTexture(GL_TEXTURE2);
     // glBindTexture(GL_TEXTURE_2D, m_smoothnessTexture);
-    // glActiveTexture(GL_TEXTURE3);
+    // glActiveTexture(GL_TEXTURE2);
     // glBindTexture(GL_TEXTURE_2D, m_heightTexture);
-    // glActiveTexture(GL_TEXTURE4);
+    // glActiveTexture(GL_TEXTURE3);
     // glBindTexture(GL_TEXTURE_2D, m_ambientOcculsionTexture);
+    // glActiveTexture(GL_TEXTURE4);
+    // glBindTexture(GL_TEXTURE_2D, m_metallicTexture);
 
-    // Get active shader program
+    // Get active shader program and set the diffuse color
     GLint prog = 0;
     glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
     GLuint uniformLocation = glGetUniformLocation(prog, "DiffuseColor");
