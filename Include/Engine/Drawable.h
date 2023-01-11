@@ -61,6 +61,8 @@ protected:
 
     std::shared_ptr<Scene> m_scene;
 
+    glm::vec4 m_diffuseColor;
+
 private:
     void setupMemers();
 

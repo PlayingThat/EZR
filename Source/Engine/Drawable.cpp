@@ -179,3 +179,4 @@ glm::mat4 Drawable::getModelMatrix()
                 glm::rotate(
                     glm::scale(getBaseModelMatrix(), this->m_scale), 0.01745f * m_rotationAngle, this->m_rotation), this->m_position);
 }
+

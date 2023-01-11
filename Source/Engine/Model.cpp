@@ -49,7 +49,20 @@ bool Model::loadModel(std::string path,
 
         aiMesh* mesh = scene->mMeshes[i];
         
-        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];    
+        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex]; 
+
+        // Extract color from material
+        aiColor4D dif;
+        glm::vec4 color;
+        if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &dif))
+        {
+            color = glm::vec4(dif.r, dif.g, dif.b, dif.a);
+        }
+        else
+        {
+            color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        }
+   
         
         // Extract indices from the mesh
         for (unsigned int j = 0; j < mesh->mNumFaces; j++)
@@ -126,7 +139,7 @@ bool Model::loadModel(std::string path,
 
         GLuint textureID = 0;
         // Create a new mesh and add it to the list of meshes
-        std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(vertices, normals, uvs, indices, tangents,
+        std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(vertices, normals, uvs, indices, tangents, color,
                                                                diffuse, textureID, textureID, textureID, textureID);
 
         m_meshes.push_back(newMesh);

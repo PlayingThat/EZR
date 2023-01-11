@@ -19,7 +19,7 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     m_backgroundColor = std::make_unique<float[]>(3); 
 
     // Create FBO for GBuffer and SFQ
-    m_gBufferFBO = std::make_shared<FBO>(m_scene, 3);
+    m_gBufferFBO = std::make_shared<FBO>(m_scene, 4);
     m_sfq = std::make_shared<ScreenFillingQuad>(m_scene);
 
     // Setup shaders for GBuffer
@@ -200,8 +200,9 @@ void Scene::drawSFQuad()
             
             m_NPREffects.at(i)->shaderProgram->setSampler2D("positions", 0, m_gBufferFBO->getColorAttachment(0));  // color diffuse
             m_NPREffects.at(i)->shaderProgram->setSampler2D("normals", 1, m_gBufferFBO->getColorAttachment(1));  // color diffuse
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("colorDiffuse", 2, m_gBufferFBO->getColorAttachment(2));  // color diffuse
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("depth", 3, m_gBufferFBO->getDepthAttachment());  // depth
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureDiffuse", 2, m_gBufferFBO->getColorAttachment(2));  // color texture
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("colorDiffuse", 3, m_gBufferFBO->getColorAttachment(3));  // color diffuse
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("depth", 4, m_gBufferFBO->getDepthAttachment());  // depth
 
             m_NPREffects.at(i)->shaderProgram->setVec3("cameraPosition", glm::vec3(getState()->getCamera()->getPosition()));  // camera
 

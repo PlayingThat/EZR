@@ -7,12 +7,12 @@ uniform sampler2D positions;
 uniform sampler2D normals;
 uniform sampler2D depth;
 
+uniform sampler2D textureDiffuse;
 uniform sampler2D colorDiffuse;
+
 uniform vec2 screenSize;
 
 uniform bool textured;
-
-uniform vec3 vColor;        //color of the vertex
 
 float DiffuseCool = 0.3;
 float DiffuseWarm = 0.3;
@@ -48,11 +48,11 @@ void main()
 
 
     vec4 texColor;
-    vec3 diffuseColor = vColor;
+    vec3 diffuseColor = texture(colorDiffuse, gl_FragCoord.xy / screenSize).rgb;
     
     if (textured) {
         //get the color from the texture
-        texColor = texture(colorDiffuse, gl_FragCoord.xy / screenSize);
+        texColor = texture(textureDiffuse, gl_FragCoord.xy / screenSize);
         diffuseColor = texColor.rgb;
     }
 

@@ -9,6 +9,7 @@ Mesh::Mesh(std::vector<glm::vec4> vertices,
            std::vector<glm::vec2> uvs,
            std::vector<GLuint> indices,
            std::vector<glm::vec3> tangents,
+           glm::vec4 diffuseColor,
            GLuint diffuseTexture,
            GLuint specularTexture,
            GLuint smoothnessTexture,
@@ -21,6 +22,9 @@ Mesh::Mesh(std::vector<glm::vec4> vertices,
     m_uvs = uvs;
     m_indices = indices;
     m_tangents = tangents;
+
+    // Set material color
+    m_diffuseColor = diffuseColor;
 
     Drawable::createBuffers();
 
@@ -49,6 +53,12 @@ void Mesh::draw()
     // glActiveTexture(GL_TEXTURE4);
     // glBindTexture(GL_TEXTURE_2D, m_ambientOcculsionTexture);
 
+    // Get active shader program
+    GLint prog = 0;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
+    GLuint uniformLocation = glGetUniformLocation(prog, "DiffuseColor");
+    glUniform4fv(uniformLocation, 1, glm::value_ptr(m_diffuseColor));
+    
     Drawable::draw();
 
 }

@@ -22,6 +22,7 @@ public:
          std::vector<glm::vec2> uvs,
          std::vector<GLuint> indices,
          std::vector<glm::vec3> tangents,
+         glm::vec4 diffuseColor,
          GLuint diffuseTexture,
          GLuint specularTexture,
          GLuint smoothnessTexture,
@@ -32,6 +33,8 @@ public:
 
     // Setter for shader program
     void setShaderProgram(std::shared_ptr<ShaderProgram> shaderProgram);
+
+    glm::vec3 getDiffuseColor();
 
 private:
     // Shader handles
