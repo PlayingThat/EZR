@@ -4,9 +4,6 @@
 
 #version 450
 
-uniform mat4 viewMatrix;            //world coordinates to camera coordinate
-uniform mat4 projectionMatrix;      //world coordinates to camera coordinate
-
 uniform sampler2D positions;
 uniform sampler2D normals;
 uniform sampler2D depth;
@@ -16,14 +13,14 @@ uniform sampler2D colorDiffuse;
 
 uniform vec2 screenSize;
 
-uniform bool textured;
+uniform bool textured;      // If true, the shader will be applied on the textured object
 
 float DiffuseCool = 0.3;
 float DiffuseWarm = 0.3;
 vec3 CoolColor = vec3(0.35, 0.45, 0.95);    //cold blue color
 vec3 WarmColor = vec3(1, 0.59, 0.4);        //warm orange color
 
-vec3 lightPosition = vec3(0, 10, 4); //light position in world coordinates
+vec3 lightPosition = vec3(0, 10, 4);        //(test) light position in world coordinates
 
 layout (location = 0) out vec4 result;
 
@@ -43,13 +40,11 @@ void main()
 
     //vec3 lightPosition = vec3(gl_LightSource[0].position);
     
-	vec4 lightPositionSpace = projectionMatrix * viewMatrix * vec4(lightPosition, 1.0f);
-    vec3 lightVec = normalize(lightPositionSpace.xyz - ecPos);
+    vec3 lightVec = normalize(lightPosition - ecPos);
 
     vec3 reflecVec = normalize(reflect(-lightVec, tNorm));
     vec3 viewVec = normalize(-ecPos);
     float NdotL = (dot(lightVec, tNorm) + 1.0) * 0.5;
-
 
     vec4 texColor;
     vec3 diffuseColor = texture(colorDiffuse, gl_FragCoord.xy / screenSize).rgb;
@@ -59,7 +54,6 @@ void main()
         texColor = texture(textureDiffuse, gl_FragCoord.xy / screenSize);
         diffuseColor = texColor.rgb;
     }
-
 
     //combine cool / warm color with vertex color
     vec3 cool = min(CoolColor + DiffuseCool * diffuseColor, 1.0);
