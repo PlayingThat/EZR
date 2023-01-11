@@ -25,49 +25,22 @@ void main(void) {
 		discard;
 	}
 
-/*
-	float intensity;
-	vec4 color;
-
-	//Light intensity by dot product of normal and lightvector
-	intensity = dot(lightVec, normal);
-
-	//Decision of colorstep to use
-	vec4 texColor = texture(colorDiffuse, gl_FragCoord.xy / screenSize);
-    vec3 diffuseColor = texColor.rgb;
-
-	if(intensity > 0.98)
-		color = vec4(0.8, 0.8, 0.8, 1.0);
-	else if(intensity > 0.5)
-		color = vec4(0.75f, 0.46f, 0.46f, 1.0f);
-	else if(intensity > 0.25)
-		color = vec4(0.69f, 0.18f, 0.18f, 1.0f);
-	else
-		color = vec4(0.0, 0.0, 0.0, 1.0);
-
-	FragColor = color;
-*/
-
 	// Deferred shading (usually in vertex shader)
 	vec4 vPosition = texture(positions, gl_FragCoord.xy / screenSize);
-	vec4 vertex = vPosition;
-	vec3 position = (viewMatrix * vec4(vertex.xyz, 1.0)).xyz;
+	vec3 position = vPosition.xyz;
 
 	vec3 tNorm = texture(normals, gl_FragCoord.xy / screenSize).xyz;
-	mat4 normalMatrix = transpose(inverse( viewMatrix));
-	vec3 normal = (normalize(normalMatrix * vec4(tNorm.xyz, 0.0))).xyz;
-
     //vec3 lightPosition = vec3(gl_LightSource[0].position);
-	vec4 lightPositionSpace = vec4(cameraPosition,1.0f);//viewMatrix * vec4(lightPosition, 1.0f);
+	vec4 lightPositionSpace = vec4(lightPosition, 1.0f);
 	
 	vec3 viewVec = normalize(cameraPosition.xyz - position);
 
 	vec3 lightVec = normalize(lightPositionSpace.xyz - position);
 
-	vec3 reflecVec = reflect(-lightVec, normal);
+	vec3 reflecVec = reflect(-lightVec, tNorm);
 
     vec4 texColor;
-    vec3 color = vec3(0.0f, 1.0f, 0.2f);
+    vec3 color = vec3(0.05f, 0.0f, 1.0f);
     
     if (Textured) {
         //get the color from the texture
@@ -84,7 +57,7 @@ void main(void) {
 	vec3 ambient = Kamb * lightColor;
 	
 	//diffused lighting
-	const int levels = 7;						//number of levels for diffuse color
+	const int levels = 6;						//number of levels for diffuse color
 	const float scaleFactor = 1.0 / levels;
 	float Kdiff = 0.5; 
 	float diff = max(dot(tNorm, lightVec), 0.0); 	//to clamp between 0 and 1
@@ -99,7 +72,7 @@ void main(void) {
 		specular = Kspec*spec*lightColor;
 	}
 	float spec_thresh = 0.4; //set threshold for specular lighting
-	float specMask = (pow(dot(reflecVec, normal), Kspec) > spec_thresh) ? 1 : 0;  //limit specular
+	float specMask = (pow(dot(reflecVec, tNorm), Kspec) > spec_thresh) ? 1 : 0;  //limit specular
 
 	//Get outline
 	float edge_thresh = 0.0; //set threshold for edge detection

@@ -1,5 +1,13 @@
 #version 450 core
 
+layout (location = 0) in vec2 aPos;
+
+void main()
+{
+    gl_Position = vec4(aPos.xy, 0.0, 1.0);
+}
+/*#version 450 core
+
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 
@@ -18,4 +26,4 @@ void main()
     position = (viewMatrix * modelMatrix * vec4(aPos.xyz, 1.0)).xyz;
 
     gl_Position = projectionMatrix * vec4(position, 1.0);
-}
+}*/

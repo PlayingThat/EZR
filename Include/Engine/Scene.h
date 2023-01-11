@@ -125,6 +125,13 @@ private:
     // Toon properties
     bool m_toonPropertyTextured = false;  // wether to use a texture or not
 
+    // Rim Lighting shader
+    std::shared_ptr<Shader> m_rimLVertexShader;
+    std::shared_ptr<Shader> m_rimLFragmentShader;
+    std::shared_ptr<ShaderProgram> m_rimLShaderProgram;
+    // Rim Lighting properties
+    bool m_rimLPropertyTextured = false;  // wether to use a texture or not
+
 
     //////////////////////////////////////////
     // Objects

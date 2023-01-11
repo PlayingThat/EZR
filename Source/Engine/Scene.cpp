@@ -118,6 +118,16 @@ void Scene::setupNPREffects()
     m_toonShaderProgram->link();
     addNPREffect(m_toonShaderProgram, false);
     addNPRProperty("Toon", "Textured", &m_toonPropertyTextured, true);
+
+    // Setup Rim Lighting
+    m_rimLVertexShader = std::make_shared<Shader>("./Assets/Shader/RimLighting.vert");
+    m_rimLFragmentShader = std::make_shared<Shader>("./Assets/Shader/RimLighting.frag");
+    m_rimLShaderProgram = std::make_shared<ShaderProgram>("RimLighting");
+    m_rimLShaderProgram->addShader(m_rimLVertexShader);
+    m_rimLShaderProgram->addShader(m_rimLFragmentShader);
+    m_rimLShaderProgram->link();
+    addNPREffect(m_rimLShaderProgram, false);
+    addNPRProperty("RimLighting", "Textured", &m_rimLPropertyTextured, true);
 }
 
 void Scene::addNPREffect(std::shared_ptr<ShaderProgram> nprEffectProgram, bool enabledByDefault)
