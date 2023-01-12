@@ -19,6 +19,7 @@
 #include <map>
 #include <string>
 
+enum SHADER_PASS_FLAG {SHADER_PASS_FLAG_SPLIT, SHADER_PASS_FLAG_MERGE, SHADER_PASS_FLAG_COMPUTE};
 
 class Terrain : public Drawable, public SizeCallbackSubscriber
 {
@@ -86,9 +87,13 @@ private:
     //////////////////////////////////////////////////////////
     // Shader programs
     void setupShaderPrograms();
+    void loadTerrainSplitShaderProgram();
+    void loadTerrainMergeShaderProgram();
+    void loadTerrainPrograms();
     void loadLEBReductionProgram();
     void LoadLebReductionPrepassProgram();
     void loadBatchProgram();
+    void loadTopViewProgram();
     void loadCBTNodeCountShader();
 
     //////////////////////////////////////////////////////////
@@ -128,6 +133,21 @@ private:
 
     //////////////////////////////////////////////////////////
     // Shaders
+    std::shared_ptr<ShaderProgram> m_terrainMergeShaderProgram;
+    std::shared_ptr<Shader> m_terrainMergeShader;
+    std::shared_ptr<Shader> m_terrainMergeLEBShader;
+    std::shared_ptr<Shader> m_terrainMergeCBTShader;
+
+    std::shared_ptr<ShaderProgram> m_terrainSplitShaderProgram;
+    std::shared_ptr<Shader> m_terrainSplitShader;
+    std::shared_ptr<Shader> m_terrainSplitFrustumCullingShader;
+    std::shared_ptr<Shader> m_terrainSplitAtmosphereShader;
+    std::shared_ptr<Shader> m_terrainSplitLEBShader;
+    std::shared_ptr<Shader> m_terrainSplitCBTShader;
+    std::shared_ptr<Shader> m_terrainSplitRenderCommonShader;
+    std::shared_ptr<Shader> m_terrainSplitRenderSpecificShader;
+    std::shared_ptr<Shader> m_terrainSplitUpdateShader;
+
     std::shared_ptr<ShaderProgram> m_cbtNodeCountShaderProgram;
     std::shared_ptr<Shader> m_cbtNodeCountVertexShader;
 
