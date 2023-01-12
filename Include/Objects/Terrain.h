@@ -19,8 +19,6 @@
 #include <map>
 #include <string>
 
-enum SHADER_PASS_FLAG {SHADER_PASS_FLAG_SPLIT, SHADER_PASS_FLAG_MERGE, SHADER_PASS_FLAG_COMPUTE};
-
 class Terrain : public Drawable, public SizeCallbackSubscriber
 {
 public:
@@ -106,9 +104,11 @@ private:
 
     // Buffers for indirect drawing
     GLuint m_bufferTerrainDraw = 0;
-    GLuint m_bufferTerrainDrawMeshTask = 0;
+    GLuint m_bufferTerrainDrawIndex = 0;
     GLuint m_bufferTerrainDrawComputeShader = 0;
+    GLuint m_bufferTerrainDrawComputeShaderIndex = 0;
     GLuint m_bufferTerrainDispatchComputeShader = 0;
+    GLuint m_bufferTerrainDispatchComputeShaderIndex = 0;
 
     // Buffers for terrain subdivision meshlet
     GLuint m_bufferMeshletVertices = 0;
@@ -132,6 +132,8 @@ private:
 
     //////////////////////////////////////////////////////////
     // Shaders
+
+    // Terrain main shaders
     std::shared_ptr<ShaderProgram> m_terrainMergeShaderProgram;
     std::shared_ptr<ShaderProgram> m_terrainSplitShaderProgram;
     std::shared_ptr<ShaderProgram> m_terrainDrawShaderProgram;
@@ -145,11 +147,22 @@ private:
     std::shared_ptr<Shader> m_terrainRenderSpecificShader;
     std::shared_ptr<Shader> m_terrainUpdateShader;
 
+    // LEB reduction shaders
+    std::shared_ptr<ShaderProgram> m_lebReductionShaderProgram;
+    std::shared_ptr<Shader> m_cbtCumSumReductionShader;
+
+    std::shared_ptr<ShaderProgram> m_lebReductionPerpassShaderProgram;
+    std::shared_ptr<Shader> m_cbtCumSumReductionPrepassShader;
+
+    std::shared_ptr<ShaderProgram> m_batchShaderProgram;
+    std::shared_ptr<Shader> m_terrainBatchShader;
+
+    std::shared_ptr<ShaderProgram> m_topViewShaderProgram;
+    std::shared_ptr<Shader> m_topViewShader;
+
     std::shared_ptr<ShaderProgram> m_cbtNodeCountShaderProgram;
     std::shared_ptr<Shader> m_cbtNodeCountVertexShader;
 
-    std::shared_ptr<ShaderProgram> m_lebReductionPerpassShaderProgram;
-    std::shared_ptr<Shader> m_lebReductionPerpassVertexShader;
 
     //////////////////////////////////////////////////////////
     // Misc terrain variables

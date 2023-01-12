@@ -20,10 +20,10 @@ ShaderProgram::~ShaderProgram()
     glDeleteProgram(m_id);
 }
 
-GLuint ShaderProgram::compileDirect(const char **sources, int count)
+GLuint ShaderProgram::compileDirect(const char **sources, int count, GLenum type)
 {
 
-    GLuint shaderId = glCreateShader(GL_COMPUTE_SHADER);
+    GLuint shaderId = glCreateShader(type);
     glShaderSource(shaderId, count, sources, NULL);
     glCompileShader(shaderId);
 
@@ -39,7 +39,7 @@ GLuint ShaderProgram::compileDirect(const char **sources, int count)
     return shaderId;
 }
 
-void ShaderProgram::link()
+void ShaderProgram::link(GLenum type)
 {
     // If no compiled shaders are attached, attach sources and shaders first
     if(m_attachedShaders.size() > 0)
@@ -64,9 +64,9 @@ void ShaderProgram::link()
         }
 
         const char *sourceArray[] = {source};
-        // writeToFile(source, "combinedShader.txt");
+        writeToFile(source, "combinedShader.txt");
         // create dummy shader 
-        GLuint dummyShader = compileDirect(sourceArray, 1);
+        GLuint dummyShader = compileDirect(sourceArray, 1, type);
         glAttachShader(m_id, dummyShader);
     }
 

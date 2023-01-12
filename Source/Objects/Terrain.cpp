@@ -162,20 +162,12 @@ void Terrain::loadRenderBuffer()
     if (glIsBuffer(m_bufferTerrainDraw))
         glDeleteBuffers(1, &m_bufferTerrainDraw);
 
-    if (glIsBuffer(m_bufferTerrainDrawMeshTask))
-        glDeleteBuffers(1, &m_bufferTerrainDrawMeshTask);
-
     if (glIsBuffer(m_bufferTerrainDrawComputeShader))
         glDeleteBuffers(1, &m_bufferTerrainDrawComputeShader);
 
     glGenBuffers(1, &m_bufferTerrainDraw);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDraw);
     glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(drawArraysCmd), drawArraysCmd, GL_STATIC_DRAW);
-    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-
-    glGenBuffers(1, &m_bufferTerrainDrawMeshTask);
-    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDrawMeshTask);
-    glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(drawMeshTasksCmd), drawMeshTasksCmd, GL_STATIC_DRAW);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 
     glGenBuffers(1, &m_bufferTerrainDrawComputeShader);
@@ -327,7 +319,7 @@ void Terrain::setupShaderPrograms()
 
 void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> shaderProgram, std::string typeFlag)
 {
-    LOG_INFO("loading terrain split shader program");
+    LOG_INFO("loading terrain " + typeFlag +" shader program");
     
     shaderProgram = std::make_shared<ShaderProgram>("TerrainSplit");
     shaderProgram->addSource("#define FLAG_SPLIT");
@@ -370,22 +362,78 @@ void Terrain::loadTerrainPrograms()
 
 void Terrain::loadLEBReductionProgram()
 {
-
+    m_lebReductionShaderProgram = std::make_shared<ShaderProgram>("LEBReduction");
+    std::shared_ptr<Shader> m_cbtCumSumReductionShader = std::make_shared<Shader>("./Assets/Shader/Terrain/cbtSumReduction.comp", false);
+    
+    m_lebReductionShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING  " + std::to_string(m_subdivionBufferIndex));
+    m_lebReductionShaderProgram->attachShader(m_terrainCBTShader);  // CBT shader already loaded in loadShaderProgram
+    m_lebReductionShaderProgram->attachShader(m_cbtCumSumReductionShader);
+    
+    // m_lebReductionShaderProgram->addSource("#ifdef COMPUTE_SHADER\n#endif");
+    m_lebReductionShaderProgram->link();
 }
 
 void Terrain::LoadLebReductionPrepassProgram()
 {
-
+    m_lebReductionPerpassShaderProgram = std::make_shared<ShaderProgram>("LEBReduction");
+    std::shared_ptr<Shader> m_cbtCumSumReductionPrepassShader = std::make_shared<Shader>("./Assets/Shader/Terrain/cbtSumReductionPrepass.comp", false);
+    
+    m_lebReductionPerpassShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING  " + std::to_string(m_subdivionBufferIndex));
+    m_lebReductionPerpassShaderProgram->attachShader(m_terrainCBTShader);  // CBT shader already loaded in loadShaderProgram
+    m_lebReductionPerpassShaderProgram->attachShader(m_cbtCumSumReductionPrepassShader);
+    
+    // m_lebReductionPerpassShaderProgram->addSource("#ifdef COMPUTE_SHADER\n#endif");
+    m_lebReductionPerpassShaderProgram->link();
 }
 
 void Terrain::loadBatchProgram()
 {
+    m_batchShaderProgram = std::make_shared<ShaderProgram>("Batch");
+    std::shared_ptr<Shader> m_batchShader = std::make_shared<Shader>("./Assets/Shader/Terrain/batch.comp", false);
+    
+    // Enable atomic operations for parallel buffer processing
+    m_batchShaderProgram->addSource("#extension GL_ARB_shader_atomic_counter_ops : require");
 
+    m_batchShaderProgram->addSource("#define FLAG_CS 1");
+    m_batchShaderProgram->addSource("#define BUFFER_BINDING_DRAW_ELEMENTS_INDIRECT_COMMAND " + std::to_string(m_bufferTerrainDrawComputeShaderIndex));
+    m_batchShaderProgram->addSource("#define BUFFER_BINDING_DISPATCH_INDIRECT_COMMAND " + std::to_string(m_bufferTerrainDispatchComputeShaderIndex));
+    m_batchShaderProgram->addSource("#define MESHLET_INDEX_COUNT " + std::to_string(3 << (2 * m_patchSubDiv)));
+
+    m_batchShaderProgram->addSource("#define LEB_BUFFER_COUNT 1");
+    m_batchShaderProgram->addSource("#define BUFFER_BINDING_LEB " + std::to_string(m_subdivionBufferIndex));
+    m_batchShaderProgram->addSource("#define BUFFER_BINDING_DRAW_ARRAYS_INDIRECT_COMMAND " + std::to_string(m_bufferTerrainDrawIndex));
+
+    m_batchShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
+    m_batchShaderProgram->addSource("#define CBT_READ_ONLY");
+    m_batchShaderProgram->attachShader(m_terrainCBTShader);  // CBT shader already loaded in loadShaderProgram
+
+    m_batchShader = std::make_shared<Shader>("./Assets/Shader/Terrain/TerrainBatcher.comp", false);
+    m_batchShaderProgram->attachShader(m_batchShader);
+    m_batchShaderProgram->link();
 }
 
 void Terrain::loadTopViewProgram()
 {
+    m_topViewShaderProgram = std::make_shared<ShaderProgram>("TopView");
+    std::shared_ptr<Shader> m_topViewShader = std::make_shared<Shader>("./Assets/Shader/Terrain/TopView.comp", false);
+    
+    m_topViewShaderProgram->addSource("#define FRAGMENT_SHADER");
+    m_topViewShaderProgram->addSource("#define TERRAIN_PATCH_SUBD_LEVEL " + std::to_string(m_patchSubDiv));
+    m_topViewShaderProgram->addSource("#define TERRAIN_PATCH_TESS_FACTOR " + std::to_string(1 << m_patchSubDiv));
+    m_topViewShaderProgram->addSource("#define BUFFER_BINDING_TERRAIN_VARIABLES 0");
+    m_topViewShaderProgram->addSource("#define LEB_BUFFER_COUNT 1");
+    m_topViewShaderProgram->addSource("#define BUFFER_BINDING_LEB " + std::to_string(m_subdivionBufferIndex));
+    m_topViewShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
+    m_topViewShaderProgram->addSource("#define CBT_READ_ONLY");
 
+    m_topViewShaderProgram->attachShader(m_terrainFrustumCullingShader);
+    m_topViewShaderProgram->attachShader(m_terrainCBTShader);
+    m_topViewShaderProgram->attachShader(m_terrainLEBShader);
+    m_topViewShaderProgram->attachShader(m_terrainRenderCommonShader);
+    m_topViewShader = std::make_shared<Shader>("./Assets/Shader/Terrain/TopView.comp", false);
+    m_topViewShaderProgram->attachShader(m_topViewShader);
+    m_topViewShaderProgram->link(GL_FRAGMENT_SHADER);
+    
 }
 
 void Terrain::loadCBTNodeCountShader()
