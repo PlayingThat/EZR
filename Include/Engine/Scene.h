@@ -22,6 +22,8 @@ typedef struct
     std::string name;
     std::variant<glm::vec2*, glm::vec3*, glm::vec4*, float*, int*, bool*, GLuint*> value;
     bool showInGUI = false;
+    float min = 0.0f;
+    float max = 1.0f;
 } NPRProperty;
 
 // Struct for NPR effects
@@ -61,7 +63,11 @@ private:
     // Add NPR property to NPR effect
     // effectName specifies the NPR effect to add the property to
     // propertyName specifies the name of the property, corresponding to the uniform name in the shader
-    void addNPRProperty(std::string effectName, std::string propertyName, std::variant<glm::vec2*, glm::vec3*, glm::vec4*, float*, int*, bool*, GLuint*> value, bool showInGUI = false);
+    void addNPRProperty(std::string effectName, std::string propertyName, 
+                        std::variant<glm::vec2*, glm::vec3*, glm::vec4*, float*, int*, bool*, GLuint*> value, 
+                        bool showInGUI = false,
+                        float min = 0.0f,
+                        float max = 1.0f);
     // Internal method to set the uniforms in the loop. don't call this!
     void setNPREffectProperty(std::shared_ptr<ShaderProgram> shaderProgram, std::string propertyName, std::variant<glm::vec2*, glm::vec3*, glm::vec4*, float*, int*, bool*, GLuint*> value);
 

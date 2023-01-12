@@ -157,7 +157,11 @@ void Scene::addNPREffect(std::shared_ptr<ShaderProgram> nprEffectProgram, bool e
     m_NPREffects.push_back(nprEffect);
 }
 
-void Scene::addNPRProperty(std::string effectName, std::string propertyName, std::variant<glm::vec2*, glm::vec3*, glm::vec4*, float*, int*, bool*, GLuint*> value, bool showInGUI)
+void Scene::addNPRProperty(std::string effectName, std::string propertyName, 
+                           std::variant<glm::vec2*, glm::vec3*, glm::vec4*, float*, int*, bool*, GLuint*> value,
+                           bool showInGUI,
+                           float min,
+                           float max)
 {
     // Iterate over all effects
     for (int i = 0; i < m_NPREffects.size(); i++)
@@ -170,6 +174,8 @@ void Scene::addNPRProperty(std::string effectName, std::string propertyName, std
             nprProperty.name = propertyName;
             nprProperty.value = value;
             nprProperty.showInGUI = showInGUI;
+            nprProperty.min = min;
+            nprProperty.max = max;
             m_NPREffects[i]->properties.push_back(nprProperty);
             return;
         }
@@ -391,27 +397,22 @@ void Scene::drawNPREffectProperty(NPRProperty property)
     std::variant<glm::vec2*, glm::vec3*, glm::vec4*, float*, int*, bool*, GLuint*> value = property.value;
     std::string propertyName = property.name;
 
-    // if (std::holds_alternative<glm::vec2*>(value))
-    // {
-    //     shaderProgram->setVec2(propertyName, *std::get<glm::vec2*>(value));
-    //     ImGUI
-    // }
-    if (std::holds_alternative<glm::vec3*>(value))
+    if (std::holds_alternative<glm::vec2*>(value))
     {
-          //ImGui::ColorPicker3(propertyName.c_str(), m_backgroundColor.get());
+        ImGui::SliderFloat4(propertyName.c_str(), glm::value_ptr(*std::get<glm::vec2*>(value)), property.min, property.max);
     }
-
-    // else if (std::holds_alternative<glm::vec4*>(value))
-    // {
-    //     shaderProgram->setVec4(propertyName, *std::get<glm::vec4*>(value));
-    // }
+    else if (std::holds_alternative<glm::vec3*>(value))
+    {
+          ImGui::ColorPicker3(propertyName.c_str(), glm::value_ptr(*std::get<glm::vec3*>(value)));
+    }
+    else if (std::holds_alternative<glm::vec4*>(value))
+    {
+        ImGui::SliderFloat4(propertyName.c_str(), glm::value_ptr(*std::get<glm::vec4*>(value)), property.min, property.max);
+    }
 
     else if (std::holds_alternative<float*>(value))
     {
-        float min = 0.0f;
-        float max = 1.0f; 
-
-        ImGui::SliderFloat(propertyName.c_str(), std::get<float*>(value), min, max);
+        ImGui::SliderFloat(propertyName.c_str(), std::get<float*>(value), property.min, property.max);
     }
 
     else if (std::holds_alternative<int*>(value))
@@ -421,7 +422,6 @@ void Scene::drawNPREffectProperty(NPRProperty property)
 
          ImGui::SliderInt(propertyName.c_str(), std::get<int*>(value), min, max);
     }
-
     else if (std::holds_alternative<bool*>(value))
     {
         ImGui::Checkbox(propertyName.c_str(), std::get<bool*>(value));
