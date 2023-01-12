@@ -325,150 +325,47 @@ void Terrain::setupShaderPrograms()
     loadCBTNodeCountShader();
 }
 
-void Terrain::loadTerrainSplitShaderProgram()
+void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> shaderProgram, std::string typeFlag)
 {
-    LOG_INFO("loading terrain merge shader program");
+    LOG_INFO("loading terrain split shader program");
     
-    m_terrainSplitShaderProgram = std::make_shared<ShaderProgram>("TerrainSplit");
-    m_terrainSplitShaderProgram->addSource("#define FLAG_SPLIT");
-    m_terrainSplitShaderProgram->addSource("#define PROJECTION_RECTILINEAR");
+    shaderProgram = std::make_shared<ShaderProgram>("TerrainSplit");
+    shaderProgram->addSource("#define FLAG_SPLIT");
+    shaderProgram->addSource("#define PROJECTION_RECTILINEAR");
 
-    m_terrainSplitShaderProgram->addSource("#define BUFFER_BINDING_TERRAIN_VARIABLES 0");
-    m_terrainSplitShaderProgram->addSource("#define BUFFER_BINDING_MESHLET_VERTICES " + std::to_string(m_bufferMeshletVertices));
-    m_terrainSplitShaderProgram->addSource("#define BUFFER_BINDING_MESHLET_INDEXES " + std::to_string(m_bufferMeshletIndices));
-    m_terrainSplitShaderProgram->addSource("#define TERRAIN_PATCH_SUBD_LEVEL " + std::to_string(m_patchSubDiv));
-    m_terrainSplitShaderProgram->addSource("#define TERRAIN_PATCH_TESS_FACTOR " + std::to_string((1 << m_patchSubDiv)));
+    shaderProgram->addSource("#define BUFFER_BINDING_TERRAIN_VARIABLES 0");
+    shaderProgram->addSource("#define BUFFER_BINDING_MESHLET_VERTICES " + std::to_string(m_bufferMeshletVertices));
+    shaderProgram->addSource("#define BUFFER_BINDING_MESHLET_INDEXES " + std::to_string(m_bufferMeshletIndices));
+    shaderProgram->addSource("#define TERRAIN_PATCH_SUBD_LEVEL " + std::to_string(m_patchSubDiv));
+    shaderProgram->addSource("#define TERRAIN_PATCH_TESS_FACTOR " + std::to_string((1 << m_patchSubDiv)));
 
-    m_terrainSplitShaderProgram->addSource("#define SHADING_DIFFUSE 1");
+    shaderProgram->addSource("#define SHADING_DIFFUSE 1");
 
-    m_terrainSplitFrustumCullingShader = std::make_shared<Shader>("./Assets/Shader/Terrain/FrustumCulling.comp", false);
-    m_terrainSplitShaderProgram->attachShader(m_terrainSplitFrustumCullingShader);
+    m_terrainFrustumCullingShader = std::make_shared<Shader>("./Assets/Shader/Terrain/FrustumCulling.comp", false);
+    shaderProgram->attachShader(m_terrainFrustumCullingShader);
 
-    m_terrainSplitShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
-    m_terrainSplitShaderProgram->addSource("#define CBT_READ_ONLY");
+    shaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
+    shaderProgram->addSource("#define CBT_READ_ONLY");
 
-    m_terrainSplitCBTShader = std::make_shared<Shader>("./Assets/Shader/Terrain/cbt.comp", false);
-    m_terrainSplitShaderProgram->attachShader(m_terrainSplitCBTShader);
-    m_terrainSplitLEBShader = std::make_shared<Shader>("./Assets/Shader/Terrain/leb.comp", false);
-    m_terrainSplitShaderProgram->attachShader(m_terrainSplitLEBShader);
-    m_terrainSplitAtmosphereShader = std::make_shared<Shader>("./Assets/Shader/Terrain/Atmosphere.comp", false);
-    m_terrainSplitShaderProgram->attachShader(m_terrainSplitAtmosphereShader);
-    m_terrainSplitRenderCommonShader = std::make_shared<Shader>("./Assets/Shader/Terrain/RenderCommon.comp", false);
-    m_terrainSplitShaderProgram->attachShader(m_terrainSplitRenderCommonShader);
-    m_terrainSplitUpdateShader = std::make_shared<Shader>("./Assets/Shader/Terrain/RenderUpdate.comp", false);
-    m_terrainSplitShaderProgram->attachShader(m_terrainSplitUpdateShader);
+    m_terrainCBTShader = std::make_shared<Shader>("./Assets/Shader/Terrain/cbt.comp", false);
+    shaderProgram->attachShader(m_terrainCBTShader);
+    m_terrainLEBShader = std::make_shared<Shader>("./Assets/Shader/Terrain/leb.comp", false);
+    shaderProgram->attachShader(m_terrainLEBShader);
+    m_terrainAtmosphereShader = std::make_shared<Shader>("./Assets/Shader/Terrain/Atmosphere.comp", false);
+    shaderProgram->attachShader(m_terrainAtmosphereShader);
+    m_terrainRenderCommonShader = std::make_shared<Shader>("./Assets/Shader/Terrain/RenderCommon.comp", false);
+    shaderProgram->attachShader(m_terrainRenderCommonShader);
+    m_terrainUpdateShader = std::make_shared<Shader>("./Assets/Shader/Terrain/RenderUpdate.comp", false);
+    shaderProgram->attachShader(m_terrainUpdateShader);
 
-    m_terrainSplitShaderProgram->link();
-}
-
-void Terrain::loadTerrainMergeShaderProgram()
-{
-    LOG_INFO("loading terrain merge shader program");
-    
-    // m_terrainMergeShader = std::make_shared<Shader>("./Assets/Shader/Terrain/TerrainMerge.comp");
-    // m_terrainMergeShaderProgram = std::make_shared<ShaderProgram>("TerrainMerge");
-    // m_terrainMergeShaderProgram->addShader(m_terrainMergeShader);
-    // m_terrainMergeShaderProgram->link();
-
-    // djgp_push_string(djp, "#define BUFFER_BINDING_TERRAIN_VARIABLES %i\n", STREAM_TERRAIN_VARIABLES);
-    // djgp_push_string(djp, "#define BUFFER_BINDING_MESHLET_VERTICES %i\n", BUFFER_MESHLET_VERTICES);
-    // djgp_push_string(djp, "#define BUFFER_BINDING_MESHLET_INDEXES %i\n", BUFFER_MESHLET_INDEXES);
-    // djgp_push_string(djp, "#define TERRAIN_PATCH_SUBD_LEVEL %i\n", g_terrain.gpuSubd);
-    // djgp_push_string(djp, "#define TERRAIN_PATCH_TESS_FACTOR %i\n", 1 << g_terrain.gpuSubd);
-    // if (g_terrain.shading == SHADING_DIFFUSE)
-    //     djgp_push_string(djp, "#define SHADING_DIFFUSE 1\n");
-    // else if (g_terrain.shading == SHADING_NORMALS)
-    //     djgp_push_string(djp, "#define SHADING_NORMALS 1\n");
-    // else if (g_terrain.shading == SHADING_COLOR)
-    //     djgp_push_string(djp, "#define SHADING_COLOR 1\n");
-    // if (g_terrain.flags.displace)
-    //     djgp_push_string(djp, "#define FLAG_DISPLACE 1\n");
-    // if (g_terrain.flags.cull)
-    //     djgp_push_string(djp, "#define FLAG_CULL 1\n");
-    // if (g_terrain.flags.wire)
-    //     djgp_push_string(djp, "#define FLAG_WIRE 1\n");
-    // djgp_push_file(djp, PATH_TO_SRC_DIRECTORY "./terrain/shaders/FrustumCulling.glsl");
-    // djgp_push_string(djp, "#define CBT_HEAP_BUFFER_BINDING %i\n", BUFFER_LEB);
-    // djgp_push_string(djp, "#define CBT_READ_ONLY\n");
-    // djgp_push_file(djp, PATH_TO_SRC_DIRECTORY "./submodules/libcbt/glsl/cbt.glsl");
-    // djgp_push_file(djp, PATH_TO_SRC_DIRECTORY "./submodules/libleb/glsl/leb.glsl");
-    // djgp_push_file(djp, PATH_TO_SRC_DIRECTORY "./terrain/shaders/BrunetonAtmosphere.glsl");
-    // djgp_push_file(djp, PATH_TO_SRC_DIRECTORY "./terrain/shaders/TerrainRenderCommon.glsl");
-    // if (g_terrain.method == METHOD_CS) {
-    //     if (strcmp("/* thisIsAHackForComputePass */\n", flag) == 0) {
-    //         if (g_terrain.flags.wire) {
-    //             djgp_push_file(djp, PATH_TO_SRC_DIRECTORY "./terrain/shaders/TerrainRenderCS_Wire.glsl");
-    //         } else {
-    //             djgp_push_file(djp, PATH_TO_SRC_DIRECTORY "./terrain/shaders/TerrainRenderCS.glsl");
-    //         }
-    //     } else {
-    //         djgp_push_file(djp, PATH_TO_SRC_DIRECTORY "./terrain/shaders/TerrainUpdateCS.glsl");
-    //     }
-    // } else if (g_terrain.method == METHOD_TS) {
-    //     if (g_terrain.flags.wire) {
-    //         djgp_push_file(djp, PATH_TO_SRC_DIRECTORY "./terrain/shaders/TerrainRenderTS_Wire.glsl");
-    //     } else {
-    //         djgp_push_file(djp, PATH_TO_SRC_DIRECTORY "./terrain/shaders/TerrainRenderTS.glsl");
-    //     }
-    // } else if (g_terrain.method == METHOD_GS) {
-    //     int subdLevel = g_terrain.gpuSubd;
-
-    //     if (g_terrain.flags.wire) {
-    //         int vertexCnt = 3 << (2 * subdLevel);
-
-    //         djgp_push_string(djp, "#define MAX_VERTICES %i\n", vertexCnt);
-    //         djgp_push_file(djp, PATH_TO_SRC_DIRECTORY "./terrain/shaders/TerrainRenderGS_Wire.glsl");
-    //     } else {
-    //         int vertexCnt = subdLevel == 0 ? 3 : 4 << (2 * subdLevel - 1);
-
-    //         djgp_push_string(djp, "#define MAX_VERTICES %i\n", vertexCnt);
-    //         djgp_push_file(djp, PATH_TO_SRC_DIRECTORY "./terrain/shaders/TerrainRenderGS.glsl");
-    //     }
-    // } else if (g_terrain.method == METHOD_MS) {
-    //     djgp_push_file(djp, PATH_TO_SRC_DIRECTORY "./terrain/shaders/TerrainRenderMS.glsl");
-    // }
-
-    // if (!djgp_to_gl(djp, 450, false, true, glp)) {
-    //     djgp_release(djp);
-
-    //     return false;
-    // }
-    // djgp_release(djp);
-
-    // g_gl.uniforms[UNIFORM_TERRAIN_DMAP_FACTOR + uniformOffset] =
-    //     glGetUniformLocation(*glp, "u_DmapFactor");
-    // g_gl.uniforms[UNIFORM_TERRAIN_LOD_FACTOR + uniformOffset] =
-    //     glGetUniformLocation(*glp, "u_LodFactor");
-    // g_gl.uniforms[UNIFORM_TERRAIN_DMAP_SAMPLER + uniformOffset] =
-    //     glGetUniformLocation(*glp, "u_DmapSampler");
-    // g_gl.uniforms[UNIFORM_TERRAIN_SMAP_SAMPLER + uniformOffset] =
-    //     glGetUniformLocation(*glp, "u_SmapSampler");
-    // g_gl.uniforms[UNIFORM_TERRAIN_DMAP_ROCK_SAMPLER + uniformOffset] =
-    //     glGetUniformLocation(*glp, "u_DmapRockSampler");
-    // g_gl.uniforms[UNIFORM_TERRAIN_SMAP_ROCK_SAMPLER + uniformOffset] =
-    //     glGetUniformLocation(*glp, "u_SmapRockSampler");
-    // g_gl.uniforms[UNIFORM_TERRAIN_TARGET_EDGE_LENGTH + uniformOffset] =
-    //     glGetUniformLocation(*glp, "u_TargetEdgeLength");
-    // g_gl.uniforms[UNIFORM_TERRAIN_MIN_LOD_VARIANCE + uniformOffset] =
-    //     glGetUniformLocation(*glp, "u_MinLodVariance");
-    // g_gl.uniforms[UNIFORM_TERRAIN_SCREEN_RESOLUTION + uniformOffset] =
-    //     glGetUniformLocation(*glp, "u_ScreenResolution");
-    // g_gl.uniforms[UNIFORM_TERRAIN_IRRADIANCE_SAMPLER + uniformOffset] =
-    //     glGetUniformLocation(*glp, "skyIrradianceSampler");
-    // g_gl.uniforms[UNIFORM_TERRAIN_INSCATTER_SAMPLER + uniformOffset] =
-    //     glGetUniformLocation(*glp, "inscatterSampler");
-    // g_gl.uniforms[UNIFORM_TERRAIN_TRANSMITTANCE_SAMPLER + uniformOffset] =
-    //     glGetUniformLocation(*glp, "transmittanceSampler");
-
-    // ConfigureTerrainProgram(*glp, uniformOffset);
-
-    // HANDLE_GL_ERRORS("loading viewer program");
+    shaderProgram->link();
 }
 
 void Terrain::loadTerrainPrograms()
 {
-    loadTerrainMergeShaderProgram();
-    loadTerrainSplitShaderProgram();
+    loadShaderProgram(m_terrainMergeShaderProgram, "#define FLAG_MERGE");
+    loadShaderProgram(m_terrainSplitShaderProgram, "#define FLAG_SPLIT");
+    loadShaderProgram(m_terrainDrawShaderProgram, "#define FLAG_DRAW");
 }
 
 void Terrain::loadLEBReductionProgram()

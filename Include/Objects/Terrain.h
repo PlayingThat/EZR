@@ -87,8 +87,7 @@ private:
     //////////////////////////////////////////////////////////
     // Shader programs
     void setupShaderPrograms();
-    void loadTerrainSplitShaderProgram();
-    void loadTerrainMergeShaderProgram();
+    void loadShaderProgram(std::shared_ptr<ShaderProgram> shaderProgram, std::string typeFlag);
     void loadTerrainPrograms();
     void loadLEBReductionProgram();
     void LoadLebReductionPrepassProgram();
@@ -134,19 +133,17 @@ private:
     //////////////////////////////////////////////////////////
     // Shaders
     std::shared_ptr<ShaderProgram> m_terrainMergeShaderProgram;
-    std::shared_ptr<Shader> m_terrainMergeShader;
-    std::shared_ptr<Shader> m_terrainMergeLEBShader;
-    std::shared_ptr<Shader> m_terrainMergeCBTShader;
-
     std::shared_ptr<ShaderProgram> m_terrainSplitShaderProgram;
-    std::shared_ptr<Shader> m_terrainSplitShader;
-    std::shared_ptr<Shader> m_terrainSplitFrustumCullingShader;
-    std::shared_ptr<Shader> m_terrainSplitAtmosphereShader;
-    std::shared_ptr<Shader> m_terrainSplitLEBShader;
-    std::shared_ptr<Shader> m_terrainSplitCBTShader;
-    std::shared_ptr<Shader> m_terrainSplitRenderCommonShader;
-    std::shared_ptr<Shader> m_terrainSplitRenderSpecificShader;
-    std::shared_ptr<Shader> m_terrainSplitUpdateShader;
+    std::shared_ptr<ShaderProgram> m_terrainDrawShaderProgram;
+
+    std::shared_ptr<Shader> m_terrainShader;
+    std::shared_ptr<Shader> m_terrainFrustumCullingShader;
+    std::shared_ptr<Shader> m_terrainAtmosphereShader;
+    std::shared_ptr<Shader> m_terrainLEBShader;
+    std::shared_ptr<Shader> m_terrainCBTShader;
+    std::shared_ptr<Shader> m_terrainRenderCommonShader;
+    std::shared_ptr<Shader> m_terrainRenderSpecificShader;
+    std::shared_ptr<Shader> m_terrainUpdateShader;
 
     std::shared_ptr<ShaderProgram> m_cbtNodeCountShaderProgram;
     std::shared_ptr<Shader> m_cbtNodeCountVertexShader;
