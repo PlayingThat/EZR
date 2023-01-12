@@ -52,6 +52,5 @@ private:
     std::list<GLuint> shaders;
 
     bool m_linked;
-    bool m_isCompute;
     std::string m_name;
 };

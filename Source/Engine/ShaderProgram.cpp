@@ -7,7 +7,6 @@
 ShaderProgram::ShaderProgram(std::string name)
 {
     m_linked = false;
-    m_isCompute = false;
     m_name = name;
     m_id = glCreateProgram();
 }
@@ -55,24 +54,6 @@ std::string ShaderProgram::getName()
 
 void ShaderProgram::addShader(std::shared_ptr<Shader> shader)
 {
-    // make sure that a compute shader program always just contains exactly one compute shader
-    if(shader->getType().name == "Compute")
-    {
-        if(m_isCompute)
-        {
-            LOG_ERROR("Compute shader already attached on '" + m_name + "'!");
-            return;
-        }
-        if(shaders.size() > 0)
-        {
-            LOG_ERROR(
-                    "Can't add compute shader to program '" + m_name + "', which already contains different shaders!");
-            return;
-        }
-
-        m_isCompute = true;
-    }
-
     shaders.push_back(shader->getID());
     glAttachShader(m_id, shader->getID());
 }
