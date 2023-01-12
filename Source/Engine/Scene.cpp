@@ -107,7 +107,7 @@ void Scene::setupNPREffects()
     m_goochShaderProgram->addShader(m_goochFragmentShader);
     m_goochShaderProgram->link();
     addNPREffect(m_goochShaderProgram, false);
-    addNPRProperty("Gooch", "textured", &m_goochPropertyTextured, true);
+    addNPRProperty("Gooch", "textured##Gooch", &m_goochPropertyTextured, true);
     //addNPRProperty("Gooch", "CoolColor", &m_goochPropertyCoolColor, true);
     //addNPRProperty("Gooch", "WarmColor", &m_goochPropertyWarmColor, true);
 
@@ -119,7 +119,7 @@ void Scene::setupNPREffects()
     m_toonShaderProgram->addShader(m_toonFragmentShader);
     m_toonShaderProgram->link();
     addNPREffect(m_toonShaderProgram, false);
-    addNPRProperty("Toon", "Textured", &m_toonPropertyTextured, true);
+    addNPRProperty("Toon", "textured##Toon", &m_toonPropertyTextured, true);
 
     // Setup Alternative Toon by Jess
     m_JtoonVertexShader = std::make_shared<Shader>("./Assets/Shader/JToon.vert");
@@ -129,8 +129,8 @@ void Scene::setupNPREffects()
     m_JtoonShaderProgram->addShader(m_JtoonFragmentShader);
     m_JtoonShaderProgram->link();
     addNPREffect(m_JtoonShaderProgram, false);
-    addNPRProperty("JToon", "textured", &m_JtoonPropertyTextured, true);
-    addNPRProperty("JToon", "colorLevels", &m_JtoonPropertyColorLevels, true);
+    addNPRProperty("JToon", "textured##JToon", &m_JtoonPropertyTextured, true);
+    addNPRProperty("JToon", "colorLevels", &m_JtoonPropertyColorLevels, true, 1, 20);
     addNPRProperty("JToon", "levelBrightness", &m_JtoonPropertyLevelBrightness, true);
 
     // Setup Rim Lighting
@@ -141,7 +141,7 @@ void Scene::setupNPREffects()
     m_rimLShaderProgram->addShader(m_rimLFragmentShader);
     m_rimLShaderProgram->link();
     addNPREffect(m_rimLShaderProgram, false);
-    addNPRProperty("RimLighting", "Textured", &m_rimLPropertyTextured, true);
+    addNPRProperty("RimLighting", "textured##RimLighing", &m_rimLPropertyTextured, true);
 }
 
 void Scene::addNPREffect(std::shared_ptr<ShaderProgram> nprEffectProgram, bool enabledByDefault)
@@ -403,7 +403,7 @@ void Scene::drawNPREffectProperty(NPRProperty property)
     }
     else if (std::holds_alternative<glm::vec3*>(value))
     {
-          ImGui::ColorPicker3(propertyName.c_str(), glm::value_ptr(*std::get<glm::vec3*>(value)));
+        ImGui::ColorPicker3(propertyName.c_str(), glm::value_ptr(*std::get<glm::vec3*>(value)));
     }
     else if (std::holds_alternative<glm::vec4*>(value))
     {
@@ -417,10 +417,7 @@ void Scene::drawNPREffectProperty(NPRProperty property)
 
     else if (std::holds_alternative<int*>(value))
     {
-        int min = 1;
-        int max = 20; 
-
-         ImGui::SliderInt(propertyName.c_str(), std::get<int*>(value), min, max);
+        ImGui::SliderInt(propertyName.c_str(), std::get<int*>(value), (int)property.min, (int)property.max);
     }
     else if (std::holds_alternative<bool*>(value))
     {
