@@ -64,7 +64,7 @@ void ShaderProgram::link()
         }
 
         const char *sourceArray[] = {source};
-        writeToFile(source, "combinedShader.txt");
+        // writeToFile(source, "combinedShader.txt");
         // create dummy shader 
         GLuint dummyShader = compileDirect(sourceArray, 1);
         glAttachShader(m_id, dummyShader);
