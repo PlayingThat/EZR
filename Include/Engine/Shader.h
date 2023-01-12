@@ -24,11 +24,15 @@ struct shaderType
 class Shader
 {
 public:
-    explicit Shader(std::string path);
+    explicit Shader(std::string path, bool compile = true);
 
     ~Shader();
 
+    void compileShader();
+
     const GLuint getID() const;
+
+    std::string getSource();
 
     const shaderType &getType() const;
 
@@ -39,5 +43,7 @@ private:
 
     GLuint m_id;
     std::ifstream m_shaderFileStream;
+    bool m_compiled;
     shaderType m_type;
+    std::string m_path;
 };

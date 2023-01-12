@@ -9,6 +9,10 @@ ShaderProgram::ShaderProgram(std::string name)
     m_linked = false;
     m_name = name;
     m_id = glCreateProgram();
+
+    m_attachedShaders = std::vector<std::shared_ptr<Shader>>();
+    m_sources = std::vector<GLchar *>();
+    addSource("#version 450");
 }
 
 ShaderProgram::~ShaderProgram()
@@ -16,8 +20,56 @@ ShaderProgram::~ShaderProgram()
     glDeleteProgram(m_id);
 }
 
+GLuint ShaderProgram::compileDirect(const char **sources, int count)
+{
+
+    GLuint shaderId = glCreateShader(GL_COMPUTE_SHADER);
+    glShaderSource(shaderId, count, sources, NULL);
+    glCompileShader(shaderId);
+
+    int success;
+    // if an error occured, write it to log
+    glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
+    if(!success)
+    {
+        char infoLog[1024];
+        glGetShaderInfoLog(shaderId, 1024, NULL, infoLog);
+        LOG_SHADER_ERROR("Compute shader", "Shader compilation failed on Compute Shader '<Concatenated from sources>': " << infoLog);
+    }
+    return shaderId;
+}
+
 void ShaderProgram::link()
 {
+    // If no compiled shaders are attached, attach sources and shaders first
+    if(m_attachedShaders.size() > 0)
+    {
+        // determine source and length of source pointer array
+        int srcc = m_sources.size() + m_attachedShaders.size();
+        char *source = new char[1000000]();
+
+        int j = 0;
+        // Add sources (definitions etc.) before shader
+        for(int i = 0; i < m_sources.size(); i++)
+        {
+            strcat(source, m_sources[i]);
+            j++;
+        }
+        
+        // Compile shaders
+        for(int i = 0; i < m_attachedShaders.size(); i++)
+        {
+            strcat(source, m_attachedShaders[i]->getSource().c_str());
+            j++;
+        }
+
+        const char *sourceArray[] = {source};
+        writeToFile(source, "combinedShader.txt");
+        // create dummy shader 
+        GLuint dummyShader = compileDirect(sourceArray, 1);
+        glAttachShader(m_id, dummyShader);
+    }
+
     glLinkProgram(m_id);
 
     // if errors occured, write them to log
@@ -32,6 +84,14 @@ void ShaderProgram::link()
     }
 
     m_linked = true;
+}
+
+void ShaderProgram::writeToFile(char* source, std::string name)
+{
+    std::ofstream file;
+    file.open(name);
+    file << source;
+    file.close();
 }
 
 void ShaderProgram::use()
@@ -56,6 +116,17 @@ void ShaderProgram::addShader(std::shared_ptr<Shader> shader)
 {
     shaders.push_back(shader->getID());
     glAttachShader(m_id, shader->getID());
+}
+
+void ShaderProgram::attachShader(std::shared_ptr<Shader> shader)
+{
+    m_attachedShaders.push_back(shader);
+}
+
+void ShaderProgram::addSource(std::string source)
+{
+    GLchar *temp = strdup(source.c_str());
+    m_sources.push_back(strcat(temp, "\n"));
 }
 
 void ShaderProgram::setFloat(std::string name, float value) const

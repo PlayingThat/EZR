@@ -4,15 +4,26 @@
 
 #include "Engine/Shader.h"
 
-Shader::Shader(std::string path)
+Shader::Shader(std::string path, bool compile)
 {
-    // try to load the shader from file
-    std::string shaderString = loadFromFile(path);
-    const char *shaderCString = shaderString.c_str();
+    m_compiled = compile;
 
     m_type = getTypeFromPath(path);
+    m_path = path;
 
     // compile shader
+    if (compile)
+    {
+        compileShader();
+    }
+}
+
+void Shader::compileShader()
+{
+    // try to load the shader from file
+    std::string shaderString = loadFromFile(m_path);
+    const char *shaderCString = shaderString.c_str();
+
     m_id = glCreateShader(m_type.glType);
     glShaderSource(m_id, 1, &shaderCString, NULL);
     glCompileShader(m_id);
@@ -24,8 +35,13 @@ Shader::Shader(std::string path)
     {
         char infoLog[1024];
         glGetShaderInfoLog(m_id, 1024, NULL, infoLog);
-        LOG_SHADER_ERROR(m_type.name << " shader", "Shader compilation failed on " + m_type.name + " '" + path + "': " + infoLog);
+        LOG_SHADER_ERROR(m_type.name << " shader", "Shader compilation failed on " + m_type.name + " '" + m_path + "': " + infoLog);
     }
+}
+
+std::string Shader::getSource()
+{
+    return loadFromFile(m_path).c_str();
 }
 
 Shader::~Shader()

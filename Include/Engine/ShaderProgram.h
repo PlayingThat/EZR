@@ -6,6 +6,7 @@
 
 #include "Defs.h"
 #include <list>
+#include <vector>
 #include "Shader.h"
 
 class ShaderProgram
@@ -23,7 +24,14 @@ public:
 
     std::string getName();
 
+    // For normal shaders (compiled already)
     void addShader(std::shared_ptr<Shader> shader);
+
+    // Used for compute shaders whihc include other shaders
+    void attachShader(std::shared_ptr<Shader> shader);
+
+    // Used for additional defines in compute shaders
+    void addSource(std::string source);
 
     void setFloat(std::string name, float value) const;
 
@@ -48,8 +56,13 @@ public:
     void setSampler3D(std::string name, GLuint texture, int idGl) const;
 
 private:
+    GLuint compileDirect(const char **sources, int count);
+    void writeToFile(char* source, std::string name);
+
     GLuint m_id;
     std::list<GLuint> shaders;
+    std::vector<GLchar *> m_sources;
+    std::vector<std::shared_ptr<Shader>> m_attachedShaders;
 
     bool m_linked;
     std::string m_name;
