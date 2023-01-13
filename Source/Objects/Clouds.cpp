@@ -67,7 +67,7 @@ void Clouds::draw()
     m_volumetricCloudsComputeShaderProgram->setFloat("windSpeed", m_windSpeed);
 
     glDispatchCompute(m_width / 16, m_height / 16, 1);
-    glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
     // apply post processing before drawing
     m_cloudPostProcessingShaderProgram->use();
@@ -77,7 +77,7 @@ void Clouds::draw()
     m_cloudPostProcessingShaderProgram->setVec2("resolution", glm::vec2(m_scene->getState()->getWidth(), m_scene->getState()->getHeight()));
 
     glDispatchCompute(m_width / 16, m_height / 16, 1);
-    glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
     // m_screenFillingQuad->getShaderProgram()->setSampler2D("fbo1", m_fragmentColorTextureGeometry, 0);
     // m_screenFillingQuad->getShaderProgram()->setSampler2D("fbo2", m_fragmentColorTextureCloudsBlured, 1);
