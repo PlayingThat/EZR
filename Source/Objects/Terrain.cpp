@@ -438,7 +438,17 @@ void Terrain::loadTopViewProgram()
 
 void Terrain::loadCBTNodeCountShader()
 {
-
+    m_cbtNodeCountShaderProgram = std::make_shared<ShaderProgram>("CBTNodeCount");
+    std::shared_ptr<Shader> m_cbtNodeCountShader = std::make_shared<Shader>("./Assets/Shader/Terrain/NodeCount.comp", false);
+    
+    m_cbtNodeCountShaderProgram->addSource("#define CBT_NODE_COUNT_BUFFER_BINDING " + std::to_string(m_bufferCBTNodeCountIndex));
+    m_cbtNodeCountShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING  " + std::to_string(m_subdivionBufferIndex));
+    m_cbtNodeCountShaderProgram->addSource("#define CBT_READ_ONLY");
+    m_cbtNodeCountShaderProgram->attachShader(m_terrainCBTShader);  // CBT shader already loaded in loadShaderProgram
+    m_cbtNodeCountShaderProgram->attachShader(m_cbtNodeCountShader);
+    
+    m_cbtNodeCountShaderProgram->addSource("#ifdef COMPUTE_SHADER\n#endif");
+    m_cbtNodeCountShaderProgram->link();
 }
 
 void Terrain::loadTerrainFramebuffer()

@@ -161,7 +161,7 @@ private:
     std::shared_ptr<Shader> m_topViewShader;
 
     std::shared_ptr<ShaderProgram> m_cbtNodeCountShaderProgram;
-    std::shared_ptr<Shader> m_cbtNodeCountVertexShader;
+    std::shared_ptr<Shader> m_cbtNodeCountShader;
 
 
     //////////////////////////////////////////////////////////
