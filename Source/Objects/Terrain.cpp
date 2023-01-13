@@ -321,7 +321,7 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> shaderProgram, st
 {
     LOG_INFO("loading terrain " + typeFlag +" shader program");
     
-    shaderProgram = std::make_shared<ShaderProgram>("TerrainSplit");
+    shaderProgram = std::make_shared<ShaderProgram>(typeFlag);
     shaderProgram->addSource("#define FLAG_SPLIT");
     shaderProgram->addSource("#define PROJECTION_RECTILINEAR");
 
@@ -355,9 +355,9 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> shaderProgram, st
 
 void Terrain::loadTerrainPrograms()
 {
-    loadShaderProgram(m_terrainMergeShaderProgram, "#define FLAG_MERGE");
-    loadShaderProgram(m_terrainSplitShaderProgram, "#define FLAG_SPLIT");
-    loadShaderProgram(m_terrainDrawShaderProgram, "#define FLAG_DRAW");
+    loadShaderProgram(m_terrainMergeShaderProgram, "FLAG_MERGE");
+    loadShaderProgram(m_terrainSplitShaderProgram, "FLAG_SPLIT");
+    loadShaderProgram(m_terrainDrawShaderProgram, "FLAG_DRAW");
 }
 
 void Terrain::loadLEBReductionProgram()
