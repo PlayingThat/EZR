@@ -19,7 +19,7 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     m_backgroundColor = std::make_unique<float[]>(3); 
 
     // Create FBO for GBuffer and SFQ
-    m_gBufferFBO = std::make_shared<FBO>(m_scene, 4);
+    m_gBufferFBO = std::make_shared<FBO>(m_scene, 6);
     m_sfq = std::make_shared<ScreenFillingQuad>(m_scene);
 
     // Setup shaders for GBuffer
@@ -232,22 +232,24 @@ void Scene::drawSFQuad()
             m_NPREffects.at(i)->shaderProgram->setVec2("screenSize", glm::vec2(getState()->getCamera()->getWidth(),
                                                                               getState()->getCamera()->getHeight()));
             
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("positions", 0, m_gBufferFBO->getColorAttachment(0));  // color diffuse
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("normals", 1, m_gBufferFBO->getColorAttachment(1));  // color diffuse
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureDiffuse", 2, m_gBufferFBO->getColorAttachment(2));  // color texture
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("colorDiffuse", 3, m_gBufferFBO->getColorAttachment(3));  // color diffuse
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("depth", 4, m_gBufferFBO->getDepthAttachment());  // depth
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("positions", 0, m_gBufferFBO->getColorAttachment(0)); 
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("normals", 1, m_gBufferFBO->getColorAttachment(1));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("uvs", 2, m_gBufferFBO->getColorAttachment(2));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("tangents", 3, m_gBufferFBO->getColorAttachment(3));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureDiffuse", 4, m_gBufferFBO->getColorAttachment(4)); 
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("colorDiffuse", 5, m_gBufferFBO->getColorAttachment(5));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("depth", 6, m_gBufferFBO->getDepthAttachment());
 
             m_NPREffects.at(i)->shaderProgram->setVec3("cameraPosition", glm::vec3(getState()->getCamera()->getPosition()));  // camera
 
             // Stippling Shader Textures
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp1", 5, m_stipp1);
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp2", 6, m_stipp2);
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp3", 7, m_stipp3);
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp4", 8, m_stipp4);
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp5", 9, m_stipp5);
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp6", 10, m_stipp6);
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("paper", 11, m_paper);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp1", 15, m_stipp1);  // index offset for ao, metallic, roughness, and possibly bitangents if needed
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp2", 16, m_stipp2);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp3", 17, m_stipp3);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp4", 18, m_stipp4);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp5", 19, m_stipp5);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp6", 20, m_stipp6);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("paper", 21, m_paper);
 
             // Set NPR properties
             // Iterate over npr effect properties
