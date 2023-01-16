@@ -57,6 +57,11 @@ private:
     // base buffers
     void create();
 
+    void loadTextures();
+    void loadSceneFramebufferTexture();
+    void loadTerrainMaps(std::string filePath);
+    void GenerateSlopeMap();
+
     // Setup buffers
     void setupBuffers();
 
@@ -95,9 +100,17 @@ private:
 
     // Configure shader programs
     void configureTerrainPrograms();
-    void configureShaderProgram(std::shared_ptr<ShaderProgram> shaderProgram);
+    void configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram);
     void configureTerrainProgram();
     void configureTopViewProgram();
+
+    //////////////////////////////////////////////////////////
+    // Textures
+    GLuint m_displacementMapTexture = 0;
+    GLuint m_slopeMapTexture = 0;
+
+    std::vector<uint16_t> m_displacementMap;
+    std::vector<uint16_t> m_slopeMap;
     
 
     //////////////////////////////////////////////////////////
@@ -183,6 +196,8 @@ private:
 
     // Patch subdivision level to be sent to GPU
     int m_patchSubDiv = 0;
+
+    float m_dmapFactor = 1.0f;
 
     //////////////////////////////////////////////////////////
     // Misc Engine Elements

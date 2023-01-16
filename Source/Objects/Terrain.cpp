@@ -59,38 +59,6 @@ void Terrain::drawTerrain()
 
 }
 
-void Terrain::retrieveCBTNodeCount()
-{
-    static GLint isReady = GL_FALSE;
-    const GLuint *query = &m_queryCBTNodeCount;
-
-    glGetQueryObjectiv(*query, GL_QUERY_RESULT_AVAILABLE, &isReady);
-
-    if (isReady) {
-        GLuint *buffer = &m_bufferCBTNodeCount;
-
-        m_cbtNodeCount = *(uint32_t *)
-            glMapNamedBuffer(*buffer, GL_READ_ONLY | GL_MAP_UNSYNCHRONIZED_BIT);
-        glUnmapNamedBuffer(m_bufferCBTNodeCount);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
-                         m_bufferCBTNodeCountIndex,
-                         m_bufferCBTNodeCount);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
-                         m_subdivionBufferIndex,
-                         m_subdivisionBuffer);
-        m_cbtNodeCountShaderProgram->use();
-        glDispatchCompute(1, 1, 1);
-        glMemoryBarrier(GL_ALL_BARRIER_BITS);
-        glQueryCounter(*query, GL_TIMESTAMP);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
-                         m_bufferCBTNodeCountIndex,
-                         0);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
-                         m_subdivionBufferIndex,
-                         0);
-    }
-}
-
 void Terrain::create()
 {
 /*     // Load shaders
@@ -102,6 +70,9 @@ void Terrain::create()
     m_basicShaderProgram->attachShader(m_basicVertexShader);
     m_basicShaderProgram->attachShader(m_basicFragmentShader);
     m_basicShaderProgram->link(); */
+
+    // Load textures
+    loadTextures();
 
     // Load buffers
     setupBuffers();
@@ -134,6 +105,153 @@ void Terrain::setupBuffers()
 
     loadCBTNodeCountBuffer();
 
+}
+
+void Terrain::loadTextures()
+{
+    loadSceneFramebufferTexture();
+    loadTerrainMaps("./Assets/Textures/Terrain/displacement_map_kauai.png");
+}
+
+void Terrain::loadSceneFramebufferTexture()
+{
+    glGenTextures(1, &m_framebufferTerrainDepthTexture);
+    glActiveTexture(GL_TEXTURE0 + m_framebufferTerrainDepthTexture);
+    glBindTexture(GL_TEXTURE_2D, m_framebufferTerrainDepthTexture);
+    glTexStorage2D(GL_TEXTURE_2D,
+        1,
+        GL_DEPTH24_STENCIL8,
+        m_scene->getState()->getCamera()->getWidth(),
+        m_scene->getState()->getCamera()->getHeight());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glGenTextures(1, &m_framebufferTerrainColorTexture);
+    glActiveTexture(GL_TEXTURE0 + m_framebufferTerrainColorTexture);
+    glBindTexture(GL_TEXTURE_2D, m_framebufferTerrainColorTexture);
+    
+    glTexStorage2D(GL_TEXTURE_2D,
+        1,
+        GL_RGBA32F,
+        m_scene->getState()->getCamera()->getWidth(),
+        m_scene->getState()->getCamera()->getHeight());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glActiveTexture(GL_TEXTURE0);
+
+    HANDLE_GL_ERRORS("setting up terrain frame buffer textures");
+}
+
+void Terrain::loadTerrainMaps(std::string filePath)
+{
+    LOG_INFO("loading displacement map for terrain");
+    m_displacementMapTexture = createTextureFromFile(filePath);
+
+    int w = 3601;
+    int h = 3601;
+    // const uint16_t *texels = (const uint16_t *)djgt->next->texels;
+    std::vector<uint16_t> dmap(w * h * 2);
+
+    for (int j = 0; j < h; ++j)
+    {
+        for (int i = 0; i < w; ++i) 
+        {
+            // uint16_t z = texels[i + w * j]; // in [0,2^16-1]
+            // float zf = float(z) / float((1 << 16) - 1);
+            // uint16_t z2 = zf * zf * ((1 << 16) - 1);
+
+            // dmap[    2 * (i + w * j)] = z;
+            // dmap[1 + 2 * (i + w * j)] = z2;
+        }
+    }
+
+    // Generate slope map from displacement map
+    GenerateSlopeMap();
+
+    glActiveTexture(m_displacementMapTexture);
+}
+
+void Terrain::GenerateSlopeMap()
+{
+    // int w = 3601;
+    // int h = 3601;
+    // const uint16_t *texels = (const uint16_t *)dmap->next->texels;
+
+    // std::vector<float> smap(w * h * 2);
+
+    // for (int j = 0; j < h; ++j)
+    //     for (int i = 0; i < w; ++i) {
+    //         int i1 = std::max(0, i - 1);
+    //         int i2 = std::min(w - 1, i + 1);
+    //         int j1 = std::max(0, j - 1);
+    //         int j2 = std::min(h - 1, j + 1);
+    //         uint16_t px_l = texels[i1 + w * j]; // in [0,2^16-1]
+    //         uint16_t px_r = texels[i2 + w * j]; // in [0,2^16-1]
+    //         uint16_t px_b = texels[i + w * j1]; // in [0,2^16-1]
+    //         uint16_t px_t = texels[i + w * j2]; // in [0,2^16-1]
+    //         float z_l = (float)px_l / 65535.0f; // in [0, 1]
+    //         float z_r = (float)px_r / 65535.0f; // in [0, 1]
+    //         float z_b = (float)px_b / 65535.0f; // in [0, 1]
+    //         float z_t = (float)px_t / 65535.0f; // in [0, 1]
+    //         float slope_x = (float)w * 0.5f * (z_r - z_l);
+    //         float slope_y = (float)h * 0.5f * (z_t - z_b);
+
+    //         smap[    2 * (i + w * j)] = slope_x;
+    //         smap[1 + 2 * (i + w * j)] = slope_y;
+    //     }
+
+    // if (glIsTexture(g_gl.textures[smapID]))
+    //     glDeleteTextures(1, &g_gl.textures[smapID]);
+
+    // glGenTextures(1, &g_gl.textures[smapID]);
+    // glActiveTexture(GL_TEXTURE0 + smapID);
+    // glBindTexture(GL_TEXTURE_2D, g_gl.textures[smapID]);
+    // glTexStorage2D(GL_TEXTURE_2D, mipcnt, GL_RG32F, w, h);
+    // glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RG, GL_FLOAT, &smap[0]);
+
+    // glGenerateMipmap(GL_TEXTURE_2D);
+    // glTexParameteri(GL_TEXTURE_2D,
+    //     GL_TEXTURE_MIN_FILTER,
+    //     GL_LINEAR_MIPMAP_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D,
+    //     GL_TEXTURE_WRAP_S,
+    //     GL_CLAMP_TO_EDGE);
+    // glTexParameteri(GL_TEXTURE_2D,
+    //     GL_TEXTURE_WRAP_T,
+    //     GL_CLAMP_TO_EDGE);
+    // glActiveTexture(GL_TEXTURE0);
+}
+
+void Terrain::retrieveCBTNodeCount()
+{
+    static GLint isReady = GL_FALSE;
+    const GLuint *query = &m_queryCBTNodeCount;
+
+    glGetQueryObjectiv(*query, GL_QUERY_RESULT_AVAILABLE, &isReady);
+
+    if (isReady) {
+        GLuint *buffer = &m_bufferCBTNodeCount;
+
+        m_cbtNodeCount = *(uint32_t *)
+            glMapNamedBuffer(*buffer, GL_READ_ONLY | GL_MAP_UNSYNCHRONIZED_BIT);
+        glUnmapNamedBuffer(m_bufferCBTNodeCount);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                         m_bufferCBTNodeCountIndex,
+                         m_bufferCBTNodeCount);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                         m_subdivionBufferIndex,
+                         m_subdivisionBuffer);
+        m_cbtNodeCountShaderProgram->use();
+        glDispatchCompute(1, 1, 1);
+        glMemoryBarrier(GL_ALL_BARRIER_BITS);
+        glQueryCounter(*query, GL_TIMESTAMP);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                         m_bufferCBTNodeCountIndex,
+                         0);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                         m_subdivionBufferIndex,
+                         0);
+    }
 }
 
 void Terrain::loadSubdivisionBuffer()
@@ -358,7 +476,6 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram, s
 void Terrain::loadTerrainPrograms()
 {
     loadShaderProgram(m_terrainMergeShaderProgram, "FLAG_MERGE");
-    HANDLE_GL_ERRORS("test");
     loadShaderProgram(m_terrainSplitShaderProgram, "FLAG_SPLIT");
     loadShaderProgram(m_terrainDrawShaderProgram, "FLAG_DRAW");
 }
@@ -462,29 +579,6 @@ void Terrain::loadTerrainFramebuffer()
 
     glGenFramebuffers(1, &m_framebufferTerrain);
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrain);
-    
-    glGenTextures(1, &m_framebufferTerrainDepthTexture);
-    glActiveTexture(GL_TEXTURE0 + m_framebufferTerrainDepthTexture);
-    glBindTexture(GL_TEXTURE_2D, m_framebufferTerrainDepthTexture);
-    glTexStorage2D(GL_TEXTURE_2D,
-        1,
-        GL_DEPTH24_STENCIL8,
-        m_scene->getState()->getCamera()->getWidth(),
-        m_scene->getState()->getCamera()->getHeight());
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glGenTextures(1, &m_framebufferTerrainColorTexture);
-    glActiveTexture(GL_TEXTURE0 + m_framebufferTerrainColorTexture);
-    glBindTexture(GL_TEXTURE_2D, m_framebufferTerrainColorTexture);
-    
-    glTexStorage2D(GL_TEXTURE_2D,
-        1,
-        GL_RGBA32F,
-        m_scene->getState()->getCamera()->getWidth(),
-        m_scene->getState()->getCamera()->getHeight());
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER,
         GL_COLOR_ATTACHMENT0,
@@ -506,14 +600,63 @@ void Terrain::loadTerrainFramebuffer()
 
 void Terrain::configureTerrainPrograms()
 {
-    configureShaderProgram(m_terrainSplitShaderProgram);
     configureShaderProgram(m_terrainMergeShaderProgram);
+    configureShaderProgram(m_terrainSplitShaderProgram);
     configureShaderProgram(m_terrainDrawShaderProgram);
 }
 
-void Terrain::configureShaderProgram(std::shared_ptr<ShaderProgram> shaderProgram)
+void Terrain::configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram)
 {
+    // Calculate LOD
+    float tmp = 2.0f * tan(glm::radians(m_scene->getState()->getCamera()->getFov()))
+                / m_scene->getState()->getCamera()->getHeight() * (1 << m_patchSubDiv)
+                * 7.0f;  // 7.0 is primitivePixelLengthTarget
 
+    float lodFactor = -2.0f * std::log2(tmp) + 2.0f;
+
+    shaderProgram->setFloat("u_DmapFactor", m_dmapFactor);
+    shaderProgram->setFloat("u_LodFactor", lodFactor);
+    // shaderProgram->setInt("u_DmapSampler", TEXTURE_DMAP);
+    // shaderProgram->setInt("u_SmapSampler", TEXTURE_SMAP);
+    // shaderProgram->setInt("u_DmapRockSampler", TEXTURE_DMAP_ROCK);
+    // shaderProgram->setInt("u_SmapRockSampler", TEXTURE_DMAP_GRASS);
+
+    // glProgramUniform1f(glp,
+    //     g_gl.uniforms[UNIFORM_TERRAIN_DMAP_FACTOR + offset],
+    //     g_terrain.dmap.scale);
+    // glProgramUniform1f(glp,
+    //     g_gl.uniforms[UNIFORM_TERRAIN_LOD_FACTOR + offset],
+    //     lodFactor);
+    // glProgramUniform1i(glp,
+    //     g_gl.uniforms[UNIFORM_TERRAIN_DMAP_SAMPLER + offset],
+    //     TEXTURE_DMAP);
+    // glProgramUniform1i(glp,
+    //     g_gl.uniforms[UNIFORM_TERRAIN_SMAP_SAMPLER + offset],
+    //     TEXTURE_SMAP);
+    // glProgramUniform1i(glp,
+    //     g_gl.uniforms[UNIFORM_TERRAIN_DMAP_ROCK_SAMPLER + offset],
+    //     TEXTURE_ROCK_DMAP);
+    // glProgramUniform1i(glp,
+    //     g_gl.uniforms[UNIFORM_TERRAIN_SMAP_ROCK_SAMPLER + offset],
+    //     TEXTURE_ROCK_SMAP);
+    // glProgramUniform1f(glp,
+    //     g_gl.uniforms[UNIFORM_TERRAIN_TARGET_EDGE_LENGTH + offset],
+    //     g_terrain.primitivePixelLengthTarget);
+    // glProgramUniform1f(glp,
+    //     g_gl.uniforms[UNIFORM_TERRAIN_MIN_LOD_VARIANCE + offset],
+    //     sqr(g_terrain.minLodStdev / 64.0f / g_terrain.dmap.scale));
+    // glProgramUniform2f(glp,
+    //     g_gl.uniforms[UNIFORM_TERRAIN_SCREEN_RESOLUTION + offset],
+    //     g_framebuffer.w, g_framebuffer.h);
+    // glProgramUniform1i(glp,
+    //     g_gl.uniforms[UNIFORM_TERRAIN_INSCATTER_SAMPLER + offset],
+    //     TEXTURE_ATMOSPHERE_INSCATTER);
+    // glProgramUniform1i(glp,
+    //     g_gl.uniforms[UNIFORM_TERRAIN_IRRADIANCE_SAMPLER+ offset],
+    //     TEXTURE_ATMOSPHERE_IRRADIANCE);
+    // glProgramUniform1i(glp,
+    //     g_gl.uniforms[UNIFORM_TERRAIN_TRANSMITTANCE_SAMPLER + offset],
+    //     TEXTURE_ATMOSPHERE_TRANSMITTANCE);
 }
 
 void Terrain::configureTerrainProgram()

@@ -230,3 +230,8 @@ glm::vec3 *Camera::getCameraPosition()
 {
     return &m_cameraPos;
 }
+
+float Camera::getFov()
+{
+    return m_fov;
+}
