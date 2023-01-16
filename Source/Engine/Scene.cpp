@@ -142,6 +142,20 @@ void Scene::setupNPREffects()
     m_rimLShaderProgram->link();
     addNPREffect(m_rimLShaderProgram, false);
     addNPRProperty("RimLighting", "textured##RimLighing", &m_rimLPropertyTextured, true);
+
+    // Setup Stippling
+    m_stippVertexShader = std::make_shared<Shader>("./Assets/Shader/Stippling.vert");
+    m_stippFragmentShader = std::make_shared<Shader>("./Assets/Shader/Stippling.frag");
+    m_stippShaderProgram = std::make_shared<ShaderProgram>("Stippling");
+    m_stippShaderProgram->addShader(m_stippVertexShader);
+    m_stippShaderProgram->addShader(m_stippFragmentShader);
+    m_stippShaderProgram->link();
+    addNPREffect(m_stippShaderProgram, false);
+    addNPRProperty("Stippling", "Textured", &m_stippPropertyTextured, true);
+    
+    // Stippling Textures
+    createStipplingTexture();
+
 }
 
 void Scene::addNPREffect(std::shared_ptr<ShaderProgram> nprEffectProgram, bool enabledByDefault)
@@ -226,6 +240,15 @@ void Scene::drawSFQuad()
 
             m_NPREffects.at(i)->shaderProgram->setVec3("cameraPosition", glm::vec3(getState()->getCamera()->getPosition()));  // camera
 
+            // Stippling Shader Textures
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp1", 5, m_stipp1);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp2", 6, m_stipp2);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp3", 7, m_stipp3);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp4", 8, m_stipp4);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp5", 9, m_stipp5);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp6", 10, m_stipp6);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("paper", 11, m_paper);
+
             // Set NPR properties
             // Iterate over npr effect properties
             for(int effectPropertyIndex = 0; effectPropertyIndex < m_NPREffects.at(i)->properties.size(); effectPropertyIndex++)
@@ -289,6 +312,17 @@ void Scene::renderDrawables()
 void Scene::addObject(std::shared_ptr<Drawable> object)
 {
     m_drawables.push_back(object);
+}
+
+void Scene::createStipplingTexture()
+{
+    m_stipp1 = createTextureFromFile("Assets/Relevant-Textures/Stippling/stipp1.jpg");
+    m_stipp2 = createTextureFromFile("Assets/Relevant-Textures/Stippling/stipp2.jpg");
+    m_stipp3 = createTextureFromFile("Assets/Relevant-Textures/Stippling/stipp3.jpg");
+    m_stipp4 = createTextureFromFile("Assets/Relevant-Textures/Stippling/stipp4.jpg");
+    m_stipp5 = createTextureFromFile("Assets/Relevant-Textures/Stippling/stipp5.jpg");
+    m_stipp6 = createTextureFromFile("Assets/Relevant-Textures/Stippling/stipp6.jpg");
+    m_paper = createTextureFromFile("Assets/Relevant-Textures/Stippling/paper.jpg");
 }
 
 void Scene::drawNPRPanel()
