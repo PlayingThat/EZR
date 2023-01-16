@@ -114,24 +114,24 @@ void Scene::setupNPREffects()
     // Setup Toon
     m_toonVertexShader = std::make_shared<Shader>("./Assets/Shader/Toon.vert");
     m_toonFragmentShader = std::make_shared<Shader>("./Assets/Shader/Toon.frag");
-    m_toonShaderProgram = std::make_shared<ShaderProgram>("Toon");
+    m_toonShaderProgram = std::make_shared<ShaderProgram>("Toon with Outline");
     m_toonShaderProgram->addShader(m_toonVertexShader);
     m_toonShaderProgram->addShader(m_toonFragmentShader);
     m_toonShaderProgram->link();
     addNPREffect(m_toonShaderProgram, false);
-    addNPRProperty("Toon", "textured##Toon", &m_toonPropertyTextured, true);
+    addNPRProperty("Toon with Outline", "textured##Toon", &m_toonPropertyTextured, true);
 
     // Setup Alternative Toon by Jess
     m_JtoonVertexShader = std::make_shared<Shader>("./Assets/Shader/JToon.vert");
     m_JtoonFragmentShader = std::make_shared<Shader>("./Assets/Shader/JToon.frag");
-    m_JtoonShaderProgram = std::make_shared<ShaderProgram>("JToon");
+    m_JtoonShaderProgram = std::make_shared<ShaderProgram>("Toon");
     m_JtoonShaderProgram->addShader(m_JtoonVertexShader);
     m_JtoonShaderProgram->addShader(m_JtoonFragmentShader);
     m_JtoonShaderProgram->link();
     addNPREffect(m_JtoonShaderProgram, false);
-    addNPRProperty("JToon", "textured##JToon", &m_JtoonPropertyTextured, true);
-    addNPRProperty("JToon", "colorLevels", &m_JtoonPropertyColorLevels, true, 1, 20);
-    addNPRProperty("JToon", "levelBrightness", &m_JtoonPropertyLevelBrightness, true);
+    addNPRProperty("Toon", "textured##JToon", &m_JtoonPropertyTextured, true);
+    addNPRProperty("Toon", "colorLevels", &m_JtoonPropertyColorLevels, true, 1, 20);
+    addNPRProperty("Toon", "levelBrightness", &m_JtoonPropertyLevelBrightness, true);
 
     // Setup Rim Lighting
     m_rimLVertexShader = std::make_shared<Shader>("./Assets/Shader/RimLighting.vert");
