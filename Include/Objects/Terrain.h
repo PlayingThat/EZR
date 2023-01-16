@@ -85,13 +85,20 @@ private:
     //////////////////////////////////////////////////////////
     // Shader programs
     void setupShaderPrograms();
-    void loadShaderProgram(std::shared_ptr<ShaderProgram> shaderProgram, std::string typeFlag);
+    void loadShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram, std::string typeFlag);
     void loadTerrainPrograms();
     void loadLEBReductionProgram();
     void LoadLebReductionPrepassProgram();
     void loadBatchProgram();
     void loadTopViewProgram();
     void loadCBTNodeCountShader();
+
+    // Configure shader programs
+    void configureTerrainPrograms();
+    void configureShaderProgram(std::shared_ptr<ShaderProgram> shaderProgram);
+    void configureTerrainProgram();
+    void configureTopViewProgram();
+    
 
     //////////////////////////////////////////////////////////
     // GL Buffer

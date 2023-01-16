@@ -11,7 +11,9 @@ ShaderProgram::ShaderProgram(std::string name)
     m_id = glCreateProgram();
 
     m_attachedShaders = std::vector<std::shared_ptr<Shader>>();
-    m_sources = std::vector<GLchar *>();
+    m_attachedShaders.reserve(10);
+    m_sources = std::vector<std::string>();
+    m_sources.reserve(10);
     addSource("#version 450");
 }
 
@@ -20,7 +22,7 @@ ShaderProgram::~ShaderProgram()
     glDeleteProgram(m_id);
 }
 
-GLuint ShaderProgram::compileDirect(const char **sources, int count, GLenum type)
+GLuint ShaderProgram::compileDirect(const GLchar **sources, int count, GLenum type)
 {
 
     GLuint shaderId = glCreateShader(type);
@@ -46,28 +48,30 @@ void ShaderProgram::link(GLenum type)
     {
         // determine source and length of source pointer array
         int srcc = m_sources.size() + m_attachedShaders.size();
-        char *source = new char[1000000]();
+        std::string source = "";
 
-        int j = 0;
         // Add sources (definitions etc.) before shader
         for(int i = 0; i < m_sources.size(); i++)
         {
-            strcat(source, m_sources[i]);
-            j++;
+            source += m_sources[i];
         }
         
         // Compile shaders
         for(int i = 0; i < m_attachedShaders.size(); i++)
         {
-            strcat(source, m_attachedShaders[i]->getSource().c_str());
-            j++;
+            source += m_attachedShaders[i]->getSource();
         }
 
-        const char *sourceArray[] = {source};
+        const GLchar *sourceArray[] = {source.c_str()};
         // writeToFile(source, "combinedShader.txt");
         // create dummy shader 
+        HANDLE_GL_ERRORS("ShaderProgram::link(");
         GLuint dummyShader = compileDirect(sourceArray, 1, type);
+        
+        HANDLE_GL_ERRORS("ShaderProgram::linkgjhtjhtjhtljkhtjklhrjklhrtjh");
         glAttachShader(m_id, dummyShader);
+        HANDLE_GL_ERRORS("ShaderProgram::ddddddddddddddddddddddddddddddddd");
+        glDeleteShader(dummyShader);
     }
 
     glLinkProgram(m_id);
@@ -125,8 +129,7 @@ void ShaderProgram::attachShader(std::shared_ptr<Shader> shader)
 
 void ShaderProgram::addSource(std::string source)
 {
-    GLchar *temp = strdup(source.c_str());
-    m_sources.push_back(strcat(temp, "\n"));
+    m_sources.push_back(source + "\n");
 }
 
 void ShaderProgram::setFloat(std::string name, float value) const

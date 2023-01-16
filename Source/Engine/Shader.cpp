@@ -10,6 +10,7 @@ Shader::Shader(std::string path, bool compile)
 
     m_type = getTypeFromPath(path);
     m_path = path;
+    m_id = 0;
 
     // compile shader
     if (compile)
@@ -41,7 +42,7 @@ void Shader::compileShader()
 
 std::string Shader::getSource()
 {
-    return loadFromFile(m_path).c_str();
+    return loadFromFile(m_path);
 }
 
 Shader::~Shader()

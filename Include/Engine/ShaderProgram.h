@@ -56,12 +56,12 @@ public:
     void setSampler3D(std::string name, GLuint texture, int idGl) const;
 
 private:
-    GLuint compileDirect(const char **sources, int count, GLenum type = GL_COMPUTE_SHADER);
+    GLuint compileDirect(const GLchar **sources, int count, GLenum type = GL_COMPUTE_SHADER);
     void writeToFile(char* source, std::string name);
 
     GLuint m_id;
     std::list<GLuint> shaders;
-    std::vector<GLchar *> m_sources;
+    std::vector<std::string> m_sources;
     std::vector<std::shared_ptr<Shader>> m_attachedShaders;
 
     bool m_linked;

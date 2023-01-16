@@ -22,10 +22,10 @@ void Terrain::draw()
 {
     // drawGUI();
 
-    glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrain);
-    glClearColor(0.5, 0.5, 0.5, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    drawScene();
+    // glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrain);
+    // glClearColor(0.5, 0.5, 0.5, 1.0);
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // drawScene();
 
     // glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // glClearColor(0, 0, 0, 0);
@@ -114,6 +114,9 @@ void Terrain::create()
 
     // Load shaders
     setupShaderPrograms();
+
+    // Load queries
+    setupQueries();
 }
 
 void Terrain::setupBuffers()
@@ -270,7 +273,7 @@ void Terrain::setupVAOs()
 
 void Terrain::loadVAOEmpty()
 {
-    LOG_INFO("loading Empty-VertexArray");
+    LOG_INFO("Loading Empty-VertexArray");
     if (glIsVertexArray(m_vaoEmpty))
         glDeleteVertexArrays(1, &m_vaoEmpty);
 
@@ -282,7 +285,7 @@ void Terrain::loadVAOEmpty()
 
 void Terrain::loadVAOTriangleMeshlet()
 {
-    LOG_INFO("loading VAO for triangle meshlet");
+    LOG_INFO("Loading VAO for triangle meshlet");
     if (glIsVertexArray(m_vaoTriangleMeshlet))
         glDeleteVertexArrays(1, &m_vaoTriangleMeshlet);
 
@@ -299,10 +302,8 @@ void Terrain::loadVAOTriangleMeshlet()
 
 void Terrain::setupQueries()
 {
-    GLuint *query = &m_queryCBTNodeCount;
-
-    glGenQueries(1, query);
-    glQueryCounter(*query, GL_TIMESTAMP);
+    glGenQueries(1, &m_queryCBTNodeCount);
+    glQueryCounter(m_queryCBTNodeCount, GL_TIMESTAMP);
 
     HANDLE_GL_ERRORS("setting up terrain cbt node count queries");
 }
@@ -317,9 +318,9 @@ void Terrain::setupShaderPrograms()
     loadCBTNodeCountShader();
 }
 
-void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> shaderProgram, std::string typeFlag)
+void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram, std::string typeFlag)
 {
-    LOG_INFO("loading terrain " + typeFlag +" shader program");
+    LOG_INFO("Loading terrain " + typeFlag +" shader program");
     
     shaderProgram = std::make_shared<ShaderProgram>(typeFlag);
     shaderProgram->addSource("#define FLAG_SPLIT");
@@ -330,7 +331,6 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> shaderProgram, st
     shaderProgram->addSource("#define BUFFER_BINDING_MESHLET_INDEXES " + std::to_string(m_bufferMeshletIndices));
     shaderProgram->addSource("#define TERRAIN_PATCH_SUBD_LEVEL " + std::to_string(m_patchSubDiv));
     shaderProgram->addSource("#define TERRAIN_PATCH_TESS_FACTOR " + std::to_string((1 << m_patchSubDiv)));
-
     shaderProgram->addSource("#define SHADING_DIFFUSE 1");
 
     m_terrainFrustumCullingShader = std::make_shared<Shader>("./Assets/Shader/Terrain/FrustumCulling.comp", false);
@@ -341,21 +341,24 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> shaderProgram, st
 
     m_terrainCBTShader = std::make_shared<Shader>("./Assets/Shader/Terrain/cbt.comp", false);
     shaderProgram->attachShader(m_terrainCBTShader);
-    m_terrainLEBShader = std::make_shared<Shader>("./Assets/Shader/Terrain/leb.comp", false);
+    m_terrainLEBShader= std::make_shared<Shader>("./Assets/Shader/Terrain/leb.comp", false);
     shaderProgram->attachShader(m_terrainLEBShader);
-    m_terrainAtmosphereShader = std::make_shared<Shader>("./Assets/Shader/Terrain/Atmosphere.comp", false);
-    shaderProgram->attachShader(m_terrainAtmosphereShader);
-    m_terrainRenderCommonShader = std::make_shared<Shader>("./Assets/Shader/Terrain/RenderCommon.comp", false);
+    std::shared_ptr<Shader> atmosphereShader = std::make_shared<Shader>("./Assets/Shader/Terrain/Atmosphere.comp", false);
+    shaderProgram->attachShader(atmosphereShader);
+    m_terrainRenderCommonShader= std::make_shared<Shader>("./Assets/Shader/Terrain/RenderCommon.comp", false);
     shaderProgram->attachShader(m_terrainRenderCommonShader);
-    m_terrainUpdateShader = std::make_shared<Shader>("./Assets/Shader/Terrain/RenderUpdate.comp", false);
-    shaderProgram->attachShader(m_terrainUpdateShader);
+    std::shared_ptr<Shader> renderUpdateShader = std::make_shared<Shader>("./Assets/Shader/Terrain/RenderUpdate.comp", false);
+    shaderProgram->attachShader(renderUpdateShader);
 
     shaderProgram->link();
+    HANDLE_GL_ERRORS("setting up " + typeFlag + " shader");
+
 }
 
 void Terrain::loadTerrainPrograms()
 {
     loadShaderProgram(m_terrainMergeShaderProgram, "FLAG_MERGE");
+    HANDLE_GL_ERRORS("test");
     loadShaderProgram(m_terrainSplitShaderProgram, "FLAG_SPLIT");
     loadShaderProgram(m_terrainDrawShaderProgram, "FLAG_DRAW");
 }
@@ -453,18 +456,35 @@ void Terrain::loadCBTNodeCountShader()
 
 void Terrain::loadTerrainFramebuffer()
 {
-    LOG_INFO("loading terrain framebuffer");
+    LOG_INFO("Loading terrain framebuffer");
     if (glIsFramebuffer(m_framebufferTerrain))
         glDeleteFramebuffers(1, &m_framebufferTerrain);
 
     glGenFramebuffers(1, &m_framebufferTerrain);
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrain);
+    
+    glGenTextures(1, &m_framebufferTerrainDepthTexture);
+    glActiveTexture(GL_TEXTURE0 + m_framebufferTerrainDepthTexture);
+    glBindTexture(GL_TEXTURE_2D, m_framebufferTerrainDepthTexture);
+    glTexStorage2D(GL_TEXTURE_2D,
+        1,
+        GL_DEPTH24_STENCIL8,
+        m_scene->getState()->getCamera()->getWidth(),
+        m_scene->getState()->getCamera()->getHeight());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    GLuint *temp = createColorAttachments(m_scene->getState()->getCamera()->getWidth(),
-                           m_scene->getState()->getCamera()->getHeight(),
-                           2);
-    m_framebufferTerrainColorTexture = temp[0];
-    m_framebufferTerrainDepthTexture = temp[1];
+    glGenTextures(1, &m_framebufferTerrainColorTexture);
+    glActiveTexture(GL_TEXTURE0 + m_framebufferTerrainColorTexture);
+    glBindTexture(GL_TEXTURE_2D, m_framebufferTerrainColorTexture);
+    
+    glTexStorage2D(GL_TEXTURE_2D,
+        1,
+        GL_RGBA32F,
+        m_scene->getState()->getCamera()->getWidth(),
+        m_scene->getState()->getCamera()->getHeight());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER,
         GL_COLOR_ATTACHMENT0,
@@ -476,11 +496,32 @@ void Terrain::loadTerrainFramebuffer()
         GL_TEXTURE_2D,
         m_framebufferTerrainDepthTexture,
         0);
-
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
     if (GL_FRAMEBUFFER_COMPLETE != glCheckFramebufferStatus(GL_FRAMEBUFFER)) {
-        LOG_ERROR("Error setting up terrain render framebuffer");
+        LOG_ERROR("Error setting up terrain render framebuffer, error code: " << glCheckFramebufferStatus(GL_FRAMEBUFFER));
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Terrain::configureTerrainPrograms()
+{
+    configureShaderProgram(m_terrainSplitShaderProgram);
+    configureShaderProgram(m_terrainMergeShaderProgram);
+    configureShaderProgram(m_terrainDrawShaderProgram);
+}
+
+void Terrain::configureShaderProgram(std::shared_ptr<ShaderProgram> shaderProgram)
+{
+
+}
+
+void Terrain::configureTerrainProgram()
+{
+
+}
+
+void Terrain::configureTopViewProgram()
+{
+
 }
