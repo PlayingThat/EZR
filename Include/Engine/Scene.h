@@ -79,6 +79,9 @@ private:
     // Setup NPR effect shaders
     void setupNPREffects();
 
+    // Setup Stippling Textures
+    void createStipplingTexture();
+
     std::shared_ptr<Scene> m_scene;
 
     std::vector<std::shared_ptr<Drawable>> m_drawables;
@@ -142,8 +145,6 @@ private:
     int m_JtoonPropertyColorLevels = 5;           // adjustable number of different color levels
     float m_JtoonPropertyLevelBrightness = 0.4;   // parameter to brighten the result 
 
-
-
     // Rim Lighting shader
     std::shared_ptr<Shader> m_rimLVertexShader;
     std::shared_ptr<Shader> m_rimLFragmentShader;
@@ -151,7 +152,21 @@ private:
     // Rim Lighting properties
     bool m_rimLPropertyTextured = false;  // wether to use a texture or not
 
-
+    // Stippling shader
+    std::shared_ptr<Shader> m_stippVertexShader;
+    std::shared_ptr<Shader> m_stippFragmentShader;
+    std::shared_ptr<ShaderProgram> m_stippShaderProgram;
+    // Stippling properties
+    bool m_stippPropertyTextured = false;  // wether to use a texture or not
+    // Stippling Textures
+    GLuint m_stipp1 = 0;
+    GLuint m_stipp2 = 0;
+    GLuint m_stipp3 = 0;
+    GLuint m_stipp4 = 0;
+    GLuint m_stipp5 = 0;
+    GLuint m_stipp6 = 0;
+    GLuint m_paper = 0;
+    
     //////////////////////////////////////////
     // Objects
     std::shared_ptr<Drawable> m_triangle;
