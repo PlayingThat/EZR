@@ -126,8 +126,8 @@ private:
     std::shared_ptr<ShaderProgram> m_goochShaderProgram;
     // Gooch properties
     bool m_goochPropertyTextured = false;  // wether to use a texture or not
-    //vec3 m_goochPropertyCoolColor = vec3(0.35, 0.45, 0.95);    //cold blue color
-    //vec3 m_goochPropertyWarmColor = vec3(1, 0.59, 0.4);        //warm orange color
+    glm::vec3 m_goochPropertyCoolColor = glm::vec3(0.35, 0.45, 0.95);    //cold blue color
+    glm::vec3 m_goochPropertyWarmColor = glm::vec3(1, 0.59, 0.4);        //warm orange color
 
     // Toon shader (by Alyssa)
     std::shared_ptr<Shader> m_toonVertexShader;

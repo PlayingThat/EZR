@@ -54,3 +54,4 @@ Dependencies/glm/.ninja_deps
 Dependencies/glm/.ninja_log
 Dependencies/assimp/contrib/zlib/libzlibstatic.a
 Dependencies/assimp/cmake_uninstall.cmake
+EZR/
