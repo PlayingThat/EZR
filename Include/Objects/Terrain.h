@@ -60,7 +60,7 @@ private:
     void loadTextures();
     void loadSceneFramebufferTexture();
     void loadTerrainMaps(std::string filePath);
-    void GenerateSlopeMap();
+    void generateSlopeMap();
 
     // Setup buffers
     void setupBuffers();
@@ -108,6 +108,9 @@ private:
     // Textures
     GLuint m_displacementMapTexture = 0;
     GLuint m_slopeMapTexture = 0;
+    const uint16_t *m_slopeTerrainMapPixels = nullptr;
+    int m_slopeTerrainMapWidth = 0;
+    int m_slopeTerrainMapHeight = 0;
 
     std::vector<uint16_t> m_displacementMap;
     std::vector<uint16_t> m_slopeMap;

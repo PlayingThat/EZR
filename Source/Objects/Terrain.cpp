@@ -144,82 +144,107 @@ void Terrain::loadSceneFramebufferTexture()
 
 void Terrain::loadTerrainMaps(std::string filePath)
 {
-    LOG_INFO("loading displacement map for terrain");
-    m_displacementMapTexture = createTextureFromFile(filePath);
+    LOG_INFO("Loading displacement map for terrain");
 
-    int w = 3601;
-    int h = 3601;
+    m_slopeTerrainMapPixels = stbi_load_16(filePath.c_str(), &m_slopeTerrainMapWidth, &m_slopeTerrainMapHeight, nullptr, 1);
+
     // const uint16_t *texels = (const uint16_t *)djgt->next->texels;
-    std::vector<uint16_t> dmap(w * h * 2);
+    std::vector<uint16_t> dmap(m_slopeTerrainMapWidth * m_slopeTerrainMapHeight * 2);
 
-    for (int j = 0; j < h; ++j)
+    for (int j = 0; j < m_slopeTerrainMapHeight; ++j)
     {
-        for (int i = 0; i < w; ++i) 
+        for (int i = 0; i < m_slopeTerrainMapWidth; ++i) 
         {
-            // uint16_t z = texels[i + w * j]; // in [0,2^16-1]
-            // float zf = float(z) / float((1 << 16) - 1);
-            // uint16_t z2 = zf * zf * ((1 << 16) - 1);
+            uint16_t z = m_slopeTerrainMapPixels[i + m_slopeTerrainMapWidth * j]; // in [0,2^16-1]
+            float zf = float(z) / float((1 << 16) - 1);
+            uint16_t z2 = zf * zf * ((1 << 16) - 1);
 
-            // dmap[    2 * (i + w * j)] = z;
-            // dmap[1 + 2 * (i + w * j)] = z2;
+            dmap[    2 * (i + m_slopeTerrainMapWidth * j)] = z;
+            dmap[1 + 2 * (i + m_slopeTerrainMapWidth * j)] = z2;
         }
     }
 
     // Generate slope map from displacement map
-    GenerateSlopeMap();
+    generateSlopeMap();
 
     glActiveTexture(m_displacementMapTexture);
+    if (glIsTexture(m_displacementMapTexture))
+        glDeleteTextures(1, &m_displacementMapTexture);
+
+    glGenTextures(1, &m_displacementMapTexture);
+    glActiveTexture(GL_TEXTURE0 + m_displacementMapTexture);
+    glBindTexture(GL_TEXTURE_2D, m_displacementMapTexture);
+    glTexStorage2D(GL_TEXTURE_2D, glm::log2((float)glm::max(m_slopeTerrainMapWidth, m_slopeTerrainMapHeight)),
+                   GL_RG16, m_slopeTerrainMapWidth, m_slopeTerrainMapHeight);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_slopeTerrainMapWidth, m_slopeTerrainMapHeight, GL_RG, GL_UNSIGNED_SHORT, &dmap[0]);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MIN_FILTER,
+                    GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MAG_FILTER,
+                    GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_S,
+                    GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_T,
+                    GL_CLAMP_TO_EDGE);
+    glActiveTexture(GL_TEXTURE0);
+    HANDLE_GL_ERRORS("loading terrain displacement map");
 }
 
-void Terrain::GenerateSlopeMap()
+void Terrain::generateSlopeMap()
 {
-    // int w = 3601;
-    // int h = 3601;
-    // const uint16_t *texels = (const uint16_t *)dmap->next->texels;
+    LOG_INFO("Generating slope map for terrain");
+    int w = m_slopeTerrainMapWidth;
+    int h = m_slopeTerrainMapHeight;
 
-    // std::vector<float> smap(w * h * 2);
+    std::vector<float> smap(w * h * 2);
 
-    // for (int j = 0; j < h; ++j)
-    //     for (int i = 0; i < w; ++i) {
-    //         int i1 = std::max(0, i - 1);
-    //         int i2 = std::min(w - 1, i + 1);
-    //         int j1 = std::max(0, j - 1);
-    //         int j2 = std::min(h - 1, j + 1);
-    //         uint16_t px_l = texels[i1 + w * j]; // in [0,2^16-1]
-    //         uint16_t px_r = texels[i2 + w * j]; // in [0,2^16-1]
-    //         uint16_t px_b = texels[i + w * j1]; // in [0,2^16-1]
-    //         uint16_t px_t = texels[i + w * j2]; // in [0,2^16-1]
-    //         float z_l = (float)px_l / 65535.0f; // in [0, 1]
-    //         float z_r = (float)px_r / 65535.0f; // in [0, 1]
-    //         float z_b = (float)px_b / 65535.0f; // in [0, 1]
-    //         float z_t = (float)px_t / 65535.0f; // in [0, 1]
-    //         float slope_x = (float)w * 0.5f * (z_r - z_l);
-    //         float slope_y = (float)h * 0.5f * (z_t - z_b);
+    for (int j = 0; j < h; ++j)
+        for (int i = 0; i < w; ++i) {
+            int i1 = std::max(0, i - 1);
+            int i2 = std::min(w - 1, i + 1);
+            int j1 = std::max(0, j - 1);
+            int j2 = std::min(h - 1, j + 1);
+            uint16_t px_l = m_slopeTerrainMapPixels[i1 + w * j]; // in [0,2^16-1]
+            uint16_t px_r = m_slopeTerrainMapPixels[i2 + w * j]; // in [0,2^16-1]
+            uint16_t px_b = m_slopeTerrainMapPixels[i + w * j1]; // in [0,2^16-1]
+            uint16_t px_t = m_slopeTerrainMapPixels[i + w * j2]; // in [0,2^16-1]
+            float z_l = (float)px_l / 65535.0f; // in [0, 1]
+            float z_r = (float)px_r / 65535.0f; // in [0, 1]
+            float z_b = (float)px_b / 65535.0f; // in [0, 1]
+            float z_t = (float)px_t / 65535.0f; // in [0, 1]
+            float slope_x = (float)w * 0.5f * (z_r - z_l);
+            float slope_y = (float)h * 0.5f * (z_t - z_b);
 
-    //         smap[    2 * (i + w * j)] = slope_x;
-    //         smap[1 + 2 * (i + w * j)] = slope_y;
-    //     }
+            smap[    2 * (i + w * j)] = slope_x;
+            smap[1 + 2 * (i + w * j)] = slope_y;
+        }
 
-    // if (glIsTexture(g_gl.textures[smapID]))
-    //     glDeleteTextures(1, &g_gl.textures[smapID]);
+    if (glIsTexture(m_slopeMapTexture))
+        glDeleteTextures(1, &m_slopeMapTexture);
 
-    // glGenTextures(1, &g_gl.textures[smapID]);
-    // glActiveTexture(GL_TEXTURE0 + smapID);
-    // glBindTexture(GL_TEXTURE_2D, g_gl.textures[smapID]);
-    // glTexStorage2D(GL_TEXTURE_2D, mipcnt, GL_RG32F, w, h);
-    // glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RG, GL_FLOAT, &smap[0]);
+    glGenTextures(1, &m_slopeMapTexture);
+    glActiveTexture(GL_TEXTURE0 + m_slopeMapTexture);
+    glBindTexture(GL_TEXTURE_2D, m_slopeMapTexture);
+    glTexStorage2D(GL_TEXTURE_2D, glm::log2((float)glm::max(w, h)), GL_RG32F, w, h);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RG, GL_FLOAT, &smap[0]);
 
-    // glGenerateMipmap(GL_TEXTURE_2D);
-    // glTexParameteri(GL_TEXTURE_2D,
-    //     GL_TEXTURE_MIN_FILTER,
-    //     GL_LINEAR_MIPMAP_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D,
-    //     GL_TEXTURE_WRAP_S,
-    //     GL_CLAMP_TO_EDGE);
-    // glTexParameteri(GL_TEXTURE_2D,
-    //     GL_TEXTURE_WRAP_T,
-    //     GL_CLAMP_TO_EDGE);
-    // glActiveTexture(GL_TEXTURE0);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D,
+        GL_TEXTURE_MIN_FILTER,
+        GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,
+        GL_TEXTURE_WRAP_S,
+        GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D,
+        GL_TEXTURE_WRAP_T,
+        GL_CLAMP_TO_EDGE);
+    glActiveTexture(GL_TEXTURE0);
+
+    HANDLE_GL_ERRORS("generating slope map");
 }
 
 void Terrain::retrieveCBTNodeCount()
