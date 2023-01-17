@@ -17,8 +17,10 @@ uniform bool textured;      // If true, the shader will be applied on the textur
 
 float DiffuseCool = 0.3;
 float DiffuseWarm = 0.3;
-vec3 CoolColor = vec3(0.35, 0.45, 0.95);    //cold blue color
-vec3 WarmColor = vec3(1, 0.59, 0.4);        //warm orange color
+//vec3 CoolColor = vec3(0.35, 0.45, 0.95);    //cold blue color
+//vec3 WarmColor = vec3(1, 0.59, 0.4);        //warm orange color
+uniform vec3 CoolColor;
+uniform vec3 WarmColor;
 
 vec3 lightPosition = vec3(0, 10, 4);        //(test) light position in world coordinates
 

@@ -10,6 +10,8 @@
 
 GLuint createTextureFromFile(const char* path);
 
+const uint16_t *createTextureFromFile16(const char* path, int &width, int &height);
+
 GLuint createTexture2D(std::size_t width, std::size_t height);
 GLuint createGroundTexture2D(std::size_t width, std::size_t height);
 

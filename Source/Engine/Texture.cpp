@@ -46,6 +46,15 @@ GLuint createTextureFromFile(const char* path)
     return texHandle;
 }
 
+const uint16_t *createTextureFromFile16(const char* path, int &width, int &height) 
+{
+    const uint16_t * img_data = stbi_load_16(path, (int*)&width, (int*)&height, nullptr, 1);
+    if(img_data == nullptr) {
+        LOG_ERROR(stbi_failure_reason());
+    }
+    return img_data;
+}
+
 
 GLuint createTexture2D(std::size_t width, std::size_t height)
 {

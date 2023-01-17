@@ -108,8 +108,8 @@ void Scene::setupNPREffects()
     m_goochShaderProgram->link();
     addNPREffect(m_goochShaderProgram, false);
     addNPRProperty("Gooch", "textured##Gooch", &m_goochPropertyTextured, true);
-    //addNPRProperty("Gooch", "CoolColor", &m_goochPropertyCoolColor, true);
-    //addNPRProperty("Gooch", "WarmColor", &m_goochPropertyWarmColor, true);
+    addNPRProperty("Gooch", "CoolColor", &m_goochPropertyCoolColor, true);
+    addNPRProperty("Gooch", "WarmColor", &m_goochPropertyWarmColor, true);
 
     // Setup Toon
     m_toonVertexShader = std::make_shared<Shader>("./Assets/Shader/Toon.vert");
