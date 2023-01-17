@@ -111,6 +111,57 @@ void Terrain::loadTextures()
 {
     loadSceneFramebufferTexture();
     loadTerrainMaps("./Assets/Terrain/displacement_map_kauai.png");
+    loadAtmosphereTexture();
+}
+
+void Terrain::loadAtmosphereTexture()
+{
+    LOG_INFO("Loading atmosphere textures");
+    float *data = new float[16*64*3];
+    FILE *f = fopen("./Assets/Terain/irradiance.raw", "rb");
+    fread(data, 1, 16*64*3*sizeof(float), f);
+    fclose(f);
+    glActiveTexture(GL_TEXTURE0 + m_irradianceTexture);
+    glBindTexture(GL_TEXTURE_2D, m_irradianceTexture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 64, 16, 0, GL_RGB, GL_FLOAT, data);
+    delete[] data;
+
+    int res = 64;
+    int nr = res / 2;
+    int nv = res * 2;
+    int nb = res / 2;
+    int na = 8;
+    f = fopen("./Assets/Terain/inscatter.raw", "rb");
+    data = new float[nr*nv*nb*na*4];
+    fread(data, 1, nr*nv*nb*na*4*sizeof(float), f);
+    fclose(f);
+    glActiveTexture(GL_TEXTURE0 + m_inscatterTexture);
+    glBindTexture(GL_TEXTURE_3D, m_inscatterTexture);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA16F, na*nb, nv, nr, 0, GL_RGBA, GL_FLOAT, data);
+    delete[] data;
+
+    data = new float[256*64*3];
+    f = fopen("./Assets/Terain/transmittance.raw", "rb");
+    fread(data, 1, 256*64*3*sizeof(float), f);
+    fclose(f);
+    glActiveTexture(GL_TEXTURE0 + m_transmittanceTexture);
+    glBindTexture(GL_TEXTURE_2D, m_transmittanceTexture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 256, 64, 0, GL_RGB, GL_FLOAT, data);
+    delete[] data;
+    HANDLE_GL_ERRORS("loading terrain atmosphere textures");
 }
 
 void Terrain::loadSceneFramebufferTexture()
@@ -190,6 +241,8 @@ void Terrain::loadTerrainMaps(std::string filePath)
                     GL_TEXTURE_WRAP_T,
                     GL_CLAMP_TO_EDGE);
     glActiveTexture(GL_TEXTURE0);
+    delete[] m_slopeTerrainMapPixels;
+
     HANDLE_GL_ERRORS("loading terrain displacement map");
 }
 
@@ -637,10 +690,17 @@ void Terrain::configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgr
 
     shaderProgram->setFloat("u_DmapFactor", m_dmapFactor);
     shaderProgram->setFloat("u_LodFactor", lodFactor);
-    // shaderProgram->setInt("u_DmapSampler", TEXTURE_DMAP);
-    // shaderProgram->setInt("u_SmapSampler", TEXTURE_SMAP);
+    shaderProgram->setSampler2D("u_DmapSampler", 0, m_displacementMapTexture);
+    shaderProgram->setInt("u_SmapSampler", m_slopeMapTexture);
     // shaderProgram->setInt("u_DmapRockSampler", TEXTURE_DMAP_ROCK);
     // shaderProgram->setInt("u_SmapRockSampler", TEXTURE_DMAP_GRASS);
+    shaderProgram->setFloat("u_TargetEdgeLength", 7.0f);  // targetEdgeLength
+    shaderProgram->setFloat("u_MinLodVariance", glm::sqrt(0.1f / 64.0f / m_dmapFactor));
+    shaderProgram->setSampler2D("transmittanceSampler", 5, m_transmittanceTexture);
+    shaderProgram->setSampler2D("skyIrradianceSampler", 6, m_irradianceTexture);
+    shaderProgram->setSampler2D("inscatterSampler", 7, m_inscatterTexture);
+
+
 
     // glProgramUniform1f(glp,
     //     g_gl.uniforms[UNIFORM_TERRAIN_DMAP_FACTOR + offset],

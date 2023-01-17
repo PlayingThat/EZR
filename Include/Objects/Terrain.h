@@ -61,6 +61,7 @@ private:
     void loadSceneFramebufferTexture();
     void loadTerrainMaps(std::string filePath);
     void generateSlopeMap();
+    void loadAtmosphereTexture();
 
     // Setup buffers
     void setupBuffers();
@@ -114,7 +115,12 @@ private:
 
     std::vector<uint16_t> m_displacementMap;
     std::vector<uint16_t> m_slopeMap;
-    
+
+    // Irradiance
+    GLuint m_irradianceTexture = 0;
+    GLuint m_inscatterTexture = 0;
+    GLuint m_transmittanceTexture = 0;
+
 
     //////////////////////////////////////////////////////////
     // GL Buffer
