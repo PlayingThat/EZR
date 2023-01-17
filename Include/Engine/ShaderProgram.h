@@ -57,7 +57,7 @@ public:
 
 private:
     GLuint compileDirect(const GLchar **sources, int count, GLenum type = GL_COMPUTE_SHADER);
-    void writeToFile(char* source, std::string name);
+    void writeToFile(std::string source, std::string name);
 
     GLuint m_id;
     std::list<GLuint> shaders;

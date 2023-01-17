@@ -36,7 +36,7 @@ GLuint ShaderProgram::compileDirect(const GLchar **sources, int count, GLenum ty
     {
         char infoLog[1024];
         glGetShaderInfoLog(shaderId, 1024, NULL, infoLog);
-        LOG_SHADER_ERROR("Compute shader", "Shader compilation failed on Compute Shader '<Concatenated from sources>': " << infoLog);
+        LOG_SHADER_ERROR("Compute shader", "Shader compilation failed on Compute Shader '<Concatenated from sources> (" << m_name << ")': " << infoLog);
     }
     return shaderId;
 }
@@ -63,14 +63,11 @@ void ShaderProgram::link(GLenum type)
         }
 
         const GLchar *sourceArray[] = {source.c_str()};
-        // writeToFile(source, "combinedShader.txt");
+        // writeToFile(source, "combinedShader"+ m_name + ".txt");
         // create dummy shader 
-        HANDLE_GL_ERRORS("ShaderProgram::link(");
         GLuint dummyShader = compileDirect(sourceArray, 1, type);
         
-        HANDLE_GL_ERRORS("ShaderProgram::linkgjhtjhtjhtljkhtjklhrjklhrtjh");
         glAttachShader(m_id, dummyShader);
-        HANDLE_GL_ERRORS("ShaderProgram::ddddddddddddddddddddddddddddddddd");
         glDeleteShader(dummyShader);
     }
 
@@ -90,7 +87,7 @@ void ShaderProgram::link(GLenum type)
     m_linked = true;
 }
 
-void ShaderProgram::writeToFile(char* source, std::string name)
+void ShaderProgram::writeToFile(std::string source, std::string name)
 {
     std::ofstream file;
     file.open(name);
