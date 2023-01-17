@@ -524,6 +524,7 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram, s
     shaderProgram->addSource("#define TERRAIN_PATCH_SUBD_LEVEL " + std::to_string(m_patchSubDiv));
     shaderProgram->addSource("#define TERRAIN_PATCH_TESS_FACTOR " + std::to_string((1 << m_patchSubDiv)));
     shaderProgram->addSource("#define SHADING_DIFFUSE 1");
+    shaderProgram->addSource("#define FLAG_DISPLACE 1");
 
     m_terrainFrustumCullingShader = std::make_shared<Shader>("./Assets/Shader/Terrain/FrustumCulling.comp", false);
     shaderProgram->attachShader(m_terrainFrustumCullingShader);
@@ -544,6 +545,8 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram, s
 
     shaderProgram->link();
     HANDLE_GL_ERRORS("setting up " + typeFlag + " shader");
+    configureShaderProgram(shaderProgram);
+    HANDLE_GL_ERRORS("configuring " + typeFlag + " shader");
 
 }
 
@@ -565,6 +568,7 @@ void Terrain::loadLEBReductionProgram()
     
     // m_lebReductionShaderProgram->addSource("#ifdef COMPUTE_SHADER\n#endif");
     m_lebReductionShaderProgram->link();
+    HANDLE_GL_ERRORS("loading leb reduction shader");
 }
 
 void Terrain::LoadLebReductionPrepassProgram()
@@ -578,6 +582,7 @@ void Terrain::LoadLebReductionPrepassProgram()
     
     // m_lebReductionPerpassShaderProgram->addSource("#ifdef COMPUTE_SHADER\n#endif");
     m_lebReductionPerpassShaderProgram->link();
+    HANDLE_GL_ERRORS("loading leb reduction prepass shader");
 }
 
 void Terrain::loadBatchProgram()
@@ -604,6 +609,7 @@ void Terrain::loadBatchProgram()
     m_batchShader = std::make_shared<Shader>("./Assets/Shader/Terrain/TerrainBatcher.comp", false);
     m_batchShaderProgram->attachShader(m_batchShader);
     m_batchShaderProgram->link();
+    HANDLE_GL_ERRORS("loading terrain batch shader");
 }
 
 void Terrain::loadTopViewProgram()
@@ -612,6 +618,7 @@ void Terrain::loadTopViewProgram()
     std::shared_ptr<Shader> m_topViewShader = std::make_shared<Shader>("./Assets/Shader/Terrain/TopView.comp", false);
     
     m_topViewShaderProgram->addSource("#define FRAGMENT_SHADER");
+    m_topViewShaderProgram->addSource("#define FLAG_DISPLACE");
     m_topViewShaderProgram->addSource("#define TERRAIN_PATCH_SUBD_LEVEL " + std::to_string(m_patchSubDiv));
     m_topViewShaderProgram->addSource("#define TERRAIN_PATCH_TESS_FACTOR " + std::to_string(1 << m_patchSubDiv));
     m_topViewShaderProgram->addSource("#define BUFFER_BINDING_TERRAIN_VARIABLES 0");
@@ -628,6 +635,8 @@ void Terrain::loadTopViewProgram()
     m_topViewShaderProgram->attachShader(m_topViewShader);
     m_topViewShaderProgram->link(GL_FRAGMENT_SHADER);
     
+    HANDLE_GL_ERRORS("loading terrain top view shader");
+    configureTopViewProgram();
 }
 
 void Terrain::loadCBTNodeCountShader()
@@ -672,13 +681,6 @@ void Terrain::loadTerrainFramebuffer()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Terrain::configureTerrainPrograms()
-{
-    configureShaderProgram(m_terrainMergeShaderProgram);
-    configureShaderProgram(m_terrainSplitShaderProgram);
-    configureShaderProgram(m_terrainDrawShaderProgram);
-}
-
 void Terrain::configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram)
 {
     // Calculate LOD
@@ -688,6 +690,7 @@ void Terrain::configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgr
 
     float lodFactor = -2.0f * std::log2(tmp) + 2.0f;
 
+    shaderProgram->use();
     shaderProgram->setFloat("u_DmapFactor", m_dmapFactor);
     shaderProgram->setFloat("u_LodFactor", lodFactor);
     shaderProgram->setSampler2D("u_DmapSampler", 0, m_displacementMapTexture);
@@ -699,8 +702,6 @@ void Terrain::configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgr
     shaderProgram->setSampler2D("transmittanceSampler", 5, m_transmittanceTexture);
     shaderProgram->setSampler2D("skyIrradianceSampler", 6, m_irradianceTexture);
     shaderProgram->setSampler2D("inscatterSampler", 7, m_inscatterTexture);
-
-
 
     // glProgramUniform1f(glp,
     //     g_gl.uniforms[UNIFORM_TERRAIN_DMAP_FACTOR + offset],
@@ -740,12 +741,32 @@ void Terrain::configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgr
     //     TEXTURE_ATMOSPHERE_TRANSMITTANCE);
 }
 
-void Terrain::configureTerrainProgram()
+void Terrain::configureAtmosphereProgram()
 {
-
+    // atmosphere->setSampler2D("transmittanceSampler", 5, m_transmittanceTexture);
+    // shaderProgram->setSampler2D("skyIrradianceSampler", 6, m_irradianceTexture);
+    // shaderProgram->setSampler2D("inscatterSampler", 7, m_inscatterTexture);
+    // glProgramUniform1i(g_gl.programs[PROGRAM_SKY],
+    //                    g_gl.uniforms[UNIFORM_SKY_INSCATTER_SAMPLER],
+    //                    TEXTURE_ATMOSPHERE_INSCATTER);
+    // glProgramUniform1i(g_gl.programs[PROGRAM_SKY],
+    //                    g_gl.uniforms[UNIFORM_SKY_IRRADIANCE_SAMPLER],
+    //                    TEXTURE_ATMOSPHERE_IRRADIANCE);
+    // glProgramUniform1i(g_gl.programs[PROGRAM_SKY],
+    //                    g_gl.uniforms[UNIFORM_SKY_TRANSMITTANCE_SAMPLER],
+    //                    TEXTURE_ATMOSPHERE_TRANSMITTANCE);
 }
 
 void Terrain::configureTopViewProgram()
 {
-
+    m_topViewShaderProgram->use();
+    m_topViewShaderProgram->setFloat("u_DmapFactor", m_dmapFactor);
+    m_topViewShaderProgram->setSampler2D("u_DmapSampler", 0, m_displacementMapTexture);
+    HANDLE_GL_ERRORS("configuring terrain topview shader");
+    // glProgramUniform1f(g_gl.programs[PROGRAM_TOPVIEW],
+    //     g_gl.uniforms[UNIFORM_TOPVIEW_DMAP_FACTOR],
+    //     g_terrain.dmap.scale);
+    // glProgramUniform1i(g_gl.programs[PROGRAM_TOPVIEW],
+    //     g_gl.uniforms[UNIFORM_TOPVIEW_DMAP_SAMPLER],
+    //     TEXTURE_DMAP);
 }

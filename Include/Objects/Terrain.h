@@ -100,9 +100,8 @@ private:
     void loadCBTNodeCountShader();
 
     // Configure shader programs
-    void configureTerrainPrograms();
     void configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram);
-    void configureTerrainProgram();
+    void configureAtmosphereProgram();
     void configureTopViewProgram();
 
     //////////////////////////////////////////////////////////

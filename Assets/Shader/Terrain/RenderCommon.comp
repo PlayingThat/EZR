@@ -17,7 +17,7 @@ uniform PerFrameVariables {
 
 uniform float u_TargetEdgeLength;
 uniform float u_LodFactor;
-#if FLAG_DISPLACE
+#ifdef FLAG_DISPLACE
 uniform sampler2D u_DmapSampler;
 uniform sampler2D u_SmapSampler;
 uniform sampler2D u_DmapRockSampler;
@@ -39,7 +39,7 @@ vec4[3] DecodeTriangleVertices(in const cbt_Node node)
     vec4 p2 = vec4(pos[0][1], pos[1][1], 0.0, 1.0);
     vec4 p3 = vec4(pos[0][2], pos[1][2], 0.0, 1.0);
 
-#if FLAG_DISPLACE
+#ifdef FLAG_DISPLACE
     p1.z = u_DmapFactor * texture(u_DmapSampler, p1.xy).r;
     p2.z = u_DmapFactor * texture(u_DmapSampler, p2.xy).r;
     p3.z = u_DmapFactor * texture(u_DmapSampler, p3.xy).r;
@@ -163,7 +163,7 @@ float TriangleLevelOfDetail(in const vec4[3] patchVertices)
 #endif
 }
 
-#if FLAG_DISPLACE
+#ifdef FLAG_DISPLACE
 /*******************************************************************************
  * DisplacementVarianceTest -- Checks if the height variance criteria is met
  *
@@ -221,7 +221,7 @@ vec2 LevelOfDetail(in const vec4[3] patchVertices)
         return vec2(0.0f, 1.0f);
 #endif
 
-#   if FLAG_DISPLACE
+#   ifdef FLAG_DISPLACE
     // variance test
     if (!DisplacementVarianceTest(patchVertices))
         return vec2(0.0f, 1.0f);
@@ -263,7 +263,7 @@ VertexAttribute TessellateTriangle(
     vec2 texCoord = BarycentricInterpolation(texCoords, tessCoord);
     vec4 position = vec4(texCoord, 0, 1);
 
-#if FLAG_DISPLACE
+#ifdef FLAG_DISPLACE
     position.z = u_DmapFactor * textureLod(u_DmapSampler, texCoord, 0.0).r;
 #endif
 
@@ -290,7 +290,7 @@ vec4 ShadeFragment(vec2 texCoord, vec3 worldPos)
     float blendFactor = exp2(-nearestDistance / wireScale);
 #endif
 
-#if FLAG_DISPLACE
+#ifdef FLAG_DISPLACE
 #if 1
     // slope
     vec2 smap = texture(u_SmapSampler, texCoord).rg * u_DmapFactor * 0.03;
