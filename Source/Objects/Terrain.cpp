@@ -110,7 +110,7 @@ void Terrain::setupBuffers()
 void Terrain::loadTextures()
 {
     loadSceneFramebufferTexture();
-    loadTerrainMaps("./Assets/Textures/Terrain/displacement_map_kauai.png");
+    loadTerrainMaps("./Assets/Terrain/displacement_map_kauai.png");
 }
 
 void Terrain::loadSceneFramebufferTexture()
@@ -146,7 +146,7 @@ void Terrain::loadTerrainMaps(std::string filePath)
 {
     LOG_INFO("Loading displacement map for terrain");
 
-    m_slopeTerrainMapPixels = stbi_load_16(filePath.c_str(), &m_slopeTerrainMapWidth, &m_slopeTerrainMapHeight, nullptr, 1);
+    m_slopeTerrainMapPixels = createTextureFromFile16(filePath.c_str(), m_slopeTerrainMapWidth, m_slopeTerrainMapHeight);
 
     // const uint16_t *texels = (const uint16_t *)djgt->next->texels;
     std::vector<uint16_t> dmap(m_slopeTerrainMapWidth * m_slopeTerrainMapHeight * 2);
@@ -167,14 +167,13 @@ void Terrain::loadTerrainMaps(std::string filePath)
     // Generate slope map from displacement map
     generateSlopeMap();
 
-    glActiveTexture(m_displacementMapTexture);
     if (glIsTexture(m_displacementMapTexture))
         glDeleteTextures(1, &m_displacementMapTexture);
 
     glGenTextures(1, &m_displacementMapTexture);
     glActiveTexture(GL_TEXTURE0 + m_displacementMapTexture);
     glBindTexture(GL_TEXTURE_2D, m_displacementMapTexture);
-    glTexStorage2D(GL_TEXTURE_2D, glm::log2((float)glm::max(m_slopeTerrainMapWidth, m_slopeTerrainMapHeight)),
+    glTexStorage2D(GL_TEXTURE_2D, (int)glm::log2((float)glm::max(m_slopeTerrainMapWidth, m_slopeTerrainMapHeight)),
                    GL_RG16, m_slopeTerrainMapWidth, m_slopeTerrainMapHeight);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_slopeTerrainMapWidth, m_slopeTerrainMapHeight, GL_RG, GL_UNSIGNED_SHORT, &dmap[0]);
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -223,13 +222,10 @@ void Terrain::generateSlopeMap()
             smap[1 + 2 * (i + w * j)] = slope_y;
         }
 
-    if (glIsTexture(m_slopeMapTexture))
-        glDeleteTextures(1, &m_slopeMapTexture);
-
     glGenTextures(1, &m_slopeMapTexture);
     glActiveTexture(GL_TEXTURE0 + m_slopeMapTexture);
     glBindTexture(GL_TEXTURE_2D, m_slopeMapTexture);
-    glTexStorage2D(GL_TEXTURE_2D, glm::log2((float)glm::max(w, h)), GL_RG32F, w, h);
+    glTexStorage2D(GL_TEXTURE_2D, (int)glm::log2((float)glm::max(w, h)), GL_RG32F, w, h);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, GL_RG, GL_FLOAT, &smap[0]);
 
     glGenerateMipmap(GL_TEXTURE_2D);
