@@ -78,7 +78,29 @@ void Terrain::drawTerrain()
 
 void Terrain::lebUpdate()
 {
+    static int pingPong = 0;
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
 
+    // set GL state
+    glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, m_bufferTerrainDispatchComputeShader);
+
+    // update
+    if (pingPong == 0)
+    {
+        m_terrainSplitShaderProgram->use();
+    }
+    else
+    {
+        m_terrainMergeShaderProgram->use();
+    }
+    glDispatchComputeIndirect(0);
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+    // reset GL state
+    glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, 0);
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
+    pingPong = 1 - pingPong;
 }
 
 void Terrain::lebReductionPass()
@@ -98,16 +120,6 @@ void Terrain::lebRender()
 
 void Terrain::create()
 {
-/*     // Load shaders
-    m_basicVertexShader = std::make_shared<Shader>("Shaders/basic.vert", GL_VERTEX_SHADER);
-    m_basicFragmentShader = std::make_shared<Shader>("Shaders/basic.frag", GL_FRAGMENT_SHADER);
-
-    // Create shader program
-    m_basicShaderProgram = std::make_unique<ShaderProgram>();
-    m_basicShaderProgram->attachShader(m_basicVertexShader);
-    m_basicShaderProgram->attachShader(m_basicFragmentShader);
-    m_basicShaderProgram->link(); */
-
     // Load textures
     loadTextures();
 
@@ -180,7 +192,6 @@ void Terrain::loadTerrainVariables()
         // norm of vector
         frustum[i*2+j]*= glm::sqrt(glm::dot(glm::vec3(tmp.x, tmp.y, tmp.z), (glm::vec3(tmp.x, tmp.y, tmp.z))));
     }
-
     setTerrainVariables(m_terrainMergeShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
     setTerrainVariables(m_terrainSplitShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
     setTerrainVariables(m_terrainDrawShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
