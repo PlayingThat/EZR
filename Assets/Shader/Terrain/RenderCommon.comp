@@ -4,16 +4,14 @@
  * Uniform Data -- Global variables for terrain rendering
  *
  */
-layout(std140, column_major, binding = BUFFER_BINDING_TERRAIN_VARIABLES)
-uniform PerFrameVariables {
-    mat4 u_ModelMatrix;
-    mat4 u_ModelViewMatrix;
-    mat4 u_ViewMatrix;
-    mat4 u_CameraMatrix;
-    mat4 u_ViewProjectionMatrix;
-    mat4 u_ModelViewProjectionMatrix;
-    vec4 u_FrustumPlanes[6];
-};
+
+uniform mat4 u_ModelMatrix;
+uniform mat4 u_ModelViewMatrix;
+uniform mat4 u_ViewMatrix;
+uniform mat4 u_CameraMatrix;
+uniform mat4 u_ViewProjectionMatrix;
+uniform mat4 u_ModelViewProjectionMatrix;
+uniform vec4 u_FrustumPlanes[6];
 
 uniform float u_TargetEdgeLength;
 uniform float u_LodFactor;

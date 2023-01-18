@@ -48,10 +48,21 @@ private:
     //////////////////////////////////////////////////////////
     // Render functions
     void drawScene();
-
     void drawTerrain();
+    void renderSky();
 
     void retrieveCBTNodeCount();
+    void loadTerrainVariables();
+    void setTerrainVariables(std::shared_ptr<ShaderProgram> &shaderProgram,
+                             glm::mat4* modelMatrix,
+                             glm::mat4* viewMatrix,
+                             glm::mat4* projectionMatrix,
+                             glm::vec4 frustum[6]);
+
+    void lebUpdate();
+    void lebReductionPass();
+    void lebBatchingPass();
+    void lebRender();
 
 
     // base buffers

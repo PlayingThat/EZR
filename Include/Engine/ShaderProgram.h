@@ -39,11 +39,13 @@ public:
 
     void setInt(std::string name, int value) const;
 
-    void setVec2(std::string name, glm::vec2 value) const;
+    void setVec2(std::string name, glm::vec2 value, int numberOfValues = 1) const;
 
-    void setVec3(std::string name, glm::vec3 value) const;
+    void setVec3(std::string name, glm::vec3 value, int numberOfValues = 1) const;
 
-    void setVec4(std::string name, glm::vec4 value) const;
+    void setVec4(std::string name, glm::vec4 value, int numberOfValues = 1) const;
+
+    void setVec4(std::string name, glm::vec4* value, int numberOfValues = 1) const;
 
     void setMat2(std::string name, glm::mat2 value) const;
 

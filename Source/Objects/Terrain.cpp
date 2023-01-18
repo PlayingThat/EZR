@@ -22,10 +22,10 @@ void Terrain::draw()
 {
     // drawGUI();
 
-    // glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrain);
-    // glClearColor(0.5, 0.5, 0.5, 1.0);
-    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // drawScene();
+    glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrain);
+    glClearColor(0.5, 0.5, 0.5, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    drawScene();
 
     // glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // glClearColor(0, 0, 0, 0);
@@ -51,12 +51,49 @@ void Terrain::onSizeChanged(int width, int height)
 void Terrain::drawScene()
 {
     drawTerrain();
+    retrieveCBTNodeCount();
+    renderSky();
 
+}
+
+void Terrain::renderSky()
+{
+    // glDepthMask(GL_FALSE);
+    // m_skybox->draw();
+    // glDepthMask(GL_TRUE);
 }
 
 void Terrain::drawTerrain()
 {
+    // djgc_start(g_gl.clocks[CLOCK_ALL]);
 
+    loadTerrainVariables();
+    lebUpdate();
+    lebReductionPass();
+    lebBatchingPass();
+    lebRender(); // render pass (if applicable)
+
+    // djgc_stop(g_gl.clocks[CLOCK_ALL]);
+}
+
+void Terrain::lebUpdate()
+{
+
+}
+
+void Terrain::lebReductionPass()
+{
+    
+}
+
+void Terrain::lebBatchingPass()
+{
+    
+}
+
+void Terrain::lebRender()
+{
+    
 }
 
 void Terrain::create()
@@ -105,6 +142,51 @@ void Terrain::setupBuffers()
 
     loadCBTNodeCountBuffer();
 
+}
+
+void Terrain::setTerrainVariables(std::shared_ptr<ShaderProgram> &shaderProgram,
+                                  glm::mat4* modelMatrix,
+                                  glm::mat4* viewMatrix,
+                                  glm::mat4* projectionMatrix,
+                                  glm::vec4 frustum[6])
+{
+    shaderProgram->use();
+    shaderProgram->setMat4("u_ModelMatrix", *modelMatrix);
+    shaderProgram->setMat4("u_ModelViewMatrix", *viewMatrix * *modelMatrix);
+    shaderProgram->setMat4("u_ViewMatrix", *viewMatrix);
+    shaderProgram->setMat4("u_CameraMatrix", glm::transpose(glm::inverse(*viewMatrix)));
+    shaderProgram->setMat4("u_ViewProjectionMatrix", *projectionMatrix * *viewMatrix);
+    shaderProgram->setMat4("u_ModelViewProjectionMatrix", *projectionMatrix * *viewMatrix * *modelMatrix);
+    shaderProgram->setVec4("u_FrustumPlanes", *frustum, 6);
+}
+
+void Terrain::loadTerrainVariables()
+{
+    glm::mat4 modelMatrix = getModelMatrix();
+    glm::mat4 viewMatrix = *m_scene->getState()->getCamera()->getViewMatrix();
+    glm::mat4 projectionMatrix = *m_scene->getState()->getCamera()->getProjectionMatrix();
+
+    glm::vec4 frustum[6];      
+
+    // extract frustum planes from modelViewProjection matrix
+    glm::mat4 mvp = projectionMatrix * viewMatrix * modelMatrix;
+    for (int i = 0; i < 3; ++i)
+    for (int j = 0; j < 2; ++j) {
+        frustum[i*2+j].x = mvp[0][3] + (j == 0 ? mvp[0][i] : -mvp[0][i]);
+        frustum[i*2+j].y = mvp[1][3] + (j == 0 ? mvp[1][i] : -mvp[1][i]);
+        frustum[i*2+j].z = mvp[2][3] + (j == 0 ? mvp[2][i] : -mvp[2][i]);
+        frustum[i*2+j].w = mvp[3][3] + (j == 0 ? mvp[3][i] : -mvp[3][i]);
+        glm::vec4 tmp = frustum[i*2+j];
+        // norm of vector
+        frustum[i*2+j]*= glm::sqrt(glm::dot(glm::vec3(tmp.x, tmp.y, tmp.z), (glm::vec3(tmp.x, tmp.y, tmp.z))));
+    }
+
+    setTerrainVariables(m_terrainMergeShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
+    setTerrainVariables(m_terrainSplitShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
+    setTerrainVariables(m_terrainDrawShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
+    setTerrainVariables(m_topViewShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
+    
+    HANDLE_GL_ERRORS("setting terrain matrix uniforms");
 }
 
 void Terrain::loadTextures()
