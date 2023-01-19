@@ -141,9 +141,6 @@ void Terrain::create()
 
 void Terrain::setupBuffers()
 {
-    // Clear any previous errors
-    CLEAR_GL_ERRORS();
-
     // Load subdivision buffer
     loadSubdivisionBuffer();
 
