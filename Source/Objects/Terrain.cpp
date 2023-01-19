@@ -890,3 +890,11 @@ void Terrain::configureTopViewProgram()
     //     g_gl.uniforms[UNIFORM_TOPVIEW_DMAP_SAMPLER],
     //     TEXTURE_DMAP);
 }
+
+GLuint* Terrain::getDrawTextures()
+{
+    GLuint* drawTextures = new GLuint[2];
+    drawTextures[0] = m_framebufferTerrainColorTexture;
+    drawTextures[1] = m_framebufferTerrainDepthTexture;
+    return drawTextures;
+}

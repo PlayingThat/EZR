@@ -27,6 +27,12 @@ public:
 
     void draw();
 
+    //////////////////////////////////////////////////////////
+    // Retrieve draw textures
+    // [0] = Terrain texture
+    // [1] = Depth texture
+    GLuint* getDrawTextures();
+
 protected:
     void renderScene();
     void renderViewer();

@@ -48,6 +48,7 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     m_triangle = std::make_shared<ColorfullTriangle>(m_scene);
 
     m_terrain = std::make_shared<Terrain>(m_scene);
+    m_terrainTextures = reinterpret_cast<Terrain *>(m_terrain.get())->getDrawTextures();
 
     m_clouds = std::make_shared<Clouds>(m_scene);
     m_cloudColorTexture = std::shared_ptr<Clouds>(m_clouds, reinterpret_cast<Clouds *>(m_clouds.get()))->getCloudTexture();
@@ -275,6 +276,7 @@ void Scene::drawSFQuad()
     m_compositingShaderProgram->setInt("numberOfEnabledEffects", m_enabledNPREffectCount);
     m_compositingShaderProgram->setSampler2D("fboClouds", 8, m_cloudColorTexture);  // color diffuse
     m_compositingShaderProgram->setSampler2D("depth", 9, m_gBufferFBO->getDepthAttachment());  // depth
+    m_compositingShaderProgram->setSampler2D("terrain", 10, m_terrainTextures[0]);  // positions
 
     // Set shader uniforms
     int shaderFBOOffset = 0;

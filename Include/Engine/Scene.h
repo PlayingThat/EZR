@@ -94,6 +94,9 @@ private:
     // GBuffer
     std::shared_ptr<FBO> m_gBufferFBO;
 
+    // Terrain buffer textures
+    GLuint* m_terrainTextures = nullptr;
+
     // NPR Shader effect FBOs
     // std::map<std::string, std::shared_ptr<FBO>> m_nprEffectFBOs;
     int m_enabledNPREffectCount = 0;

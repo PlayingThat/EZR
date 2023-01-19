@@ -13,6 +13,8 @@ uniform sampler2D fboClouds;
 // mask for clouds
 uniform sampler2D depth;
 
+uniform sampler2D terrain;
+
 uniform vec2 screenSize;
 uniform int numberOfEnabledEffects;
 
@@ -49,4 +51,6 @@ void main()
     }
     else
         FragColor = color;
+    //vec4 terrainFrag = texture(terrain, gl_FragCoord.xy / screenSize);
+    //FragColor = texture(terrain, gl_FragCoord.xy / screenSize);
 }
