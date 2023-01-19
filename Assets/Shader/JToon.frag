@@ -13,7 +13,7 @@ uniform sampler2D colorDiffuse;
 
 uniform vec2 screenSize;
 
-uniform bool textured;      // If true, the shader will be applied on the textured object
+uniform bool Textured;      // If true, the shader will be applied on the textured object
 
 uniform int colorLevels;                        // adjustable number of different color levels
 const float scaleFactor = 1.0f / colorLevels;   // width of a color level
@@ -72,7 +72,7 @@ void main()
     vec4 texColor;
     vec3 diffuseColor = texture(colorDiffuse, gl_FragCoord.xy / screenSize).rgb;
 
-    if (textured) {
+    if (Textured) {
         //get the color from the texture
         texColor = texture(textureDiffuse, gl_FragCoord.xy / screenSize);
         diffuseColor = texColor.rgb;

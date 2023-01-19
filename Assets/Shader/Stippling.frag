@@ -7,8 +7,11 @@ uniform vec2 screenSize;
 
 uniform sampler2D positions;
 uniform sampler2D normals;
-uniform sampler2D depth;
 uniform sampler2D uvs;
+uniform sampler2D tangents;
+uniform sampler2D textureDiffuse;
+uniform sampler2D colorDiffuse;
+uniform sampler2D depth;
 
 vec3 lightPosition = vec3(0, 10, 4);
 

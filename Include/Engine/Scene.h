@@ -10,6 +10,8 @@
 #include "Objects/ScreenFillingQuad.h"
 #include <vector>
 #include <variant>
+#include <cctype>
+#include <algorithm>
 
 #include "Objects/ColorfullTriangle.h"
 #include "Objects/Terrain.h"
@@ -78,6 +80,9 @@ private:
 
     // Setup NPR effect shaders
     void setupNPREffects();
+
+    // Helpers
+    std::string splitString(std::string s, char del);
 
     // Setup Stippling Textures
     void createStipplingTexture();

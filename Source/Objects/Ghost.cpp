@@ -12,16 +12,17 @@ Ghost::Ghost(std::shared_ptr<Scene> scene) : Drawable(scene)
     m_model = std::make_unique<Model>(m_scene);
     create();
 
-    // Shader setup
-    m_basicVertexShader = std::make_shared<Shader>("./Assets/Shader/Basic.vert");
-    m_textureFragmentShader = std::make_shared<Shader>("./Assets/Shader/BasicTextured.frag");
+    /* Deprecated */
+    // // Shader setup
+    // m_basicVertexShader = std::make_shared<Shader>("./Assets/Shader/Basic.vert");
+    // m_textureFragmentShader = std::make_shared<Shader>("./Assets/Shader/BasicTextured.frag");
 
-    m_basicShaderProgram = std::make_unique<ShaderProgram>("Gooch");
-    m_basicShaderProgram->addShader(m_basicVertexShader);
-    m_basicShaderProgram->addShader(m_textureFragmentShader);
-    printf("Linking shader program...\n");
+    // m_basicShaderProgram = std::make_unique<ShaderProgram>("Gooch");
+    // m_basicShaderProgram->addShader(m_basicVertexShader);
+    // m_basicShaderProgram->addShader(m_textureFragmentShader);
+    // printf("Linking shader program...\n");
 
-    m_basicShaderProgram->link();
+    // m_basicShaderProgram->link();
 }
 
 void Ghost::create()

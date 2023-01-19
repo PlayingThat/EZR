@@ -108,7 +108,7 @@ void Scene::setupNPREffects()
     m_goochShaderProgram->addShader(m_goochFragmentShader);
     m_goochShaderProgram->link();
     addNPREffect(m_goochShaderProgram, false);
-    addNPRProperty("Gooch", "textured##Gooch", &m_goochPropertyTextured, true);
+    addNPRProperty("Gooch", "Textured##Gooch", &m_goochPropertyTextured, true);
     addNPRProperty("Gooch", "CoolColor", &m_goochPropertyCoolColor, true);
     addNPRProperty("Gooch", "WarmColor", &m_goochPropertyWarmColor, true);
 
@@ -120,7 +120,7 @@ void Scene::setupNPREffects()
     m_toonShaderProgram->addShader(m_toonFragmentShader);
     m_toonShaderProgram->link();
     addNPREffect(m_toonShaderProgram, false);
-    addNPRProperty("Toon with Outline", "textured##Toon", &m_toonPropertyTextured, true);
+    addNPRProperty("Toon with Outline", "Textured##Toon", &m_toonPropertyTextured, true);
 
     // Setup Alternative Toon by Jess
     m_JtoonVertexShader = std::make_shared<Shader>("./Assets/Shader/JToon.vert");
@@ -130,7 +130,7 @@ void Scene::setupNPREffects()
     m_JtoonShaderProgram->addShader(m_JtoonFragmentShader);
     m_JtoonShaderProgram->link();
     addNPREffect(m_JtoonShaderProgram, false);
-    addNPRProperty("Toon", "textured##JToon", &m_JtoonPropertyTextured, true);
+    addNPRProperty("Toon", "Textured##JToon", &m_JtoonPropertyTextured, true);
     addNPRProperty("Toon", "colorLevels", &m_JtoonPropertyColorLevels, true, 1, 20);
     addNPRProperty("Toon", "levelBrightness", &m_JtoonPropertyLevelBrightness, true);
 
@@ -142,7 +142,7 @@ void Scene::setupNPREffects()
     m_rimLShaderProgram->addShader(m_rimLFragmentShader);
     m_rimLShaderProgram->link();
     addNPREffect(m_rimLShaderProgram, false);
-    addNPRProperty("RimLighting", "textured##RimLighing", &m_rimLPropertyTextured, true);
+    addNPRProperty("RimLighting", "Textured##RimLighing", &m_rimLPropertyTextured, true);
 
     // Setup Stippling
     m_stippVertexShader = std::make_shared<Shader>("./Assets/Shader/Stippling.vert");
@@ -256,8 +256,10 @@ void Scene::drawSFQuad()
             // Iterate over npr effect properties
             for(int effectPropertyIndex = 0; effectPropertyIndex < m_NPREffects.at(i)->properties.size(); effectPropertyIndex++)
             {
+                // Remove ID hashtags from property name and cast it to lowercase string for use in shader
+                std::string cleanName = splitString(m_NPREffects.at(i)->properties.at(effectPropertyIndex).name, '#');
                 setNPREffectProperty(m_NPREffects.at(i)->shaderProgram, 
-                                     m_NPREffects.at(i)->properties.at(effectPropertyIndex).name,
+                                     cleanName,
                                      m_NPREffects.at(i)->properties.at(effectPropertyIndex).value);
             }
             
@@ -465,4 +467,14 @@ void Scene::drawNPREffectProperty(NPRProperty property)
     // {
     //     shaderProgram->setSampler2D(propertyName, 0, *std::get<GLuint*>(value));
     // }
+}
+
+
+// Splits a string at a given delimiter and returns the first part
+std::string Scene::splitString(std::string s, char del)
+{
+    std::stringstream ss(s);
+    std::string result;
+    std::getline(ss, result, del);
+    return result;
 }
