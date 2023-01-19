@@ -105,17 +105,81 @@ void Terrain::lebUpdate()
 
 void Terrain::lebReductionPass()
 {
-    
+    int it = m_maxDepth;
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
+    m_lebReductionPerpassShaderProgram->use();
+    if (true) {
+        int cnt = ((1 << it) >> 5);// / 2;
+        int numGroup = (cnt >= 256) ? (cnt >> 8) : 1;
+        // int loc = glGetUniformLocation(g_gl.programs[PROGRAM_LEB_REDUCTION_PREPASS],
+        //                                "u_PassID");
+
+        // djgc_start(g_gl.clocks[CLOCK_REDUCTION00 + it - 1]);
+        // glUniform1i(loc, it);
+        m_lebReductionPerpassShaderProgram->setInt("u_PassID", it);
+        glDispatchCompute(numGroup, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        // djgc_stop(g_gl.clocks[CLOCK_REDUCTION00 + g_terrain.maxDepth - 1]);
+
+        it-= 5;
+    }
+
+    m_lebReductionShaderProgram->use();
+    while (--it >= 0) {
+        // int loc = glGetUniformLocation(g_gl.programs[PROGRAM_LEB_REDUCTION], "u_PassID");
+        int cnt = 1 << it;
+        int numGroup = (cnt >= 256) ? (cnt >> 8) : 1;
+
+        // djgc_start(g_gl.clocks[CLOCK_REDUCTION00 + it]);
+        m_lebReductionShaderProgram->setInt("u_PassID", it);
+        // glUniform1i(loc, it);
+        glDispatchCompute(numGroup, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        // djgc_stop(g_gl.clocks[CLOCK_REDUCTION00 + it]);
+    }
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
 }
 
 void Terrain::lebBatchingPass()
 {
-    
+    m_batchShaderProgram->use();
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                     m_bufferTerrainDrawIndex,
+                     m_bufferTerrainDraw);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                     m_bufferTerrainDrawComputeShaderIndex,
+                     m_bufferTerrainDrawComputeShader);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                     m_bufferTerrainDispatchComputeShaderIndex,
+                     m_bufferTerrainDispatchComputeShader);
+
+    glDispatchCompute(1, 1, 1);
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_bufferTerrainDrawIndex, 0);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_bufferTerrainDrawComputeShaderIndex, 0);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_bufferTerrainDispatchComputeShaderIndex, 0);
 }
 
 void Terrain::lebRender()
 {
-    
+    // set GL state
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDraw);
+    glBindVertexArray(m_vaoTriangleMeshlet);
+
+    // render
+    m_terrainDrawShaderProgram->use();
+    glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_SHORT, ((char *)NULL + (0)));  // 0 = offset
+
+    // reset GL state
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+    glBindVertexArray(0);
+    glDisable(GL_CULL_FACE);
 }
 
 void Terrain::create()
@@ -208,7 +272,10 @@ void Terrain::loadAtmosphereTexture()
 {
     LOG_INFO("Loading atmosphere textures");
     float *data = new float[16*64*3];
-    FILE *f = fopen("./Assets/Terain/irradiance.raw", "rb");
+    FILE *f = fopen("./Assets/Terrain/irradiance.raw", "rb");
+    if (!f) {
+        LOG_ERROR("Failed to open terrain atmosphere texture");
+    }
     fread(data, 1, 16*64*3*sizeof(float), f);
     fclose(f);
     glActiveTexture(GL_TEXTURE0 + m_irradianceTexture);
@@ -225,7 +292,7 @@ void Terrain::loadAtmosphereTexture()
     int nv = res * 2;
     int nb = res / 2;
     int na = 8;
-    f = fopen("./Assets/Terain/inscatter.raw", "rb");
+    f = fopen("./Assets/Terrain/inscatter.raw", "rb");
     data = new float[nr*nv*nb*na*4];
     fread(data, 1, nr*nv*nb*na*4*sizeof(float), f);
     fclose(f);
@@ -240,7 +307,7 @@ void Terrain::loadAtmosphereTexture()
     delete[] data;
 
     data = new float[256*64*3];
-    f = fopen("./Assets/Terain/transmittance.raw", "rb");
+    f = fopen("./Assets/Terrain/transmittance.raw", "rb");
     fread(data, 1, 256*64*3*sizeof(float), f);
     fclose(f);
     glActiveTexture(GL_TEXTURE0 + m_transmittanceTexture);
@@ -792,43 +859,6 @@ void Terrain::configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgr
     shaderProgram->setSampler2D("transmittanceSampler", 5, m_transmittanceTexture);
     shaderProgram->setSampler2D("skyIrradianceSampler", 6, m_irradianceTexture);
     shaderProgram->setSampler2D("inscatterSampler", 7, m_inscatterTexture);
-
-    // glProgramUniform1f(glp,
-    //     g_gl.uniforms[UNIFORM_TERRAIN_DMAP_FACTOR + offset],
-    //     g_terrain.dmap.scale);
-    // glProgramUniform1f(glp,
-    //     g_gl.uniforms[UNIFORM_TERRAIN_LOD_FACTOR + offset],
-    //     lodFactor);
-    // glProgramUniform1i(glp,
-    //     g_gl.uniforms[UNIFORM_TERRAIN_DMAP_SAMPLER + offset],
-    //     TEXTURE_DMAP);
-    // glProgramUniform1i(glp,
-    //     g_gl.uniforms[UNIFORM_TERRAIN_SMAP_SAMPLER + offset],
-    //     TEXTURE_SMAP);
-    // glProgramUniform1i(glp,
-    //     g_gl.uniforms[UNIFORM_TERRAIN_DMAP_ROCK_SAMPLER + offset],
-    //     TEXTURE_ROCK_DMAP);
-    // glProgramUniform1i(glp,
-    //     g_gl.uniforms[UNIFORM_TERRAIN_SMAP_ROCK_SAMPLER + offset],
-    //     TEXTURE_ROCK_SMAP);
-    // glProgramUniform1f(glp,
-    //     g_gl.uniforms[UNIFORM_TERRAIN_TARGET_EDGE_LENGTH + offset],
-    //     g_terrain.primitivePixelLengthTarget);
-    // glProgramUniform1f(glp,
-    //     g_gl.uniforms[UNIFORM_TERRAIN_MIN_LOD_VARIANCE + offset],
-    //     sqr(g_terrain.minLodStdev / 64.0f / g_terrain.dmap.scale));
-    // glProgramUniform2f(glp,
-    //     g_gl.uniforms[UNIFORM_TERRAIN_SCREEN_RESOLUTION + offset],
-    //     g_framebuffer.w, g_framebuffer.h);
-    // glProgramUniform1i(glp,
-    //     g_gl.uniforms[UNIFORM_TERRAIN_INSCATTER_SAMPLER + offset],
-    //     TEXTURE_ATMOSPHERE_INSCATTER);
-    // glProgramUniform1i(glp,
-    //     g_gl.uniforms[UNIFORM_TERRAIN_IRRADIANCE_SAMPLER+ offset],
-    //     TEXTURE_ATMOSPHERE_IRRADIANCE);
-    // glProgramUniform1i(glp,
-    //     g_gl.uniforms[UNIFORM_TERRAIN_TRANSMITTANCE_SAMPLER + offset],
-    //     TEXTURE_ATMOSPHERE_TRANSMITTANCE);
 }
 
 void Terrain::configureAtmosphereProgram()
