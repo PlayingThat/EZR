@@ -13,9 +13,6 @@ LongestEdgeBisection::LongestEdgeBisection()
 // Decodes node attributes
 void LongestEdgeBisection::decodeNodeAttributeArray(const cbt_Node node, int64_t attributeArraySize, float attributeArray[][3])
 {
-    if(!attributeArraySize > 0);
-        LOG_WARNING("Attribute array size is 0. Nothing to decode.");
-
     Matrix3x3 m;
     float attributeVector[3];
 
