@@ -20,7 +20,7 @@ Terrain::~Terrain()
 
 void Terrain::draw()
 {
-    // drawGUI();
+    drawGUI();
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrain);
     glClearColor(0.5, 0.5, 0.5, 1.0);
@@ -37,7 +37,16 @@ void Terrain::draw()
 void Terrain::drawGUI()
 {
     ImGui::Begin("Terrain");
-    ImGui::SliderInt("Max Depth", &m_maxDepth, 1, 30);
+    if (ImGui::SliderInt("Max Depth", &m_maxDepth, 1, 22)) {
+        setupBuffers();
+        setupShaderPrograms();
+    }
+    if (ImGui::SliderInt("Patch Sub Level", &m_patchSubDiv, 1, 10)) {
+        loadSubdivisionBuffer();
+        loadVAOTriangleMeshlet();
+        setupShaderPrograms();
+    }
+    ImGui::SliderFloat("Height Scale", &m_dmapFactor, 0.0f, 1.0f);
     ImGui::End();
 }
 
@@ -144,6 +153,7 @@ void Terrain::lebReductionPass()
 void Terrain::lebBatchingPass()
 {
     m_batchShaderProgram->use();
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
                      m_bufferTerrainDrawIndex,
                      m_bufferTerrainDraw);
@@ -173,9 +183,7 @@ void Terrain::lebRender()
 
     // render
     m_terrainDrawShaderProgram->use();
-    HANDLE_GL_ERRORS("before draw");
     glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_SHORT, ((char *)NULL + (0)));  // 0 = offset
-    HANDLE_GL_ERRORS("after draw");
 
     // reset GL state
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
@@ -686,7 +694,6 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram, s
     shaderProgram->addSource("#define FLAG_SPLIT");
     shaderProgram->addSource("#define PROJECTION_RECTILINEAR");
 
-    shaderProgram->addSource("#define BUFFER_BINDING_TERRAIN_VARIABLES 0");
     shaderProgram->addSource("#define BUFFER_BINDING_MESHLET_VERTICES " + std::to_string(m_bufferMeshletVertices));
     shaderProgram->addSource("#define BUFFER_BINDING_MESHLET_INDEXES " + std::to_string(m_bufferMeshletIndices));
     shaderProgram->addSource("#define TERRAIN_PATCH_SUBD_LEVEL " + std::to_string(m_patchSubDiv));
