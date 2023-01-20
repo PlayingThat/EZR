@@ -46,8 +46,7 @@ void ShaderProgram::link(GLenum type)
     // If no compiled shaders are attached, attach sources and shaders first
     if(m_attachedShaders.size() > 0)
     {
-        // determine source and length of source pointer array
-        int srcc = m_sources.size() + m_attachedShaders.size();
+        // determine source of source pointer array
         std::string source = "";
 
         // Add sources (definitions etc.) before shader
@@ -70,6 +69,89 @@ void ShaderProgram::link(GLenum type)
         glAttachShader(m_id, dummyShader);
         glDeleteShader(dummyShader);
     }
+
+    glLinkProgram(m_id);
+
+    // if errors occured, write them to log
+    GLint success = 0;
+    glGetProgramiv(m_id, GL_LINK_STATUS, &success);
+    if(!success)
+    {
+        char infoLog[1024];
+        glGetProgramInfoLog(m_id, 1024, NULL, infoLog);
+        LOG_SHADER_ERROR("Shader program", "Shader program " + m_name + " linking failed: " + infoLog);
+        glDeleteProgram(m_id);
+    }
+
+    m_linked = true;
+}
+
+void ShaderProgram::linkCombinedVertexFragment(std::shared_ptr<Shader> vertexShader, std::shared_ptr<Shader> fragmentShader)
+{
+    // If no compiled shaders are attached, attach sources and shaders first
+    if(m_attachedShaders.size() > 0)
+    {
+        // determine source of source pointer array
+        std::string source = "";
+
+        // Add sources (definitions etc.) before shader
+        for(int i = 0; i < m_sources.size(); i++)
+        {
+            source += m_sources[i];
+        }
+        
+        source += "#define VERTEX_SHADER";
+        
+        // Compile shaders
+        for(int i = 0; i < m_attachedShaders.size(); i++)
+        {
+            source += m_attachedShaders[i]->getSource();
+        }
+
+        // Add vertex shader source
+        source += vertexShader->getSource();
+
+        const GLchar *sourceArray[] = {source.c_str()};
+        // writeToFile(source, "combinedShader"+ m_name + ".txt");
+        // create dummy shader 
+        GLuint dummyShader = compileDirect(sourceArray, 1, GL_VERTEX_SHADER);
+        
+        glAttachShader(m_id, dummyShader);
+        glDeleteShader(dummyShader);
+    }
+
+    // Add fragment shader source
+        if(m_attachedShaders.size() > 0)
+    {
+        // determine source of source pointer array
+        std::string source = "";
+
+        // Add sources (definitions etc.) before shader
+        for(int i = 0; i < m_sources.size(); i++)
+        {
+            source += m_sources[i];
+        }
+
+        source += "#define FRAGMENT_SHADER";
+        
+        // Compile shaders
+        for(int i = 0; i < m_attachedShaders.size(); i++)
+        {
+            source += m_attachedShaders[i]->getSource();
+        }
+
+        // Add frag shader source
+        source += fragmentShader->getSource();
+
+        const GLchar *sourceArray[] = {source.c_str()};
+        // writeToFile(source, "combinedShader"+ m_name + ".txt");
+        // create dummy shader 
+        GLuint dummyShader = compileDirect(sourceArray, 1, GL_FRAGMENT_SHADER);
+        
+        glAttachShader(m_id, dummyShader);
+        glDeleteShader(dummyShader);
+    }
+
 
     glLinkProgram(m_id);
 

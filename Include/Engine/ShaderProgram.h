@@ -17,6 +17,7 @@ public:
     ~ShaderProgram();
 
     void link(GLenum type = GL_COMPUTE_SHADER);
+    void linkCombinedVertexFragment(std::shared_ptr<Shader> vertexShader, std::shared_ptr<Shader> fragmentShader);
 
     void use();
 

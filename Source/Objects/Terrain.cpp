@@ -173,7 +173,9 @@ void Terrain::lebRender()
 
     // render
     m_terrainDrawShaderProgram->use();
+    HANDLE_GL_ERRORS("before draw");
     glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_SHORT, ((char *)NULL + (0)));  // 0 = offset
+    HANDLE_GL_ERRORS("after draw");
 
     // reset GL state
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
@@ -697,10 +699,17 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram, s
     shaderProgram->attachShader(atmosphereShader);
     m_terrainRenderCommonShader= std::make_shared<Shader>("./Assets/Shader/Terrain/RenderCommon.comp", false);
     shaderProgram->attachShader(m_terrainRenderCommonShader);
-    std::shared_ptr<Shader> renderUpdateShader = std::make_shared<Shader>("./Assets/Shader/Terrain/RenderUpdate.comp", false);
-    shaderProgram->attachShader(renderUpdateShader);
+    if (typeFlag == "FLAG_DRAW") {
+        std::shared_ptr<Shader> renderDrawShader = std::make_shared<Shader>("./Assets/Shader/Terrain/RenderPass.comp", false);
+        shaderProgram->linkCombinedVertexFragment(renderDrawShader, renderDrawShader);
+    }   
+    else { 
+        std::shared_ptr<Shader> renderUpdateShader = std::make_shared<Shader>("./Assets/Shader/Terrain/RenderUpdate.comp", false);
+        shaderProgram->attachShader(renderUpdateShader);
+        shaderProgram->link();
+    }
 
-    shaderProgram->link();
+
     HANDLE_GL_ERRORS("setting up " + typeFlag + " shader");
     configureShaderProgram(shaderProgram);
     HANDLE_GL_ERRORS("configuring " + typeFlag + " shader");
