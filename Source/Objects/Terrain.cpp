@@ -280,6 +280,7 @@ void Terrain::loadAtmosphereTexture()
     }
     fread(data, 1, 16*64*3*sizeof(float), f);
     fclose(f);
+    glGenTextures(1, &m_irradianceTexture);
     glActiveTexture(GL_TEXTURE0 + m_irradianceTexture);
     glBindTexture(GL_TEXTURE_2D, m_irradianceTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -295,9 +296,13 @@ void Terrain::loadAtmosphereTexture()
     int nb = res / 2;
     int na = 8;
     f = fopen("./Assets/Terrain/inscatter.raw", "rb");
+    if (!f) {
+        LOG_ERROR("Failed to open terrain inscatter texture");
+    }
     data = new float[nr*nv*nb*na*4];
     fread(data, 1, nr*nv*nb*na*4*sizeof(float), f);
     fclose(f);
+    glGenTextures(1, &m_inscatterTexture);
     glActiveTexture(GL_TEXTURE0 + m_inscatterTexture);
     glBindTexture(GL_TEXTURE_3D, m_inscatterTexture);
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -310,8 +315,12 @@ void Terrain::loadAtmosphereTexture()
 
     data = new float[256*64*3];
     f = fopen("./Assets/Terrain/transmittance.raw", "rb");
+    if (!f) {
+        LOG_ERROR("Failed to open terrain transmittance texture");
+    }
     fread(data, 1, 256*64*3*sizeof(float), f);
     fclose(f);
+    glGenTextures(1, &m_transmittanceTexture);
     glActiveTexture(GL_TEXTURE0 + m_transmittanceTexture);
     glBindTexture(GL_TEXTURE_2D, m_transmittanceTexture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -859,15 +868,18 @@ void Terrain::configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgr
     shaderProgram->use();
     shaderProgram->setFloat("u_DmapFactor", m_dmapFactor);
     shaderProgram->setFloat("u_LodFactor", lodFactor);
-    shaderProgram->setSampler2D("u_DmapSampler", 0, m_displacementMapTexture);
+    shaderProgram->setSampler2D("u_DmapSampler", m_displacementMapTexture, m_displacementMapTexture);
     shaderProgram->setInt("u_SmapSampler", m_slopeMapTexture);
     // shaderProgram->setInt("u_DmapRockSampler", TEXTURE_DMAP_ROCK);
     // shaderProgram->setInt("u_SmapRockSampler", TEXTURE_DMAP_GRASS);
     shaderProgram->setFloat("u_TargetEdgeLength", 7.0f);  // targetEdgeLength
     shaderProgram->setFloat("u_MinLodVariance", glm::sqrt(0.1f / 64.0f / m_dmapFactor));
-    shaderProgram->setSampler2D("transmittanceSampler", 5, m_transmittanceTexture);
-    shaderProgram->setSampler2D("skyIrradianceSampler", 6, m_irradianceTexture);
-    shaderProgram->setSampler2D("inscatterSampler", 7, m_inscatterTexture);
+    shaderProgram->setSampler2D("transmittanceSampler", m_transmittanceTexture, m_transmittanceTexture);
+    shaderProgram->setSampler2D("skyIrradianceSampler", m_irradianceTexture, m_irradianceTexture);
+    // shaderProgram->setSampler3D("inscatterSampler", 7, m_inscatterTexture);
+    glActiveTexture(GL_TEXTURE0 + 7);
+    glBindTexture(GL_TEXTURE_3D, m_inscatterTexture);
+    shaderProgram->setInt("inscatterSampler", 7);
 }
 
 void Terrain::configureAtmosphereProgram()

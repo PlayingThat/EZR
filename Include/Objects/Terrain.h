@@ -217,7 +217,7 @@ private:
     // GUI Elements
 
     // Max subdivision depth of the terrain
-    int m_maxDepth = 10;
+    int m_maxDepth = 15;
 
     // Patch subdivision level to be sent to GPU
     int m_patchSubDiv = 3;
