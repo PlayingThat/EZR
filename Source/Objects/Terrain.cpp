@@ -148,7 +148,6 @@ void Terrain::lebReductionPass()
         // djgc_stop(g_gl.clocks[CLOCK_REDUCTION00 + it]);
     }
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
-    LOG_INFO(m_subdivionBufferIndex);
 }
 
 void Terrain::lebBatchingPass()
