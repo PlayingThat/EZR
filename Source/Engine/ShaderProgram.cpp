@@ -217,6 +217,12 @@ void ShaderProgram::setFloat(std::string name, float value) const
     glUniform1f(uniformLocation, value);
 }
 
+void ShaderProgram::setFloat2(std::string name, float value1, float value2) const
+{
+    GLuint uniformLocation = glGetUniformLocation(m_id, name.c_str());
+    glUniform2f(uniformLocation, value1, value2);
+}
+
 void ShaderProgram::setBool(std::string name, bool value) const
 {
     GLuint uniformLocation = glGetUniformLocation(m_id, name.c_str());

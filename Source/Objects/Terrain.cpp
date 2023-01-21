@@ -744,11 +744,11 @@ void Terrain::loadLEBReductionProgram()
     m_lebReductionShaderProgram = std::make_shared<ShaderProgram>("LEBReduction");
     std::shared_ptr<Shader> m_cbtCumSumReductionShader = std::make_shared<Shader>("./Assets/Shader/Terrain/cbtSumReduction.comp", false);
     
-    m_lebReductionShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING  " + std::to_string(m_subdivionBufferIndex));
+    m_lebReductionShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
     m_lebReductionShaderProgram->attachShader(m_terrainCBTShader);  // CBT shader already loaded in loadShaderProgram
     m_lebReductionShaderProgram->attachShader(m_cbtCumSumReductionShader);
-    
-    // m_lebReductionShaderProgram->addSource("#ifdef COMPUTE_SHADER\n#endif");
+    m_lebReductionShaderProgram->addSource("#ifdef COMPUTE_SHADER\n#endif");
+
     m_lebReductionShaderProgram->link();
     HANDLE_GL_ERRORS("loading leb reduction shader");
 }
@@ -758,11 +758,11 @@ void Terrain::LoadLebReductionPrepassProgram()
     m_lebReductionPerpassShaderProgram = std::make_shared<ShaderProgram>("LEBReduction");
     std::shared_ptr<Shader> m_cbtCumSumReductionPrepassShader = std::make_shared<Shader>("./Assets/Shader/Terrain/cbtSumReductionPrepass.comp", false);
     
-    m_lebReductionPerpassShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING  " + std::to_string(m_subdivionBufferIndex));
+    m_lebReductionPerpassShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
     m_lebReductionPerpassShaderProgram->attachShader(m_terrainCBTShader);  // CBT shader already loaded in loadShaderProgram
     m_lebReductionPerpassShaderProgram->attachShader(m_cbtCumSumReductionPrepassShader);
-    
-    // m_lebReductionPerpassShaderProgram->addSource("#ifdef COMPUTE_SHADER\n#endif");
+    m_lebReductionPerpassShaderProgram->addSource("#ifdef COMPUTE_SHADER\n#endif");
+
     m_lebReductionPerpassShaderProgram->link();
     HANDLE_GL_ERRORS("loading leb reduction prepass shader");
 }
@@ -770,10 +770,11 @@ void Terrain::LoadLebReductionPrepassProgram()
 void Terrain::loadBatchProgram()
 {
     m_batchShaderProgram = std::make_shared<ShaderProgram>("Batch");
-    std::shared_ptr<Shader> m_batchShader = std::make_shared<Shader>("./Assets/Shader/Terrain/batch.comp", false);
+    std::shared_ptr<Shader> m_batchShader = std::make_shared<Shader>("./Assets/Shader/Terrain/TerrainBatcher.comp", false);
     
     // Enable atomic operations for parallel buffer processing
     m_batchShaderProgram->addSource("#extension GL_ARB_shader_atomic_counter_ops : require");
+    m_batchShaderProgram->addSource("#define ATOMIC_COUNTER_EXCHANGE_ARB 1");
 
     m_batchShaderProgram->addSource("#define FLAG_CS 1");
     m_batchShaderProgram->addSource("#define BUFFER_BINDING_DRAW_ELEMENTS_INDIRECT_COMMAND " + std::to_string(m_bufferTerrainDrawComputeShaderIndex));
@@ -788,7 +789,6 @@ void Terrain::loadBatchProgram()
     m_batchShaderProgram->addSource("#define CBT_READ_ONLY");
     m_batchShaderProgram->attachShader(m_terrainCBTShader);  // CBT shader already loaded in loadShaderProgram
 
-    m_batchShader = std::make_shared<Shader>("./Assets/Shader/Terrain/TerrainBatcher.comp", false);
     m_batchShaderProgram->attachShader(m_batchShader);
     m_batchShaderProgram->link();
     HANDLE_GL_ERRORS("loading terrain batch shader");
@@ -827,7 +827,7 @@ void Terrain::loadCBTNodeCountShader()
     std::shared_ptr<Shader> m_cbtNodeCountShader = std::make_shared<Shader>("./Assets/Shader/Terrain/NodeCount.comp", false);
     
     m_cbtNodeCountShaderProgram->addSource("#define CBT_NODE_COUNT_BUFFER_BINDING " + std::to_string(m_bufferCBTNodeCountIndex));
-    m_cbtNodeCountShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING  " + std::to_string(m_subdivionBufferIndex));
+    m_cbtNodeCountShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
     m_cbtNodeCountShaderProgram->addSource("#define CBT_READ_ONLY");
     m_cbtNodeCountShaderProgram->attachShader(m_terrainCBTShader);  // CBT shader already loaded in loadShaderProgram
     m_cbtNodeCountShaderProgram->attachShader(m_cbtNodeCountShader);
@@ -881,10 +881,11 @@ void Terrain::configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgr
     // shaderProgram->setInt("u_SmapRockSampler", TEXTURE_DMAP_GRASS);
     shaderProgram->setFloat("u_TargetEdgeLength", 7.0f);  // targetEdgeLength
     shaderProgram->setFloat("u_MinLodVariance", glm::sqrt(0.1f / 64.0f / m_dmapFactor));
+    shaderProgram->setFloat2("u_ScreenResolution", m_scene->getState()->getCamera()->getWidth(), m_scene->getState()->getCamera()->getHeight());
     shaderProgram->setSampler2D("transmittanceSampler", m_transmittanceTexture, m_transmittanceTexture);
     shaderProgram->setSampler2D("skyIrradianceSampler", m_irradianceTexture, m_irradianceTexture);
     // shaderProgram->setSampler3D("inscatterSampler", 7, m_inscatterTexture);
-    glActiveTexture(GL_TEXTURE0 + 7);
+    glActiveTexture(GL_TEXTURE0 + m_inscatterTexture);
     glBindTexture(GL_TEXTURE_3D, m_inscatterTexture);
     shaderProgram->setInt("inscatterSampler", 7);
 }

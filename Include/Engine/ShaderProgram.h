@@ -36,6 +36,8 @@ public:
 
     void setFloat(std::string name, float value) const;
 
+    void setFloat2(std::string name, float value1, float value2) const;
+
     void setBool(std::string name, bool value) const;
 
     void setInt(std::string name, int value) const;

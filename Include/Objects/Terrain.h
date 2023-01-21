@@ -145,7 +145,7 @@ private:
     GLuint m_subdivisionBuffer = 0;
     
     // Buffer indices
-    GLuint m_subdivionBufferIndex = 0;
+    GLuint m_subdivionBufferIndex = 7;
 
     // Buffers for indirect drawing
     GLuint m_bufferTerrainDraw = 0;
