@@ -148,6 +148,7 @@ void Terrain::lebReductionPass()
         // djgc_stop(g_gl.clocks[CLOCK_REDUCTION00 + it]);
     }
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
+    LOG_INFO(m_subdivionBufferIndex);
 }
 
 void Terrain::lebBatchingPass()
@@ -691,7 +692,6 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram, s
     LOG_INFO("Loading terrain " + typeFlag +" shader program");
     
     shaderProgram = std::make_shared<ShaderProgram>(typeFlag);
-    shaderProgram->addSource("#define FLAG_SPLIT");
     shaderProgram->addSource("#define PROJECTION_RECTILINEAR");
 
     shaderProgram->addSource("#define BUFFER_BINDING_MESHLET_VERTICES " + std::to_string(m_bufferMeshletVertices));
@@ -721,6 +721,7 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram, s
     }   
     else { 
         std::shared_ptr<Shader> renderUpdateShader = std::make_shared<Shader>("./Assets/Shader/Terrain/RenderUpdate.comp", false);
+        shaderProgram->addSource("#define " + typeFlag);
         shaderProgram->attachShader(renderUpdateShader);
         shaderProgram->link();
     }
@@ -787,6 +788,8 @@ void Terrain::loadBatchProgram()
 
     m_batchShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
     m_batchShaderProgram->addSource("#define CBT_READ_ONLY");
+    
+    m_batchShaderProgram->addSource("#define COMPUTE_SHADER");
     m_batchShaderProgram->attachShader(m_terrainCBTShader);  // CBT shader already loaded in loadShaderProgram
 
     m_batchShaderProgram->attachShader(m_batchShader);
@@ -884,10 +887,7 @@ void Terrain::configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgr
     shaderProgram->setFloat2("u_ScreenResolution", m_scene->getState()->getCamera()->getWidth(), m_scene->getState()->getCamera()->getHeight());
     shaderProgram->setSampler2D("transmittanceSampler", m_transmittanceTexture, m_transmittanceTexture);
     shaderProgram->setSampler2D("skyIrradianceSampler", m_irradianceTexture, m_irradianceTexture);
-    // shaderProgram->setSampler3D("inscatterSampler", 7, m_inscatterTexture);
-    glActiveTexture(GL_TEXTURE0 + m_inscatterTexture);
-    glBindTexture(GL_TEXTURE_3D, m_inscatterTexture);
-    shaderProgram->setInt("inscatterSampler", 7);
+    shaderProgram->setSampler3D("inscatterSampler", m_inscatterTexture, m_inscatterTexture);
 }
 
 void Terrain::configureAtmosphereProgram()
