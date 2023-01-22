@@ -27,10 +27,10 @@ void Terrain::draw()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     drawScene();
 
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    // glClearColor(0, 0, 0, 0);
-    // glClear(GL_COLOR_BUFFER_BIT);
-    // renderViewer();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(0, 0, 300, 300);
+    glClear(GL_COLOR_BUFFER_BIT);
+    renderTopView();
 }
 
 // Draw GUI controls for terrain arguments
@@ -63,6 +63,26 @@ void Terrain::drawScene()
     retrieveCBTNodeCount();
     renderSky();
 
+}
+
+void Terrain::renderTopView()
+{
+    glDisable(GL_CULL_FACE);
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDraw);
+    glViewport(10, 10, 300, 300);
+    glBindVertexArray(m_vaoEmpty);
+    glPatchParameteri(GL_PATCH_VERTICES, 1);
+
+    m_topViewShaderProgram->use();
+    glDrawArraysIndirect(GL_PATCHES, 0);
+
+    // reset GL state
+    glBindVertexArray(0);
+    glViewport(0, 0, m_scene->getState()->getWidth(), m_scene->getState()->getHeight());
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
 }
 
 void Terrain::renderSky()

@@ -31,6 +31,7 @@ public:
     // Retrieve draw textures
     // [0] = Terrain texture
     // [1] = Depth texture
+    // [2] = Top View texture
     GLuint* getDrawTextures();
 
 protected:
@@ -56,6 +57,7 @@ private:
     void drawScene();
     void drawTerrain();
     void renderSky();
+    void renderTopView();
 
     void retrieveCBTNodeCount();
     void loadTerrainVariables();

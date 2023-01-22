@@ -101,6 +101,7 @@ private:
 
     // Terrain buffer textures
     GLuint* m_terrainTextures = nullptr;
+    GLuint m_terrainTopView = 0;
 
     // NPR Shader effect FBOs
     // std::map<std::string, std::shared_ptr<FBO>> m_nprEffectFBOs;
