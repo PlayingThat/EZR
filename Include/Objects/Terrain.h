@@ -196,7 +196,7 @@ private:
     std::shared_ptr<ShaderProgram> m_lebReductionShaderProgram;
     std::shared_ptr<Shader> m_cbtCumSumReductionShader;
 
-    std::shared_ptr<ShaderProgram> m_lebReductionPerpassShaderProgram;
+    std::shared_ptr<ShaderProgram> m_lebReductionPrepassShaderProgram;
     std::shared_ptr<Shader> m_cbtCumSumReductionPrepassShader;
 
     std::shared_ptr<ShaderProgram> m_batchShaderProgram;
@@ -217,7 +217,7 @@ private:
     // GUI Elements
 
     // Max subdivision depth of the terrain
-    int m_maxDepth = 15;
+    int m_maxDepth = 25;
 
     // Patch subdivision level to be sent to GPU
     int m_patchSubDiv = 3;

@@ -117,7 +117,7 @@ void Terrain::lebReductionPass()
     int it = m_maxDepth;
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
-    m_lebReductionPerpassShaderProgram->use();
+    m_lebReductionPrepassShaderProgram->use();
     if (true) {
         int cnt = ((1 << it) >> 5);// / 2;
         int numGroup = (cnt >= 256) ? (cnt >> 8) : 1;
@@ -126,7 +126,7 @@ void Terrain::lebReductionPass()
 
         // djgc_start(g_gl.clocks[CLOCK_REDUCTION00 + it - 1]);
         // glUniform1i(loc, it);
-        m_lebReductionPerpassShaderProgram->setInt("u_PassID", it);
+        m_lebReductionPrepassShaderProgram->setInt("u_PassID", it);
         glDispatchCompute(numGroup, 1, 1);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
         // djgc_stop(g_gl.clocks[CLOCK_REDUCTION00 + g_terrain.maxDepth - 1]);
@@ -546,7 +546,6 @@ void Terrain::loadRenderBuffer()
     glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(drawElementsCmd), drawElementsCmd, GL_STATIC_DRAW);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 
-
     glGenBuffers(1, &m_bufferTerrainDispatchComputeShader);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDispatchComputeShader);
     glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(dispatchCmd), dispatchCmd, GL_STATIC_DRAW);
@@ -755,15 +754,15 @@ void Terrain::loadLEBReductionProgram()
 
 void Terrain::LoadLebReductionPrepassProgram()
 {
-    m_lebReductionPerpassShaderProgram = std::make_shared<ShaderProgram>("LEBReduction");
+    m_lebReductionPrepassShaderProgram = std::make_shared<ShaderProgram>("LEBReductionPrepass");
     std::shared_ptr<Shader> m_cbtCumSumReductionPrepassShader = std::make_shared<Shader>("./Assets/Shader/Terrain/cbtSumReductionPrepass.comp", false);
     
-    m_lebReductionPerpassShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
-    m_lebReductionPerpassShaderProgram->attachShader(m_terrainCBTShader);  // CBT shader already loaded in loadShaderProgram
-    m_lebReductionPerpassShaderProgram->attachShader(m_cbtCumSumReductionPrepassShader);
-    m_lebReductionPerpassShaderProgram->addSource("#ifdef COMPUTE_SHADER\n#endif");
+    m_lebReductionPrepassShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
+    m_lebReductionPrepassShaderProgram->attachShader(m_terrainCBTShader);  // CBT shader already loaded in loadShaderProgram
+    m_lebReductionPrepassShaderProgram->attachShader(m_cbtCumSumReductionPrepassShader);
+    m_lebReductionPrepassShaderProgram->addSource("#ifdef COMPUTE_SHADER\n#endif");
 
-    m_lebReductionPerpassShaderProgram->link();
+    m_lebReductionPrepassShaderProgram->link();
     HANDLE_GL_ERRORS("loading leb reduction prepass shader");
 }
 
