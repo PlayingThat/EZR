@@ -280,6 +280,7 @@ void Scene::drawSFQuad()
     m_compositingShaderProgram->setSampler2D("depth", 9, m_gBufferFBO->getDepthAttachment());  // depth
     m_compositingShaderProgram->setSampler2D("terrain", 10, m_terrainTextures[0]);  // terrain color
     m_compositingShaderProgram->setSampler2D("terrainDepth", 11, m_terrainTextures[1]);  // terrain depth
+    m_compositingShaderProgram->setSampler2D("terrainTopView", 12, m_terrainTextures[2]);  // terrain top view
 
     // Set shader uniforms
     int shaderFBOOffset = 0;

@@ -68,6 +68,7 @@ void Terrain::drawScene()
 void Terrain::renderTopView()
 {
     glDisable(GL_CULL_FACE);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrainTopViewFBO->getID());
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDraw);
@@ -83,6 +84,7 @@ void Terrain::renderTopView()
     glViewport(0, 0, m_scene->getState()->getWidth(), m_scene->getState()->getHeight());
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Terrain::renderSky()
@@ -244,6 +246,9 @@ void Terrain::setupBuffers()
     loadTriangleMeshletBuffers();
 
     loadCBTNodeCountBuffer();
+
+    // Setup Top view render buffer
+    m_framebufferTerrainTopViewFBO = std::make_shared<FBO>(m_scene, 1);
 
 }
 
@@ -942,5 +947,6 @@ GLuint* Terrain::getDrawTextures()
     GLuint* drawTextures = new GLuint[2];
     drawTextures[0] = m_framebufferTerrainColorTexture;
     drawTextures[1] = m_framebufferTerrainDepthTexture;
+    drawTextures[2] = m_framebufferTerrainTopViewFBO->getColorAttachment(0);
     return drawTextures;
 }

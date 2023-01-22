@@ -173,6 +173,7 @@ private:
     GLuint m_framebufferTerrain = 0;
     GLuint m_framebufferTerrainColorTexture = 0;
     GLuint m_framebufferTerrainDepthTexture = 0;
+    std::shared_ptr<FBO> m_framebufferTerrainTopViewFBO;
 
     // Queries
     GLuint m_queryCBTNodeCount = 0;
