@@ -28,7 +28,7 @@ void main()
 
     u_DrawArraysIndirectCommand[0] = nodeCount;
 
-    u_DispatchIndirectCommand[0] = nodeCount / 256u + 1u;
+    u_DispatchIndirectCommand[0] = 14;
     u_DrawElementsIndirectCommand[0] = MESHLET_INDEX_COUNT;
     u_DrawElementsIndirectCommand[1] = nodeCount;
 }
