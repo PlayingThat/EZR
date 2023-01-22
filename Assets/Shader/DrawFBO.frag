@@ -13,7 +13,9 @@ uniform sampler2D fboClouds;
 // mask for clouds
 uniform sampler2D depth;
 
+// Terrain color buffer
 uniform sampler2D terrain;
+uniform sampler2D terrainDepth;
 
 uniform vec2 screenSize;
 uniform int numberOfEnabledEffects;
@@ -25,9 +27,19 @@ void main()
     vec4 color;
     float effectPercentage = 1.0 / numberOfEnabledEffects;
 
+    vec4 terrainFrag = texture(terrain, gl_FragCoord.xy / screenSize);
+    vec4 depthFrag = texture(depth, gl_FragCoord.xy / screenSize);
+
+    if (texture(terrainDepth, gl_FragCoord.xy / screenSize).r < depthFrag.r) {
+        color = terrainFrag;
+    }
+    else {
+        color = texture(fbo0, gl_FragCoord.xy / screenSize);
+    }
+
     // Blend the enabled effects together
     if (numberOfEnabledEffects > 0)
-        color = texture(fbo0, gl_FragCoord.xy / screenSize) * effectPercentage;
+        color *= effectPercentage;
     if (numberOfEnabledEffects > 1)
         color += texture(fbo1, gl_FragCoord.xy / screenSize) * effectPercentage;
     if (numberOfEnabledEffects > 2)
@@ -43,7 +55,6 @@ void main()
     if (numberOfEnabledEffects > 7)
         color += texture(fbo7, gl_FragCoord.xy / screenSize) * effectPercentage;
 
-    vec4 depthFrag = texture(depth, gl_FragCoord.xy / screenSize);
     vec3 clouds;
     if (depthFrag.r == 1.0f) {
         clouds = texture(fboClouds, gl_FragCoord.xy / screenSize).rgb;
