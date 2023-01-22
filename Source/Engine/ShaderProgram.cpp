@@ -169,6 +169,190 @@ void ShaderProgram::linkCombinedVertexFragment(std::shared_ptr<Shader> vertexSha
     m_linked = true;
 }
 
+void ShaderProgram::linkCombinedShader(std::shared_ptr<Shader> vertexShader, 
+                                    std::shared_ptr<Shader> fragmentShader,
+                                    std::shared_ptr<Shader> geometryShader,
+                                    std::shared_ptr<Shader> tessControlShader,
+                                    std::shared_ptr<Shader> tessEvalShader)
+{
+    // If no compiled shaders are attached, attach sources and shaders first
+    if(m_attachedShaders.size() > 0)
+    {
+        // determine source of source pointer array
+        std::string source = "";
+
+        // Add sources (definitions etc.) before shader
+        for(int i = 0; i < m_sources.size(); i++)
+        {
+            source += m_sources[i];
+        }
+        
+        source += "#define VERTEX_SHADER 1";
+        
+        // Compile shaders
+        for(int i = 0; i < m_attachedShaders.size(); i++)
+        {
+            source += m_attachedShaders[i]->getSource();
+        }
+
+        // Add vertex shader source
+        source += vertexShader->getSource();
+
+        const GLchar *sourceArray[] = {source.c_str()};
+        // writeToFile(source, "combinedShader"+ m_name + ".txt");
+        // create dummy shader 
+        GLuint dummyShader = compileDirect(sourceArray, 1, GL_VERTEX_SHADER);
+        
+        glAttachShader(m_id, dummyShader);
+        glDeleteShader(dummyShader);
+    }
+
+    // add geometry shader source
+    if(m_attachedShaders.size() > 0)
+    {
+        // determine source of source pointer array
+        std::string source = "";
+
+        // Add sources (definitions etc.) before shader
+        for(int i = 0; i < m_sources.size(); i++)
+        {
+            source += m_sources[i];
+        }
+        
+        source += "#define GEOMETRY_SHADER 1";
+        
+        // Compile shaders
+        for(int i = 0; i < m_attachedShaders.size(); i++)
+        {
+            source += m_attachedShaders[i]->getSource();
+        }
+
+        // Add vertex shader source
+        source += geometryShader->getSource();
+
+        const GLchar *sourceArray[] = {source.c_str()};
+        // writeToFile(source, "combinedShader"+ m_name + ".txt");
+        // create dummy shader 
+        GLuint dummyShader = compileDirect(sourceArray, 1, GL_GEOMETRY_SHADER);
+        
+        glAttachShader(m_id, dummyShader);
+        glDeleteShader(dummyShader);
+    }
+
+    // add tess control shader source
+    if(m_attachedShaders.size() > 0)
+    {
+        // determine source of source pointer array
+        std::string source = "";
+
+        // Add sources (definitions etc.) before shader
+        for(int i = 0; i < m_sources.size(); i++)
+        {
+            source += m_sources[i];
+        }
+        
+        source += "#define TESS_CONTROL_SHADER 1";
+        
+        // Compile shaders
+        for(int i = 0; i < m_attachedShaders.size(); i++)
+        {
+            source += m_attachedShaders[i]->getSource();
+        }
+
+        // Add tess control shader source
+        source += tessControlShader->getSource();
+
+        const GLchar *sourceArray[] = {source.c_str()};
+        // writeToFile(source, "combinedShader"+ m_name + ".txt");
+        // create dummy shader 
+        GLuint dummyShader = compileDirect(sourceArray, 1, GL_TESS_CONTROL_SHADER);
+        
+        glAttachShader(m_id, dummyShader);
+        glDeleteShader(dummyShader);
+    }
+
+    // add tess eval shader source
+    if(m_attachedShaders.size() > 0)
+    {
+        // determine source of source pointer array
+        std::string source = "";
+
+        // Add sources (definitions etc.) before shader
+        for(int i = 0; i < m_sources.size(); i++)
+        {
+            source += m_sources[i];
+        }
+        
+        source += "#define TESS_EVALUATION_SHADER 1";
+        
+        // Compile shaders
+        for(int i = 0; i < m_attachedShaders.size(); i++)
+        {
+            source += m_attachedShaders[i]->getSource();
+        }
+
+        // Add tess eval shader source
+        source += tessEvalShader->getSource();
+
+        const GLchar *sourceArray[] = {source.c_str()};
+        // writeToFile(source, "combinedShader"+ m_name + ".txt");
+        // create dummy shader 
+        GLuint dummyShader = compileDirect(sourceArray, 1, GL_TESS_EVALUATION_SHADER);
+        
+        glAttachShader(m_id, dummyShader);
+        glDeleteShader(dummyShader);
+    }
+
+
+    // Add fragment shader source
+    if(m_attachedShaders.size() > 0)
+    {
+        // determine source of source pointer array
+        std::string source = "";
+
+        // Add sources (definitions etc.) before shader
+        for(int i = 0; i < m_sources.size(); i++)
+        {
+            source += m_sources[i];
+        }
+
+        source += "#define FRAGMENT_SHADER 1";
+        
+        // Compile shaders
+        for(int i = 0; i < m_attachedShaders.size(); i++)
+        {
+            source += m_attachedShaders[i]->getSource();
+        }
+
+        // Add frag shader source
+        source += fragmentShader->getSource();
+
+        const GLchar *sourceArray[] = {source.c_str()};
+        // writeToFile(source, "combinedShader"+ m_name + ".txt");
+        // create dummy shader 
+        GLuint dummyShader = compileDirect(sourceArray, 1, GL_FRAGMENT_SHADER);
+        
+        glAttachShader(m_id, dummyShader);
+        glDeleteShader(dummyShader);
+    }
+
+
+    glLinkProgram(m_id);
+
+    // if errors occured, write them to log
+    GLint success = 0;
+    glGetProgramiv(m_id, GL_LINK_STATUS, &success);
+    if(!success)
+    {
+        char infoLog[1024];
+        glGetProgramInfoLog(m_id, 1024, NULL, infoLog);
+        LOG_SHADER_ERROR("Shader program", "Shader program " + m_name + " linking failed: " + infoLog);
+        glDeleteProgram(m_id);
+    }
+
+    m_linked = true;
+}
+
 void ShaderProgram::writeToFile(std::string source, std::string name)
 {
     std::ofstream file;

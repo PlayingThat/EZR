@@ -19,6 +19,12 @@ public:
     void link(GLenum type = GL_COMPUTE_SHADER);
     void linkCombinedVertexFragment(std::shared_ptr<Shader> vertexShader, std::shared_ptr<Shader> fragmentShader);
 
+    void linkCombinedShader(std::shared_ptr<Shader> vertexShader, 
+                                    std::shared_ptr<Shader> fragmentShader,
+                                    std::shared_ptr<Shader> geometryShader,
+                                    std::shared_ptr<Shader> tessControlShader,
+                                    std::shared_ptr<Shader> tessEvalShader);
+
     void use();
 
     GLuint getID();

@@ -800,7 +800,6 @@ void Terrain::loadTopViewProgram()
     m_topViewShaderProgram = std::make_shared<ShaderProgram>("TopView");
     std::shared_ptr<Shader> m_topViewShader = std::make_shared<Shader>("./Assets/Shader/Terrain/TopView.comp", false);
     
-    m_topViewShaderProgram->addSource("#define FRAGMENT_SHADER");
     m_topViewShaderProgram->addSource("#define FLAG_DISPLACE");
     m_topViewShaderProgram->addSource("#define TERRAIN_PATCH_SUBD_LEVEL " + std::to_string(m_patchSubDiv));
     m_topViewShaderProgram->addSource("#define TERRAIN_PATCH_TESS_FACTOR " + std::to_string(1 << m_patchSubDiv));
@@ -815,8 +814,8 @@ void Terrain::loadTopViewProgram()
     m_topViewShaderProgram->attachShader(m_terrainLEBShader);
     m_topViewShaderProgram->attachShader(m_terrainRenderCommonShader);
     m_topViewShader = std::make_shared<Shader>("./Assets/Shader/Terrain/TopView.comp", false);
-    m_topViewShaderProgram->attachShader(m_topViewShader);
-    m_topViewShaderProgram->link(GL_FRAGMENT_SHADER);
+    //m_topViewShaderProgram->attachShader(m_topViewShader);
+    m_topViewShaderProgram->linkCombinedShader(m_topViewShader, m_topViewShader, m_topViewShader, m_topViewShader, m_topViewShader);
     
     HANDLE_GL_ERRORS("loading terrain top view shader");
     configureTopViewProgram();
