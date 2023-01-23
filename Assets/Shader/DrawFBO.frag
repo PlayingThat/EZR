@@ -38,7 +38,7 @@ void main()
     vec4 terrainFrag = texture(terrain, gl_FragCoord.xy / screenSize);
     vec4 depthFrag = texture(depth, gl_FragCoord.xy / screenSize);
 
-    if (texture(terrainDepth, gl_FragCoord.xy / screenSize).r < depthFrag.r) {
+    if (texture(terrainDepth, gl_FragCoord.xy / screenSize).r < 1) {
         color = terrainFrag;
     }
     else {
