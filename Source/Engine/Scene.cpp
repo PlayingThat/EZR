@@ -144,6 +144,15 @@ void Scene::setupNPREffects()
     addNPREffect(m_rimLShaderProgram, false);
     addNPRProperty("RimLighting", "Textured##RimLighing", &m_rimLPropertyTextured, true);
 
+    // Setup Outline
+    m_outlVertexShader = std::make_shared<Shader>("./Assets/Shader/Outline.vert");
+    m_outlFragmentShader = std::make_shared<Shader>("./Assets/Shader/Outline.frag");
+    m_outlShaderProgram = std::make_shared<ShaderProgram>("Outline");
+    m_outlShaderProgram->addShader(m_outlVertexShader);
+    m_outlShaderProgram->addShader(m_outlFragmentShader);
+    m_outlShaderProgram->link();
+    addNPREffect(m_outlShaderProgram, false);
+
     // Setup Stippling
     m_stippVertexShader = std::make_shared<Shader>("./Assets/Shader/Stippling.vert");
     m_stippFragmentShader = std::make_shared<Shader>("./Assets/Shader/Stippling.frag");
@@ -152,7 +161,7 @@ void Scene::setupNPREffects()
     m_stippShaderProgram->addShader(m_stippFragmentShader);
     m_stippShaderProgram->link();
     addNPREffect(m_stippShaderProgram, false);
-    addNPRProperty("Stippling", "Textured", &m_stippPropertyTextured, true);
+    //addNPRProperty("Stippling", "Textured##Stippling", &m_stippPropertyTextured, true);
     
     // Stippling Textures
     createStipplingTexture();
