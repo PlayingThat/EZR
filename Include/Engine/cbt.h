@@ -134,9 +134,9 @@ CBTDEF void cbt_SetHeap(cbt_Tree *tree, const char *heapToCopy);
 #   define CBT_BARRIER
 #else
 #   if defined(_WIN32)
-#       define CBT_ATOMIC          __pragma("omp atomic" )
-#       define CBT_PARALLEL_FOR    __pragma("omp parallel for")
-#       define CBT_BARRIER         __pragma("omp barrier")
+#       define CBT_ATOMIC          _Pragma("omp atomic" )
+#       define CBT_PARALLEL_FOR    _Pragma("omp parallel for")
+#       define CBT_BARRIER         _Pragma("omp barrier")
 #   else
 #       define CBT_ATOMIC          _Pragma("omp atomic" )
 #       define CBT_PARALLEL_FOR    _Pragma("omp parallel for")
