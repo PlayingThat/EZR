@@ -31,7 +31,7 @@ bool Model::loadModel(std::string path,
                                                     aiProcess_Triangulate | 
                                                     aiProcess_ConvertToLeftHanded);
 
-    LOG_INFO("Try to load model");
+    LOG_INFO("Try to load model " + path);
     
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
