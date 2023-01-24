@@ -140,26 +140,26 @@ private:
     //////////////////////////////////////////////////////////
     // GL Buffer
 
-    // // Subdivision buffer
-    // GLuint m_subdivisionBuffer = 0;
+    // Subdivision buffer
+    GLuint m_subdivisionBuffer = 0;
     
-    // // Buffer indices
-    // GLuint m_subdivionBufferIndex = 6;
+    // Buffer indices
+    GLuint m_subdivionBufferIndex = 6;
 
-    // // Buffers for indirect drawing
-    // GLuint m_bufferTerrainDraw = 0;
-    // GLuint m_bufferTerrainDrawIndex = 7;
-    // GLuint m_bufferTerrainDrawComputeShader = 0;
-    // GLuint m_bufferTerrainDrawComputeShaderIndex = 8;
-    // GLuint m_bufferTerrainDispatchComputeShader = 0;
-    // GLuint m_bufferTerrainDispatchComputeShaderIndex = 9;
+    // Buffers for indirect drawing
+    GLuint m_bufferTerrainDraw = 0;
+    GLuint m_bufferTerrainDrawIndex = 7;
+    GLuint m_bufferTerrainDrawComputeShader = 0;
+    GLuint m_bufferTerrainDrawComputeShaderIndex = 8;
+    GLuint m_bufferTerrainDispatchComputeShader = 0;
+    GLuint m_bufferTerrainDispatchComputeShaderIndex = 9;
 
-    // // Buffers for terrain subdivision meshlet
-    // GLuint m_bufferMeshletVertices = 0;
-    // GLuint m_bufferMeshletIndices = 0;
+    // Buffers for terrain subdivision meshlet
+    GLuint m_bufferMeshletVertices = 0;
+    GLuint m_bufferMeshletIndices = 0;
 
-    // GLuint m_bufferCBTNodeCount = 0;
-    // GLuint m_bufferCBTNodeCountIndex = 10;
+    GLuint m_bufferCBTNodeCount = 0;
+    GLuint m_bufferCBTNodeCountIndex = 10;
 
     // VAO for empty buffer
     GLuint m_vaoEmpty = 0;
