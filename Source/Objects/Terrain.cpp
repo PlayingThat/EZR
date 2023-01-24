@@ -968,7 +968,7 @@ void Terrain::configureTopViewProgram()
 
 GLuint* Terrain::getDrawTextures()
 {
-    GLuint* drawTextures = new GLuint[2];
+    GLuint* drawTextures = new GLuint[3];
     drawTextures[0] = m_framebufferTerrainColorTexture;
     drawTextures[1] = m_framebufferTerrainDepthTexture;
     drawTextures[2] = m_framebufferTerrainTopViewFBO->getColorAttachment(0);
