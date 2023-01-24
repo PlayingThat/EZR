@@ -36,6 +36,11 @@ Terrain::Terrain(std::shared_ptr<Scene> scene) : Drawable(scene)
 
     // Subscribe to size change events
     m_scene->getState()->attachWindowSizeChangeCallback(this);
+
+    // Setup transform
+    rotate(glm::vec3(1, 0, 0), -90.0f);
+    scale(glm::vec3(100, 30, 100));
+    setBasePosition(glm::vec3(-50, -2, 15));
 }
 
 Terrain::~Terrain()
