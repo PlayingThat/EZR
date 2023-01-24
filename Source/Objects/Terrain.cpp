@@ -34,12 +34,19 @@ void Terrain::draw()
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrain);
     glClearColor(0.5, 0.5, 0.5, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    LOG_INFO("terrain1");
+
     drawScene();
+
+    LOG_INFO("terrain2");
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0, 0, 300, 300);
     glClear(GL_COLOR_BUFFER_BIT);
     renderTopView();
+
+    LOG_INFO("terrain3");
 }
 
 // Draw GUI controls for terrain arguments
@@ -225,6 +232,8 @@ void Terrain::lebRender()
 
 void Terrain::create()
 {
+    LOG_INFO("Try to create Terrain");
+
     // Load textures
     loadTextures();
 
@@ -242,6 +251,8 @@ void Terrain::create()
 
     // Load queries
     setupQueries();
+
+    LOG_INFO("Terrain created");
 }
 
 void Terrain::setupBuffers()
@@ -968,7 +979,7 @@ void Terrain::configureTopViewProgram()
 
 GLuint* Terrain::getDrawTextures()
 {
-    GLuint* drawTextures = new GLuint[2];
+    GLuint* drawTextures = new GLuint[3];
     drawTextures[0] = m_framebufferTerrainColorTexture;
     drawTextures[1] = m_framebufferTerrainDepthTexture;
     drawTextures[2] = m_framebufferTerrainTopViewFBO->getColorAttachment(0);
