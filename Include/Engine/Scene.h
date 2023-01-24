@@ -175,6 +175,17 @@ private:
     GLuint m_stipp5 = 0;
     GLuint m_stipp6 = 0;
     GLuint m_paper = 0;
+
+    // Hatching shader
+    std::shared_ptr<Shader> m_hatchVertexShader;
+    std::shared_ptr<Shader> m_hatchFragmentShader;
+    std::shared_ptr<ShaderProgram> m_hatchShaderProgram;
+    bool m_hatchPropertyColored = false;
+    bool m_hatchPropertyTextured = false;
+    int m_hatchPropertyMode = 0;
+    float m_hatchPropertyFrequency = 1.0;
+    bool m_hatchPropertyNoiseActive = false;
+    float m_hatchPropertyNoise = 3.0;
     
     //////////////////////////////////////////
     // Objects

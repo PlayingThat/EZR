@@ -60,9 +60,13 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     getState()->getCamera()->setPosition(glm::vec3(0.0f, 1.7f, 2.7f));
 
     //addObject(m_triangle);
+    LOG_INFO("Try to add terrain");
     addObject(m_terrain);
+    LOG_INFO("Try to add clouds");
     addObject(m_clouds);
+    LOG_INFO("Try to add ghost");
     addObject(m_ghost);
+    LOG_INFO("Finished with adding");
 }
 
 Scene::~Scene()
@@ -98,7 +102,7 @@ void Scene::setupNPREffects()
     m_basicShaderProgram->addShader(m_basicVertexShader);
     m_basicShaderProgram->addShader(m_basicFragmentShader);
     m_basicShaderProgram->link();
-    addNPREffect(m_basicShaderProgram, true);
+    addNPREffect(m_basicShaderProgram, false);
 
     // Setup Gooch
     m_goochVertexShader = std::make_shared<Shader>("./Assets/Shader/Gooch.vert");
@@ -111,6 +115,7 @@ void Scene::setupNPREffects()
     addNPRProperty("Gooch", "Textured##Gooch", &m_goochPropertyTextured, true);
     addNPRProperty("Gooch", "CoolColor", &m_goochPropertyCoolColor, true);
     addNPRProperty("Gooch", "WarmColor", &m_goochPropertyWarmColor, true);
+    
 
     // Setup Toon
     m_toonVertexShader = std::make_shared<Shader>("./Assets/Shader/Toon.vert");
@@ -154,6 +159,22 @@ void Scene::setupNPREffects()
     addNPREffect(m_stippShaderProgram, false);
     addNPRProperty("Stippling", "Textured", &m_stippPropertyTextured, true);
     
+    // Setup Hatching
+    m_hatchVertexShader = std::make_shared<Shader>("./Assets/Shader/Hatching.vert");
+    m_hatchFragmentShader = std::make_shared<Shader>("./Assets/Shader/Hatching.frag");
+    m_hatchShaderProgram = std::make_shared<ShaderProgram>("Hatching");
+    m_hatchShaderProgram->addShader(m_hatchVertexShader);
+    m_hatchShaderProgram->addShader(m_hatchFragmentShader);
+    m_hatchShaderProgram->link();
+    addNPREffect(m_hatchShaderProgram, true);
+    addNPRProperty("Hatching", "Colored", &m_hatchPropertyColored, true);
+    addNPRProperty("Hatching", "Textured##Hatching", &m_hatchPropertyTextured, true);
+    addNPRProperty("Hatching", "mode", &m_hatchPropertyMode, true, 0, 5);
+    addNPRProperty("Hatching", "frequency", &m_hatchPropertyFrequency, true, 0.5, 2.0);
+    addNPRProperty("Hatching", "noiseActive", &m_hatchPropertyNoiseActive, true);
+    addNPRProperty("Hatching", "noise", &m_hatchPropertyNoise, true, 0.0, 10.0);
+    
+
     // Stippling Textures
     createStipplingTexture();
 
