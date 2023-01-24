@@ -42,7 +42,7 @@ void main()
 #endif
 
 #if FLAG_CS
-    u_DispatchIndirectCommand[0] = 100;
+    u_DispatchIndirectCommand[0] = nodeCount / 256u + 1u;
     u_DrawElementsIndirectCommand[0] = MESHLET_INDEX_COUNT;
     u_DrawElementsIndirectCommand[1] = nodeCount;
 #endif
