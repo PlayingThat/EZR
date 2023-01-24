@@ -89,6 +89,12 @@ target_link_libraries(${PROJECT_NAME} "glad" "${CMAKE_DL_LIBS}")
 #add_library("assimp" "${GLAD_DIR}/src/glad.c")
 #target_link_libraries(${PROJECT_NAME} "assimp" "${CMAKE_CURRENT_LIST_DIR}/Dependencies/assimp/lib/libassimp.a")
 
+find_package(OpenMP)
+if(OPENMP_FOUND)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
 if (UNIX)
     target_link_libraries(
         ${PROJECT_NAME}
