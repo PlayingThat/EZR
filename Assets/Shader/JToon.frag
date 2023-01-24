@@ -31,7 +31,7 @@ void main()
         discard;
     }
 
-    // Deferred shading (usually in vertex shader)
+    // Deferred shading 
     vec4 vPosition = texture(positions, gl_FragCoord.xy / screenSize);
     vec4 vertex = vPosition;
     vec3 ecPos = vertex.xyz;
