@@ -8,6 +8,27 @@
 #define LEB_IMPLEMENTATION
 #include "../../Include/Engine/leb.h"
 
+enum {
+    BUFFER_LEB,
+    BUFFER_TERRAIN_DRAW,
+    BUFFER_TERRAIN_DRAW_MS,
+    BUFFER_MESHLET_VERTICES,
+    BUFFER_MESHLET_INDEXES,
+    BUFFER_TERRAIN_DRAW_CS,     // compute shader path only
+    BUFFER_TERRAIN_DISPATCH_CS, // compute shader path only
+    BUFFER_SPHERE_VERTICES,
+    BUFFER_SPHERE_INDEXES,
+    BUFFER_CBT_NODE_COUNT,
+
+    BUFFER_COUNT
+};
+
+struct OpenGLManager {
+    GLuint buffers[BUFFER_COUNT];
+} g_gl = {
+    {0}
+};
+
 Terrain::Terrain(std::shared_ptr<Scene> scene) : Drawable(scene)
 {
     m_scene = scene;
@@ -74,8 +95,8 @@ void Terrain::renderTopView()
     glDisable(GL_CULL_FACE);
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrainTopViewFBO->getID());
 
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
-    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDraw);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BUFFER_LEB, g_gl.buffers[BUFFER_LEB]);
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, g_gl.buffers[BUFFER_TERRAIN_DRAW]);
     glViewport(10, 10, 300, 300);
     glBindVertexArray(m_vaoEmpty);
     glPatchParameteri(GL_PATCH_VERTICES, 1);
@@ -87,7 +108,7 @@ void Terrain::renderTopView()
     glBindVertexArray(0);
     glViewport(0, 0, m_scene->getState()->getWidth(), m_scene->getState()->getHeight());
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BUFFER_LEB, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -114,10 +135,10 @@ void Terrain::drawTerrain()
 void Terrain::lebUpdate()
 {
     static int pingPong = 0;
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BUFFER_LEB, g_gl.buffers[BUFFER_LEB]);
 
     // set GL state
-    glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, m_bufferTerrainDispatchComputeShader);
+    glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, g_gl.buffers[BUFFER_TERRAIN_DISPATCH_CS]);
 
     // update
     if (pingPong == 0)
@@ -134,7 +155,7 @@ void Terrain::lebUpdate()
     // reset GL state
     glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, 0);
 
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BUFFER_LEB, 0);
     pingPong = 1 - pingPong;
 }
 
@@ -142,7 +163,7 @@ void Terrain::lebReductionPass()
 {
     int it = m_maxDepth;
 
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BUFFER_LEB, g_gl.buffers[BUFFER_LEB]);
     m_lebReductionPrepassShaderProgram->use();
     if (true) {
         int cnt = ((1 << it) >> 5);// / 2;
@@ -173,29 +194,29 @@ void Terrain::lebReductionPass()
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
         // djgc_stop(g_gl.clocks[CLOCK_REDUCTION00 + it]);
     }
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BUFFER_LEB, 0);
 }
 
 void Terrain::lebBatchingPass()
 {
     m_batchShaderProgram->use();
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BUFFER_LEB, g_gl.buffers[BUFFER_LEB]);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
-                     m_bufferTerrainDrawIndex,
-                     m_bufferTerrainDraw);
+                     BUFFER_TERRAIN_DRAW,
+                     g_gl.buffers[BUFFER_TERRAIN_DRAW]);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
-                     m_bufferTerrainDrawComputeShaderIndex,
-                     m_bufferTerrainDrawComputeShader);
+                     BUFFER_TERRAIN_DRAW_CS,
+                     g_gl.buffers[BUFFER_TERRAIN_DRAW_CS]);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
-                     m_bufferTerrainDispatchComputeShaderIndex,
-                     m_bufferTerrainDispatchComputeShader);
+                     BUFFER_TERRAIN_DISPATCH_CS,
+                     g_gl.buffers[BUFFER_TERRAIN_DISPATCH_CS]);
 
     glDispatchCompute(1, 1, 1);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_bufferTerrainDrawIndex, 0);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_bufferTerrainDrawComputeShaderIndex, 0);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_bufferTerrainDispatchComputeShaderIndex, 0);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BUFFER_TERRAIN_DRAW, 0);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BUFFER_TERRAIN_DRAW_CS, 0);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BUFFER_TERRAIN_DISPATCH_CS, 0);
 }
 
 void Terrain::lebRender()
@@ -203,8 +224,8 @@ void Terrain::lebRender()
     // set GL state
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
-    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDraw);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BUFFER_LEB, g_gl.buffers[BUFFER_LEB]);
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, g_gl.buffers[BUFFER_TERRAIN_DRAW_CS]);
     glBindVertexArray(m_vaoTriangleMeshlet);
 
     // render
@@ -212,7 +233,7 @@ void Terrain::lebRender()
     glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_SHORT, ((char *)NULL + (0)));  // 0 = offset
 
     // reset GL state
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BUFFER_LEB, 0);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
     glBindVertexArray(0);
     glDisable(GL_CULL_FACE);
@@ -517,26 +538,26 @@ void Terrain::retrieveCBTNodeCount()
     glGetQueryObjectiv(*query, GL_QUERY_RESULT_AVAILABLE, &isReady);
 
     if (isReady) {
-        GLuint *buffer = &m_bufferCBTNodeCount;
+        GLuint *buffer = &g_gl.buffers[BUFFER_CBT_NODE_COUNT];
 
         m_cbtNodeCount = *(uint32_t *)
             glMapNamedBuffer(*buffer, GL_READ_ONLY | GL_MAP_UNSYNCHRONIZED_BIT);
-        glUnmapNamedBuffer(m_bufferCBTNodeCount);
+        glUnmapNamedBuffer(g_gl.buffers[BUFFER_CBT_NODE_COUNT]);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
-                         m_bufferCBTNodeCountIndex,
-                         m_bufferCBTNodeCount);
+                         BUFFER_CBT_NODE_COUNT,
+                         g_gl.buffers[BUFFER_CBT_NODE_COUNT]);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
-                         m_subdivionBufferIndex,
-                         m_subdivisionBuffer);
+                         BUFFER_LEB,
+                         g_gl.buffers[BUFFER_LEB]);
         m_cbtNodeCountShaderProgram->use();
         glDispatchCompute(1, 1, 1);
         glMemoryBarrier(GL_ALL_BARRIER_BITS);
         glQueryCounter(*query, GL_TIMESTAMP);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
-                         m_bufferCBTNodeCountIndex,
+                         BUFFER_CBT_NODE_COUNT,
                          0);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
-                         m_subdivionBufferIndex,
+                         BUFFER_LEB,
                          0);
     }
 }
@@ -549,15 +570,17 @@ void Terrain::loadSubdivisionBuffer()
     // m_longesEdgeBisection = std::make_unique<LongestEdgeBisection>();
 
     cbt_Tree *cbt = cbt_CreateAtDepth(m_maxDepth, 1);
-
+    
+    if (glIsBuffer(g_gl.buffers[BUFFER_LEB]))
+        glDeleteBuffers(1, &g_gl.buffers[BUFFER_LEB]);
     // Create a new shader storage buffer for the longest edge bisection
-    glGenBuffers(1, &m_subdivisionBuffer);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_subdivisionBuffer);
+    glGenBuffers(1, &g_gl.buffers[BUFFER_LEB]);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, g_gl.buffers[BUFFER_LEB]);
     glBufferData(GL_SHADER_STORAGE_BUFFER, cbt_HeapByteSize(cbt),
                  cbt_GetHeap(cbt), GL_STATIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BUFFER_LEB, g_gl.buffers[BUFFER_LEB]);
     cbt_Release(cbt);
     HANDLE_GL_ERRORS("loading terrain subdivision buffer (leb/cbt)");
 }
@@ -570,24 +593,24 @@ void Terrain::loadRenderBuffer()
     uint32_t dispatchCmd[8] = {2, 1, 1, 0, 0, 0, 0, 0};
 
     // Allow for dynamic parameter tuning via the GUI
-    if (glIsBuffer(m_bufferTerrainDraw))
-        glDeleteBuffers(1, &m_bufferTerrainDraw);
+    if (glIsBuffer(g_gl.buffers[BUFFER_TERRAIN_DRAW]))
+        glDeleteBuffers(1, &g_gl.buffers[BUFFER_TERRAIN_DRAW]);
 
-    if (glIsBuffer(m_bufferTerrainDrawComputeShader))
-        glDeleteBuffers(1, &m_bufferTerrainDrawComputeShader);
+    if (glIsBuffer(g_gl.buffers[BUFFER_TERRAIN_DRAW_CS]))
+        glDeleteBuffers(1, &g_gl.buffers[BUFFER_TERRAIN_DRAW_CS]);
 
-    glGenBuffers(1, &m_bufferTerrainDraw);
-    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDraw);
+    glGenBuffers(1, &g_gl.buffers[BUFFER_TERRAIN_DRAW]);
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, g_gl.buffers[BUFFER_TERRAIN_DRAW]);
     glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(drawArraysCmd), drawArraysCmd, GL_STATIC_DRAW);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 
-    glGenBuffers(1, &m_bufferTerrainDrawComputeShader);
-    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDrawComputeShader);
+    glGenBuffers(1, &g_gl.buffers[BUFFER_TERRAIN_DRAW_CS]);
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, g_gl.buffers[BUFFER_TERRAIN_DRAW_CS]);
     glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(drawElementsCmd), drawElementsCmd, GL_STATIC_DRAW);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 
-    glGenBuffers(1, &m_bufferTerrainDispatchComputeShader);
-    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDispatchComputeShader);
+    glGenBuffers(1, &g_gl.buffers[BUFFER_TERRAIN_DISPATCH_CS]);
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, g_gl.buffers[BUFFER_TERRAIN_DISPATCH_CS]);
     glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(dispatchCmd), dispatchCmd, GL_STATIC_DRAW);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 
@@ -597,17 +620,17 @@ void Terrain::loadRenderBuffer()
 void Terrain::loadCBTNodeCountBuffer()
 {
     LOG_INFO("Loading Cbt-Node-Count-Buffer");
-    if (glIsBuffer(m_bufferCBTNodeCount))
-        glDeleteBuffers(1, &m_bufferCBTNodeCount);
-    glGenBuffers(1, &m_bufferCBTNodeCount);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_bufferCBTNodeCount);
+    if (glIsBuffer(g_gl.buffers[BUFFER_CBT_NODE_COUNT]))
+        glDeleteBuffers(1, &g_gl.buffers[BUFFER_CBT_NODE_COUNT]);
+    glGenBuffers(1, &g_gl.buffers[BUFFER_CBT_NODE_COUNT]);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, g_gl.buffers[BUFFER_CBT_NODE_COUNT]);
     glBufferStorage(GL_SHADER_STORAGE_BUFFER,
                     sizeof(int32_t),
                     NULL,
                     GL_MAP_READ_BIT);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
-                     m_bufferCBTNodeCountIndex,
-                     m_bufferCBTNodeCount);
+                     BUFFER_CBT_NODE_COUNT,
+                     g_gl.buffers[BUFFER_CBT_NODE_COUNT]);
 
     HANDLE_GL_ERRORS("loading CBT Node counter buffer");
 }
@@ -645,24 +668,24 @@ void Terrain::loadTriangleMeshletBuffers()
         }
     }
 
-    if (glIsBuffer(m_bufferMeshletVertices))
-        glDeleteBuffers(1, &m_bufferMeshletVertices);
+    if (glIsBuffer(g_gl.buffers[BUFFER_MESHLET_VERTICES]))
+        glDeleteBuffers(1, &g_gl.buffers[BUFFER_MESHLET_VERTICES]);
 
-    if (glIsBuffer(m_bufferMeshletIndices))
-        glDeleteBuffers(1, &m_bufferMeshletIndices);
+    if (glIsBuffer(g_gl.buffers[BUFFER_MESHLET_INDEXES]))
+        glDeleteBuffers(1, &g_gl.buffers[BUFFER_MESHLET_INDEXES]);
 
     LOG_INFO("Loading Meshlet-Buffers");
 
-    glGenBuffers(1, &m_bufferMeshletIndices);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_bufferMeshletIndices);
+    glGenBuffers(1, &g_gl.buffers[BUFFER_MESHLET_INDEXES]);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, g_gl.buffers[BUFFER_MESHLET_INDEXES]);
     glBufferData(GL_SHADER_STORAGE_BUFFER,
                  sizeof(indexBuffer[0]) * indexBuffer.size(),
                  &indexBuffer[0],
                  GL_STATIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-    glGenBuffers(1, &m_bufferMeshletVertices);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_bufferMeshletVertices);
+    glGenBuffers(1, &g_gl.buffers[BUFFER_MESHLET_VERTICES]);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, g_gl.buffers[BUFFER_MESHLET_VERTICES]);
     glBufferData(GL_SHADER_STORAGE_BUFFER,
                  sizeof(vertexBuffer[0]) * vertexBuffer.size(),
                  &vertexBuffer[0],
@@ -700,9 +723,9 @@ void Terrain::loadVAOTriangleMeshlet()
 
     glBindVertexArray(m_vaoTriangleMeshlet);
     glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, m_bufferMeshletVertices);
+    glBindBuffer(GL_ARRAY_BUFFER, g_gl.buffers[BUFFER_MESHLET_VERTICES]);
     glVertexAttribPointer(0, 2, GL_FLOAT, 0, 0, ((char *)NULL + (0)));
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_bufferMeshletIndices);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_gl.buffers[BUFFER_MESHLET_INDEXES]);
     glBindVertexArray(0);
     HANDLE_GL_ERRORS("loading VAO for triangle meshlet");
 }
@@ -732,8 +755,8 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram, s
     shaderProgram = std::make_shared<ShaderProgram>(typeFlag);
     shaderProgram->addSource("#define PROJECTION_RECTILINEAR");
 
-    shaderProgram->addSource("#define BUFFER_BINDING_MESHLET_VERTICES " + std::to_string(m_bufferMeshletVertices));
-    shaderProgram->addSource("#define BUFFER_BINDING_MESHLET_INDEXES " + std::to_string(m_bufferMeshletIndices));
+    shaderProgram->addSource("#define BUFFER_BINDING_MESHLET_VERTICES " + std::to_string(BUFFER_MESHLET_VERTICES));
+    shaderProgram->addSource("#define BUFFER_BINDING_MESHLET_INDEXES " + std::to_string(BUFFER_MESHLET_INDEXES));
     shaderProgram->addSource("#define TERRAIN_PATCH_SUBD_LEVEL " + std::to_string(m_patchSubDiv));
     shaderProgram->addSource("#define TERRAIN_PATCH_TESS_FACTOR " + std::to_string((1 << m_patchSubDiv)));
     shaderProgram->addSource("#define SHADING_DIFFUSE 1");
@@ -744,7 +767,7 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram, s
     m_terrainFrustumCullingShader = std::make_shared<Shader>("./Assets/Shader/Terrain/FrustumCulling.comp", false);
     shaderProgram->attachShader(m_terrainFrustumCullingShader);
 
-    shaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
+    shaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(BUFFER_LEB));
     shaderProgram->addSource("#define CBT_READ_ONLY");
 
     m_terrainCBTShader = std::make_shared<Shader>("./Assets/Shader/Terrain/cbt.comp", false);
@@ -785,7 +808,7 @@ void Terrain::loadLEBReductionProgram()
     m_lebReductionShaderProgram = std::make_shared<ShaderProgram>("LEBReduction");
     std::shared_ptr<Shader> m_cbtCumSumReductionShader = std::make_shared<Shader>("./Assets/Shader/Terrain/cbtSumReduction.comp", false);
     
-    m_lebReductionShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
+    m_lebReductionShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(BUFFER_LEB));
     m_lebReductionShaderProgram->attachShader(m_terrainCBTShader);  // CBT shader already loaded in loadShaderProgram
     m_lebReductionShaderProgram->attachShader(m_cbtCumSumReductionShader);
     m_lebReductionShaderProgram->addSource("#ifdef COMPUTE_SHADER\n#endif");
@@ -799,7 +822,7 @@ void Terrain::LoadLebReductionPrepassProgram()
     m_lebReductionPrepassShaderProgram = std::make_shared<ShaderProgram>("LEBReductionPrepass");
     std::shared_ptr<Shader> m_cbtCumSumReductionPrepassShader = std::make_shared<Shader>("./Assets/Shader/Terrain/cbtSumReductionPrepass.comp", false);
     
-    m_lebReductionPrepassShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
+    m_lebReductionPrepassShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(BUFFER_LEB));
     m_lebReductionPrepassShaderProgram->attachShader(m_terrainCBTShader);  // CBT shader already loaded in loadShaderProgram
     m_lebReductionPrepassShaderProgram->attachShader(m_cbtCumSumReductionPrepassShader);
     m_lebReductionPrepassShaderProgram->addSource("#ifdef COMPUTE_SHADER\n#endif");
@@ -818,15 +841,15 @@ void Terrain::loadBatchProgram()
     m_batchShaderProgram->addSource("#define ATOMIC_COUNTER_EXCHANGE_ARB 1");
 
     m_batchShaderProgram->addSource("#define FLAG_CS 1");
-    m_batchShaderProgram->addSource("#define BUFFER_BINDING_DRAW_ELEMENTS_INDIRECT_COMMAND " + std::to_string(m_bufferTerrainDrawComputeShaderIndex));
-    m_batchShaderProgram->addSource("#define BUFFER_BINDING_DISPATCH_INDIRECT_COMMAND " + std::to_string(m_bufferTerrainDispatchComputeShaderIndex));
+    m_batchShaderProgram->addSource("#define BUFFER_BINDING_DRAW_ELEMENTS_INDIRECT_COMMAND " + std::to_string(BUFFER_TERRAIN_DRAW_CS));
+    m_batchShaderProgram->addSource("#define BUFFER_BINDING_DISPATCH_INDIRECT_COMMAND " + std::to_string(BUFFER_TERRAIN_DISPATCH_CS));
     m_batchShaderProgram->addSource("#define MESHLET_INDEX_COUNT " + std::to_string(3 << (2 * m_patchSubDiv)));
 
     m_batchShaderProgram->addSource("#define LEB_BUFFER_COUNT 1");
-    m_batchShaderProgram->addSource("#define BUFFER_BINDING_LEB " + std::to_string(m_subdivionBufferIndex));
-    m_batchShaderProgram->addSource("#define BUFFER_BINDING_DRAW_ARRAYS_INDIRECT_COMMAND " + std::to_string(m_bufferTerrainDrawIndex));
+    m_batchShaderProgram->addSource("#define BUFFER_BINDING_LEB " + std::to_string(BUFFER_LEB));
+    m_batchShaderProgram->addSource("#define BUFFER_BINDING_DRAW_ARRAYS_INDIRECT_COMMAND " + std::to_string(BUFFER_TERRAIN_DRAW));
 
-    m_batchShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
+    m_batchShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(BUFFER_LEB));
     m_batchShaderProgram->addSource("#define CBT_READ_ONLY");
     
     m_batchShaderProgram->addSource("#define COMPUTE_SHADER");
@@ -847,8 +870,8 @@ void Terrain::loadTopViewProgram()
     m_topViewShaderProgram->addSource("#define TERRAIN_PATCH_TESS_FACTOR " + std::to_string(1 << m_patchSubDiv));
     m_topViewShaderProgram->addSource("#define BUFFER_BINDING_TERRAIN_VARIABLES 0");
     m_topViewShaderProgram->addSource("#define LEB_BUFFER_COUNT 1");
-    m_topViewShaderProgram->addSource("#define BUFFER_BINDING_LEB " + std::to_string(m_subdivionBufferIndex));
-    m_topViewShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
+    m_topViewShaderProgram->addSource("#define BUFFER_BINDING_LEB " + std::to_string(BUFFER_LEB));
+    m_topViewShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(BUFFER_LEB));
     m_topViewShaderProgram->addSource("#define CBT_READ_ONLY");
 
     m_topViewShaderProgram->attachShader(m_terrainFrustumCullingShader);
@@ -868,8 +891,8 @@ void Terrain::loadCBTNodeCountShader()
     m_cbtNodeCountShaderProgram = std::make_shared<ShaderProgram>("CBTNodeCount");
     std::shared_ptr<Shader> m_cbtNodeCountShader = std::make_shared<Shader>("./Assets/Shader/Terrain/NodeCount.comp", false);
     
-    m_cbtNodeCountShaderProgram->addSource("#define CBT_NODE_COUNT_BUFFER_BINDING " + std::to_string(m_bufferCBTNodeCountIndex));
-    m_cbtNodeCountShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
+    m_cbtNodeCountShaderProgram->addSource("#define CBT_NODE_COUNT_BUFFER_BINDING " + std::to_string(BUFFER_CBT_NODE_COUNT));
+    m_cbtNodeCountShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(BUFFER_LEB));
     m_cbtNodeCountShaderProgram->addSource("#define CBT_READ_ONLY");
     m_cbtNodeCountShaderProgram->attachShader(m_terrainCBTShader);  // CBT shader already loaded in loadShaderProgram
     m_cbtNodeCountShaderProgram->attachShader(m_cbtNodeCountShader);
