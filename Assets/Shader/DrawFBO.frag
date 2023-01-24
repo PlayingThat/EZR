@@ -36,9 +36,12 @@ void main()
     float effectPercentage = 1.0 / numberOfEnabledEffects;
 
     vec4 terrainFrag = texture(terrain, gl_FragCoord.xy / screenSize);
-    vec4 depthFrag = texture(depth, gl_FragCoord.xy / screenSize);
+    float depthFrag = texture(depth, gl_FragCoord.xy / screenSize).r;
 
-    if (texture(terrainDepth, gl_FragCoord.xy / screenSize).r < 1) {
+    // Depth test for terrain vs scene objects
+    float terrainDepth = texture(terrainDepth, gl_FragCoord.xy / screenSize).r;
+    bool terrainVisible = terrainDepth < 1 && depthFrag > terrainDepth;
+    if (terrainVisible) {
         color = terrainFrag;
     }
     else {
@@ -64,12 +67,10 @@ void main()
         color += texture(fbo7, gl_FragCoord.xy / screenSize) * effectPercentage;
 
     vec3 clouds;
-    if (depthFrag.r == 1.0f) {
+    if (depthFrag == 1.0f && !terrainVisible) {
         clouds = texture(fboClouds, gl_FragCoord.xy / screenSize).rgb;
         FragColor = vec4(clouds, 1.0f);
     }
     else
         FragColor = color;
-    //vec4 terrainFrag = texture(terrain, gl_FragCoord.xy / screenSize);
-    //FragColor = texture(terrain, gl_FragCoord.xy / screenSize);
 }
