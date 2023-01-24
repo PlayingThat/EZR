@@ -63,7 +63,10 @@ set(SRC_LIST Include/stb_image.h
         Include/Objects/Ghost.h
         Source/Objects/Ghost.cpp
         Include/Objects/Clouds.h
-        Source/Objects/Clouds.cpp)
+        Source/Objects/Clouds.cpp
+        
+        Include/Engine/leb.h
+        Include/Engine/cbt.h)
         
 
 add_executable(${PROJECT_NAME} ${SRC_LIST} )

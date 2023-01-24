@@ -13,9 +13,6 @@
 #include "../Engine/FBO.h"
 #include "../Engine/Texture.h"
 
-#include "../Engine/ConcurrentBinaryTree.h"
-#include "../Engine/LongestEdgeBisection.h"
-
 #include <map>
 #include <string>
 
@@ -49,8 +46,8 @@ private:
     std::shared_ptr<Shader> m_basicFragmentShader;
     std::unique_ptr<ShaderProgram> m_basicShaderProgram;
 
-    std::unique_ptr<ConcurrentBinaryTree> m_concurrentBinaryTree;
-    std::unique_ptr<LongestEdgeBisection> m_longesEdgeBisection;
+    // std::unique_ptr<ConcurrentBinaryTree> m_concurrentBinaryTree;
+    // std::unique_ptr<LongestEdgeBisection> m_longesEdgeBisection;
 
     //////////////////////////////////////////////////////////
     // Render functions

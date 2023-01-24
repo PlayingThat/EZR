@@ -3,6 +3,10 @@
 //
 
 #include "Objects/Terrain.h"
+#define CBT_IMPLEMENTATION
+#include "../../Include/Engine/cbt.h"
+#define LEB_IMPLEMENTATION
+#include "../../Include/Engine/leb.h"
 
 Terrain::Terrain(std::shared_ptr<Scene> scene) : Drawable(scene)
 {
@@ -278,16 +282,24 @@ void Terrain::loadTerrainVariables()
 
     // extract frustum planes from modelViewProjection matrix
     glm::mat4 mvp = projectionMatrix * viewMatrix * modelMatrix;
-    for (int i = 0; i < 3; ++i)
-    for (int j = 0; j < 2; ++j) {
-        frustum[i*2+j].x = mvp[0][3] + (j == 0 ? mvp[0][i] : -mvp[0][i]);
-        frustum[i*2+j].y = mvp[1][3] + (j == 0 ? mvp[1][i] : -mvp[1][i]);
-        frustum[i*2+j].z = mvp[2][3] + (j == 0 ? mvp[2][i] : -mvp[2][i]);
-        frustum[i*2+j].w = mvp[3][3] + (j == 0 ? mvp[3][i] : -mvp[3][i]);
-        glm::vec4 tmp = frustum[i*2+j];
-        // norm of vector
-        frustum[i*2+j]*= glm::sqrt(glm::dot(glm::vec3(tmp.x, tmp.y, tmp.z), (glm::vec3(tmp.x, tmp.y, tmp.z))));
-    }
+    // for (int i = 0; i < 3; ++i)
+    // for (int j = 0; j < 2; ++j) {
+    //     frustum[i*2+j].x = mvp[0][3] + (j == 0 ? mvp[0][i] : -mvp[0][i]);
+    //     frustum[i*2+j].y = mvp[1][3] + (j == 0 ? mvp[1][i] : -mvp[1][i]);
+    //     frustum[i*2+j].z = mvp[2][3] + (j == 0 ? mvp[2][i] : -mvp[2][i]);
+    //     frustum[i*2+j].w = mvp[3][3] + (j == 0 ? mvp[3][i] : -mvp[3][i]);
+    //     glm::vec4 tmp = frustum[i*2+j];
+    //     // norm of vector
+    //     frustum[i*2+j]*= glm::sqrt(glm::dot(glm::vec3(tmp.x, tmp.y, tmp.z), (glm::vec3(tmp.x, tmp.y, tmp.z))));
+    // }
+
+    for (int i = 4; i--; ) frustum[0][i]   = mvp[i][3] + mvp[i][0];
+    for (int i = 4; i--; ) frustum[1][i]  = mvp[i][3] - mvp[i][0];
+    for (int i = 4; i--; ) frustum[2][i] = mvp[i][3] + mvp[i][1];
+    for (int i = 4; i--; ) frustum[3][i]    = mvp[i][3] - mvp[i][1];
+    for (int i = 4; i--; ) frustum[4][i]   = mvp[i][3] + mvp[i][2];
+    for (int i = 4; i--; ) frustum[5][i]    = mvp[i][3] - mvp[i][2];
+
     setTerrainVariables(m_terrainMergeShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
     setTerrainVariables(m_terrainSplitShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
     setTerrainVariables(m_terrainDrawShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
@@ -533,17 +545,20 @@ void Terrain::loadSubdivisionBuffer()
 {
     LOG_INFO("Loading Subdivision buffer for LEB and CBT");
 
-    m_concurrentBinaryTree = std::make_unique<ConcurrentBinaryTree>(m_maxDepth, 1);
-    m_longesEdgeBisection = std::make_unique<LongestEdgeBisection>();
+    // m_concurrentBinaryTree = std::make_unique<ConcurrentBinaryTree>(m_maxDepth, 1);
+    // m_longesEdgeBisection = std::make_unique<LongestEdgeBisection>();
+
+    cbt_Tree *cbt = cbt_CreateAtDepth(m_maxDepth, 1);
 
     // Create a new shader storage buffer for the longest edge bisection
     glGenBuffers(1, &m_subdivisionBuffer);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_subdivisionBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, m_concurrentBinaryTree->heapByteSize(), m_concurrentBinaryTree->getHeap(), GL_STATIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, cbt_HeapByteSize(cbt),
+                 cbt_GetHeap(cbt), GL_STATIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
-
+    cbt_Release(cbt);
     HANDLE_GL_ERRORS("loading terrain subdivision buffer (leb/cbt)");
 }
 
@@ -611,7 +626,7 @@ void Terrain::loadTriangleMeshletBuffers()
         cbt_Node node = {(uint64_t)(triangleCount + i), (uint64_t)2 * m_patchSubDiv};
         float attribArray[][3] = { {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f} };
 
-        m_longesEdgeBisection->decodeNodeAttributeArray(node, 2, attribArray);
+        leb_DecodeNodeAttributeArray(node, 2, attribArray);
 
         for (int j = 0; j < 3; ++j) {
             uint32_t vertexID = attribArray[0][j] * (edgeTessellationFactor + 1)
@@ -723,6 +738,8 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram, s
     shaderProgram->addSource("#define TERRAIN_PATCH_TESS_FACTOR " + std::to_string((1 << m_patchSubDiv)));
     shaderProgram->addSource("#define SHADING_DIFFUSE 1");
     shaderProgram->addSource("#define FLAG_DISPLACE 1");
+    shaderProgram->addSource("#define FLAG_CULL 1");
+    shaderProgram->addSource("#define COMPUTE_SHADER");
 
     m_terrainFrustumCullingShader = std::make_shared<Shader>("./Assets/Shader/Terrain/FrustumCulling.comp", false);
     shaderProgram->attachShader(m_terrainFrustumCullingShader);
@@ -744,7 +761,7 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram, s
     }   
     else { 
         std::shared_ptr<Shader> renderUpdateShader = std::make_shared<Shader>("./Assets/Shader/Terrain/RenderUpdate.comp", false);
-        shaderProgram->addSource("#define " + typeFlag);
+        shaderProgram->addSource("#define " + typeFlag + " 1");
         shaderProgram->attachShader(renderUpdateShader);
         shaderProgram->link();
     }
@@ -825,7 +842,7 @@ void Terrain::loadTopViewProgram()
     m_topViewShaderProgram = std::make_shared<ShaderProgram>("TopView");
     std::shared_ptr<Shader> m_topViewShader = std::make_shared<Shader>("./Assets/Shader/Terrain/TopView.comp", false);
     
-    m_topViewShaderProgram->addSource("#define FLAG_DISPLACE");
+    m_topViewShaderProgram->addSource("#define FLAG_DISPLACE 1");
     m_topViewShaderProgram->addSource("#define TERRAIN_PATCH_SUBD_LEVEL " + std::to_string(m_patchSubDiv));
     m_topViewShaderProgram->addSource("#define TERRAIN_PATCH_TESS_FACTOR " + std::to_string(1 << m_patchSubDiv));
     m_topViewShaderProgram->addSource("#define BUFFER_BINDING_TERRAIN_VARIABLES 0");
