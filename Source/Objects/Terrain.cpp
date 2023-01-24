@@ -41,7 +41,7 @@ void Terrain::draw()
 void Terrain::drawGUI()
 {
     ImGui::Begin("Terrain");
-    if (ImGui::SliderInt("Max Depth", &m_maxDepth, 1, 22)) {
+    if (ImGui::SliderInt("Max Depth", &m_maxDepth, 6, 25)) {
         setupBuffers();
         setupShaderPrograms();
     }
