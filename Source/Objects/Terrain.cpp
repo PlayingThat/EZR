@@ -34,6 +34,7 @@ void Terrain::draw()
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrain);
     glClearColor(0.5, 0.5, 0.5, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     drawScene();
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -225,6 +226,8 @@ void Terrain::lebRender()
 
 void Terrain::create()
 {
+    LOG_INFO("Try to create Terrain");
+
     // Load textures
     loadTextures();
 
@@ -242,6 +245,8 @@ void Terrain::create()
 
     // Load queries
     setupQueries();
+
+    LOG_INFO("Terrain created");
 }
 
 void Terrain::setupBuffers()
