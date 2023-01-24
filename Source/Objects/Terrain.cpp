@@ -35,18 +35,12 @@ void Terrain::draw()
     glClearColor(0.5, 0.5, 0.5, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    LOG_INFO("terrain1");
-
     drawScene();
-
-    LOG_INFO("terrain2");
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0, 0, 300, 300);
     glClear(GL_COLOR_BUFFER_BIT);
     renderTopView();
-
-    LOG_INFO("terrain3");
 }
 
 // Draw GUI controls for terrain arguments
