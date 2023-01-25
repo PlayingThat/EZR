@@ -186,6 +186,11 @@ private:
     float m_hatchPropertyFrequency = 1.0;
     bool m_hatchPropertyNoiseActive = false;
     float m_hatchPropertyNoise = 3.0;
+
+    // Outline shader
+    std::shared_ptr<Shader> m_outlVertexShader;
+    std::shared_ptr<Shader> m_outlFragmentShader;
+    std::shared_ptr<ShaderProgram> m_outlShaderProgram;
     
     //////////////////////////////////////////
     // Objects
