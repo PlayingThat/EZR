@@ -273,11 +273,11 @@ void Terrain::setTerrainVariables(std::shared_ptr<ShaderProgram> &shaderProgram,
                                   glm::vec4 frustum[6])
 {
     shaderProgram->use();
-    shaderProgram->setMat4("u_ModelMatrix", *modelMatrix);
-    shaderProgram->setMat4("u_ModelViewMatrix", *viewMatrix * *modelMatrix);
-    shaderProgram->setMat4("u_ViewMatrix", *viewMatrix);
+    shaderProgram->setMat4("u_ModelMatrix", glm::transpose(*modelMatrix));
+    shaderProgram->setMat4("u_ModelViewMatrix", glm::transpose(*viewMatrix * *modelMatrix));
+    shaderProgram->setMat4("u_ViewMatrix", glm::transpose(*viewMatrix));
     shaderProgram->setMat4("u_CameraMatrix", glm::transpose(glm::inverse(*viewMatrix)));
-    shaderProgram->setMat4("u_ViewProjectionMatrix", *projectionMatrix * *viewMatrix);
+    shaderProgram->setMat4("u_ViewProjectionMatrix", glm::transpose(*projectionMatrix * *viewMatrix));
     shaderProgram->setMat4("u_ModelViewProjectionMatrix", *projectionMatrix * *viewMatrix * *modelMatrix);
     shaderProgram->setVec4("u_FrustumPlanes", *frustum, 6);
 }
@@ -291,24 +291,24 @@ void Terrain::loadTerrainVariables()
     glm::vec4 frustum[6];      
 
     // extract frustum planes from modelViewProjection matrix
-    glm::mat4 mvp = projectionMatrix * viewMatrix * modelMatrix;
-    // for (int i = 0; i < 3; ++i)
-    // for (int j = 0; j < 2; ++j) {
-    //     frustum[i*2+j].x = mvp[0][3] + (j == 0 ? mvp[0][i] : -mvp[0][i]);
-    //     frustum[i*2+j].y = mvp[1][3] + (j == 0 ? mvp[1][i] : -mvp[1][i]);
-    //     frustum[i*2+j].z = mvp[2][3] + (j == 0 ? mvp[2][i] : -mvp[2][i]);
-    //     frustum[i*2+j].w = mvp[3][3] + (j == 0 ? mvp[3][i] : -mvp[3][i]);
-    //     glm::vec4 tmp = frustum[i*2+j];
-    //     // norm of vector
-    //     frustum[i*2+j]*= glm::sqrt(glm::dot(glm::vec3(tmp.x, tmp.y, tmp.z), (glm::vec3(tmp.x, tmp.y, tmp.z))));
-    // }
+    glm::mat4 mvp = glm::transpose(projectionMatrix * viewMatrix * modelMatrix);
+    for (int i = 0; i < 3; ++i)
+    for (int j = 0; j < 2; ++j) {
+        frustum[i*2+j].x = mvp[0][3] + (j == 0 ? mvp[0][i] : -mvp[0][i]);
+        frustum[i*2+j].y = mvp[1][3] + (j == 0 ? mvp[1][i] : -mvp[1][i]);
+        frustum[i*2+j].z = mvp[2][3] + (j == 0 ? mvp[2][i] : -mvp[2][i]);
+        frustum[i*2+j].w = mvp[3][3] + (j == 0 ? mvp[3][i] : -mvp[3][i]);
+        glm::vec4 tmp = frustum[i*2+j];
+        // norm of vector
+        frustum[i*2+j]*= glm::sqrt(glm::dot(glm::vec3(tmp.x, tmp.y, tmp.z), (glm::vec3(tmp.x, tmp.y, tmp.z))));
+    }
 
-    for (int i = 4; i--; ) frustum[0][i]   = mvp[i][3] + mvp[i][0];
-    for (int i = 4; i--; ) frustum[1][i]  = mvp[i][3] - mvp[i][0];
-    for (int i = 4; i--; ) frustum[2][i] = mvp[i][3] + mvp[i][1];
-    for (int i = 4; i--; ) frustum[3][i]    = mvp[i][3] - mvp[i][1];
-    for (int i = 4; i--; ) frustum[4][i]   = mvp[i][3] + mvp[i][2];
-    for (int i = 4; i--; ) frustum[5][i]    = mvp[i][3] - mvp[i][2];
+    // for (int i = 4; i--; ) frustum[0][i]   = mvp[i][3] + mvp[i][0];
+    // for (int i = 4; i--; ) frustum[1][i]  = mvp[i][3] - mvp[i][0];
+    // for (int i = 4; i--; ) frustum[2][i] = mvp[i][3] + mvp[i][1];
+    // for (int i = 4; i--; ) frustum[3][i]    = mvp[i][3] - mvp[i][1];
+    // for (int i = 4; i--; ) frustum[4][i]   = mvp[i][3] + mvp[i][2];
+    // for (int i = 4; i--; ) frustum[5][i]    = mvp[i][3] - mvp[i][2];
 
     setTerrainVariables(m_terrainMergeShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
     setTerrainVariables(m_terrainSplitShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
@@ -316,6 +316,12 @@ void Terrain::loadTerrainVariables()
     setTerrainVariables(m_topViewShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
     
     HANDLE_GL_ERRORS("setting terrain matrix uniforms");
+
+    // LOG_INFO(glm::to_string(mvp));
+
+    // for (int i = 0; i < 6; ++i) {
+    //     LOG_INFO(glm::to_string(frustum[i]));
+    // }
 }
 
 void Terrain::loadTextures()
