@@ -6,8 +6,10 @@
 
 Camera::Camera(float width, float height)
 {
-    m_fov = 45.5f;
-    m_projectionMatrix = glm::perspective(m_fov, width / height, 0.1f, 100.0f);
+    m_fov = 45.5f;  // 90 degrees
+    m_nearClippingPlane = 0.1f;
+    m_farClippingPlane = 1000.0f;
+    m_projectionMatrix = glm::perspective(m_fov, width / height, m_nearClippingPlane, m_farClippingPlane);
 
     m_cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
     m_center = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -28,9 +30,6 @@ Camera::Camera(float width, float height)
     m_yaw = -90.0f;
     m_pitch = 0.0f;
     m_initialMouse = true;
-
-    m_nearClippingPlane = 0.1f;
-    m_farClippingPlane = 100.0f;
 }
 
 Camera::Camera(float width, float height, float fov, float nearClippingPlane, float farClippingPlane)
@@ -192,7 +191,7 @@ void Camera::setWidthHeight(int width, int height)
     m_width = width;
     m_height = height;
 
-    m_projectionMatrix = glm::perspective(m_fov, static_cast<float>(m_width) / m_height, 0.1f, 100.0f);
+    m_projectionMatrix = glm::perspective(m_fov, static_cast<float>(m_width) / m_height, m_nearClippingPlane, m_farClippingPlane);
 }
 
 void Camera::getWidthHeight(int *width, int *height)
