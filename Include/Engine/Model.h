@@ -35,7 +35,7 @@ public:
                     std::vector<unsigned int>& m_indices,
                     std::vector<glm::vec3>& m_tangents);
 
-    GLuint loadTexture(std::string path);
+    GLuint loadTexture(aiTextureType textureType, aiMaterial* material, aiMesh* mesh, const aiScene* scene, std::string path);
 
     void draw();
 
