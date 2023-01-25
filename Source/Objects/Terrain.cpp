@@ -40,7 +40,7 @@ void Terrain::draw()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0, 0, 300, 300);
     glClear(GL_COLOR_BUFFER_BIT);
-    renderTopView();
+    drawTopView();
 }
 
 // Draw GUI controls for terrain arguments
@@ -75,7 +75,7 @@ void Terrain::drawScene()
 
 }
 
-void Terrain::renderTopView()
+void Terrain::drawTopView()
 {
     glDisable(GL_CULL_FACE);
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrainTopViewFBO->getID());
@@ -863,7 +863,7 @@ void Terrain::loadTopViewProgram()
     m_topViewShaderProgram->addSource("#define FLAG_DISPLACE 1");
     m_topViewShaderProgram->addSource("#define TERRAIN_PATCH_SUBD_LEVEL " + std::to_string(m_patchSubDiv));
     m_topViewShaderProgram->addSource("#define TERRAIN_PATCH_TESS_FACTOR " + std::to_string(1 << m_patchSubDiv));
-    m_topViewShaderProgram->addSource("#define BUFFER_BINDING_TERRAIN_VARIABLES 0");
+    // m_topViewShaderProgram->addSource("#define BUFFER_BINDING_TERRAIN_VARIABLES 0");
     m_topViewShaderProgram->addSource("#define LEB_BUFFER_COUNT 1");
     m_topViewShaderProgram->addSource("#define BUFFER_BINDING_LEB " + std::to_string(m_subdivionBufferIndex));
     m_topViewShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
@@ -874,7 +874,7 @@ void Terrain::loadTopViewProgram()
     m_topViewShaderProgram->attachShader(m_terrainLEBShader);
     m_topViewShaderProgram->attachShader(m_terrainRenderCommonShader);
     m_topViewShader = std::make_shared<Shader>("./Assets/Shader/Terrain/TopView.comp", false);
-    //m_topViewShaderProgram->attachShader(m_topViewShader);
+    // m_topViewShaderProgram->attachShader(m_topViewShader);
     m_topViewShaderProgram->linkCombinedShader(m_topViewShader, m_topViewShader, m_topViewShader, m_topViewShader, m_topViewShader);
     
     HANDLE_GL_ERRORS("loading terrain top view shader");

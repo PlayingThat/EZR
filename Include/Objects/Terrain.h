@@ -54,7 +54,7 @@ private:
     void drawScene();
     void drawTerrain();
     void renderSky();
-    void renderTopView();
+    void drawTopView();
 
     void retrieveCBTNodeCount();
     void loadTerrainVariables();
