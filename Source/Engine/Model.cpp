@@ -114,7 +114,12 @@ bool Model::loadModel(std::string path,
 
         GLuint diffuse = 0, metal = 0, height = 0, normal = 0, smoothness = 0, ao = 0;
 
-        diffuse = loadTexture(aiTextureType_DIFFUSE, material, mesh, scene, path);
+        diffuse = loadTexture(aiTextureType_DIFFUSE, material, mesh, scene, "diffuse");
+        metal = loadTexture(aiTextureType_METALNESS, material, mesh, scene, "metal");
+        height = loadTexture(aiTextureType_HEIGHT, material, mesh, scene, "height");
+        normal = loadTexture(aiTextureType_NORMALS, material, mesh, scene, "normal");
+        smoothness = loadTexture(aiTextureType_DIFFUSE_ROUGHNESS, material, mesh, scene, "smoothness");
+        ao = loadTexture(aiTextureType_AMBIENT_OCCLUSION, material, mesh, scene, "ao");
 
         GLuint textureID = 0;
         // Create a new mesh and add it to the list of meshes
