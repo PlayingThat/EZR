@@ -161,7 +161,7 @@ void Scene::setupNPREffects()
     // Setup Stippling
     m_stippVertexShader = std::make_shared<Shader>("./Assets/Shader/Stippling.vert");
     m_stippFragmentShader = std::make_shared<Shader>("./Assets/Shader/Stippling.frag");
-    m_stippShaderProgram = std::make_shared<ShaderProgram>("Stippling");
+    m_stippShaderProgram = std::make_shared<ShaderProgram>("Lines");
     m_stippShaderProgram->addShader(m_stippVertexShader);
     m_stippShaderProgram->addShader(m_stippFragmentShader);
     m_stippShaderProgram->link();

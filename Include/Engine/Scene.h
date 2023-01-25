@@ -161,12 +161,6 @@ private:
     // Rim Lighting properties
     bool m_rimLPropertyTextured = false;  // wether to use a texture or not
 
-    // Stippling shader
-    std::shared_ptr<Shader> m_stippVertexShader;
-    std::shared_ptr<Shader> m_stippFragmentShader;
-    std::shared_ptr<ShaderProgram> m_stippShaderProgram;
-    // Stippling properties
-    bool m_stippPropertyTextured = false;  // wether to use a texture or not
     // Stippling Textures
     GLuint m_stipp1 = 0;
     GLuint m_stipp2 = 0;
