@@ -11,15 +11,17 @@
 Terrain::Terrain(std::shared_ptr<Scene> scene) : Drawable(scene)
 {
     m_scene = scene;
-    create();
-
-    // Subscribe to size change events
-    m_scene->getState()->attachWindowSizeChangeCallback(this);
 
     // Setup transform
     rotate(glm::vec3(1, 0, 0), -90.0f);
     scale(glm::vec3(100, 30, 100));
     setBasePosition(glm::vec3(-50, -2, 15));
+
+    create();
+
+    // Subscribe to size change events
+    m_scene->getState()->attachWindowSizeChangeCallback(this);
+
 }
 
 Terrain::~Terrain()
@@ -199,6 +201,8 @@ void Terrain::lebBatchingPass()
     glDispatchCompute(1, 1, 1);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
+    
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_bufferTerrainDrawIndex, 0);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_bufferTerrainDrawComputeShaderIndex, 0);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_bufferTerrainDispatchComputeShaderIndex, 0);
@@ -251,6 +255,9 @@ void Terrain::create()
 
 void Terrain::setupBuffers()
 {
+    // Set stream buffer variables
+    loadTerrainVariables();
+
     // Load subdivision buffer
     loadSubdivisionBuffer();
 
@@ -284,9 +291,47 @@ void Terrain::setTerrainVariables(std::shared_ptr<ShaderProgram> &shaderProgram,
 
 void Terrain::loadTerrainVariables()
 {
+    static bool first = true;
+    struct PerFrameVariables {
+        glm::mat4 model,                // 16
+                  modelView,            // 16
+                  view,                 // 16
+                  camera,               // 16
+                  viewProjection,       // 16
+                  modelViewProjection;  // 16
+        glm::vec4 frustum[6];           // 24
+        glm::vec4 align[2];             // 8
+    } variables;
+
+    if (first) {
+        first = false;    
+        const int buf_capacity = (1 << 20); // capacity in Bytes
+        StreamBuffer *buffer = (StreamBuffer*)malloc(sizeof(*buffer));
+        GLint buf = 0;
+
+        buffer->capacity = buf_capacity;
+        buffer->size = sizeof(variables);
+        buffer->offset = 0;
+
+        glGenBuffers(1, &buffer->gl);
+        glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &buf);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer->gl);
+        glBufferData(GL_ARRAY_BUFFER, buffer->capacity, NULL, GL_STREAM_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, buf);
+
+        m_streamTerrainVariables = buffer;
+    }
+
     glm::mat4 modelMatrix = getModelMatrix();
     glm::mat4 viewMatrix = *m_scene->getState()->getCamera()->getViewMatrix();
     glm::mat4 projectionMatrix = *m_scene->getState()->getCamera()->getProjectionMatrix();
+
+    variables.model = glm::transpose(modelMatrix);
+    variables.modelView = glm::transpose(viewMatrix * modelMatrix);
+    variables.view = glm::transpose(viewMatrix);
+    variables.camera = glm::transpose(glm::inverse(viewMatrix));
+    variables.viewProjection = glm::transpose(projectionMatrix * viewMatrix);
+    variables.modelViewProjection = projectionMatrix * viewMatrix * modelMatrix;
 
     glm::vec4 frustum[6];      
 
@@ -294,13 +339,13 @@ void Terrain::loadTerrainVariables()
     glm::mat4 mvp = glm::transpose(projectionMatrix * viewMatrix * modelMatrix);
     for (int i = 0; i < 3; ++i)
     for (int j = 0; j < 2; ++j) {
-        frustum[i*2+j].x = mvp[0][3] + (j == 0 ? mvp[0][i] : -mvp[0][i]);
-        frustum[i*2+j].y = mvp[1][3] + (j == 0 ? mvp[1][i] : -mvp[1][i]);
-        frustum[i*2+j].z = mvp[2][3] + (j == 0 ? mvp[2][i] : -mvp[2][i]);
-        frustum[i*2+j].w = mvp[3][3] + (j == 0 ? mvp[3][i] : -mvp[3][i]);
-        glm::vec4 tmp = frustum[i*2+j];
+        variables.frustum[i*2+j].x = mvp[0][3] + (j == 0 ? mvp[0][i] : -mvp[0][i]);
+        variables.frustum[i*2+j].y = mvp[1][3] + (j == 0 ? mvp[1][i] : -mvp[1][i]);
+        variables.frustum[i*2+j].z = mvp[2][3] + (j == 0 ? mvp[2][i] : -mvp[2][i]);
+        variables.frustum[i*2+j].w = mvp[3][3] + (j == 0 ? mvp[3][i] : -mvp[3][i]);
+        glm::vec4 tmp = variables.frustum[i*2+j];
         // norm of vector
-        frustum[i*2+j]*= glm::sqrt(glm::dot(glm::vec3(tmp.x, tmp.y, tmp.z), (glm::vec3(tmp.x, tmp.y, tmp.z))));
+        variables.frustum[i*2+j] *= glm::sqrt(glm::dot(glm::vec3(tmp), glm::vec3(tmp)));
     }
 
     // for (int i = 4; i--; ) frustum[0][i]   = mvp[i][3] + mvp[i][0];
@@ -310,10 +355,19 @@ void Terrain::loadTerrainVariables()
     // for (int i = 4; i--; ) frustum[4][i]   = mvp[i][3] + mvp[i][2];
     // for (int i = 4; i--; ) frustum[5][i]    = mvp[i][3] - mvp[i][2];
 
-    setTerrainVariables(m_terrainMergeShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
-    setTerrainVariables(m_terrainSplitShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
-    setTerrainVariables(m_terrainDrawShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
-    setTerrainVariables(m_topViewShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
+    // setTerrainVariables(m_terrainMergeShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
+    // setTerrainVariables(m_terrainSplitShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
+    // setTerrainVariables(m_terrainDrawShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
+    // setTerrainVariables(m_topViewShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
+
+    if (!bufferToGL(m_streamTerrainVariables, (const void *)&variables, NULL))
+        LOG_ERROR("bufferToGL failed");
+    
+    int tmp = m_streamTerrainVariables->offset + m_streamTerrainVariables->size * (0 - 1);
+    int maxOffset = m_streamTerrainVariables->capacity;
+    int bufOffset = ((tmp % maxOffset) + maxOffset) % maxOffset;
+
+    glBindBufferRange(GL_UNIFORM_BUFFER, m_streamTerrainVariablesIndex, m_streamTerrainVariables->gl, bufOffset, m_streamTerrainVariables->size);
     
     HANDLE_GL_ERRORS("setting terrain matrix uniforms");
 
@@ -554,6 +608,7 @@ void Terrain::retrieveCBTNodeCount()
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
                          m_subdivionBufferIndex,
                          0);
+        LOG_INFO(m_cbtNodeCount);
     }
 }
 
@@ -569,10 +624,12 @@ void Terrain::loadSubdivisionBuffer()
     if (glIsBuffer(m_subdivisionBuffer))
         glDeleteBuffers(1, &m_subdivisionBuffer);
     // Create a new shader storage buffer for the longest edge bisection
-    glGenBuffers(1, &m_subdivisionBuffer);
+    glCreateBuffers(1, &m_subdivisionBuffer);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_subdivisionBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, cbt_HeapByteSize(cbt),
-                 cbt_GetHeap(cbt), GL_STATIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, 
+                 cbt_HeapByteSize(cbt),
+                 cbt_GetHeap(cbt),
+                 GL_STATIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
@@ -583,7 +640,6 @@ void Terrain::loadSubdivisionBuffer()
 void Terrain::loadRenderBuffer()
 {
     uint32_t drawArraysCmd[8] = {2, 1, 0, 0, 0, 0, 0, 0};
-    uint32_t drawMeshTasksCmd[8] = {1, 0, 0, 0, 0, 0, 0, 0};
     uint32_t drawElementsCmd[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     uint32_t dispatchCmd[8] = {2, 1, 1, 0, 0, 0, 0, 0};
 
@@ -594,17 +650,17 @@ void Terrain::loadRenderBuffer()
     if (glIsBuffer(m_bufferTerrainDrawComputeShader))
         glDeleteBuffers(1, &m_bufferTerrainDrawComputeShader);
 
-    glGenBuffers(1, &m_bufferTerrainDraw);
+    glCreateBuffers(1, &m_bufferTerrainDraw);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDraw);
     glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(drawArraysCmd), drawArraysCmd, GL_STATIC_DRAW);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 
-    glGenBuffers(1, &m_bufferTerrainDrawComputeShader);
+    glCreateBuffers(1, &m_bufferTerrainDrawComputeShader);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDrawComputeShader);
     glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(drawElementsCmd), drawElementsCmd, GL_STATIC_DRAW);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 
-    glGenBuffers(1, &m_bufferTerrainDispatchComputeShader);
+    glCreateBuffers(1, &m_bufferTerrainDispatchComputeShader);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDispatchComputeShader);
     glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(dispatchCmd), dispatchCmd, GL_STATIC_DRAW);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
@@ -617,7 +673,7 @@ void Terrain::loadCBTNodeCountBuffer()
     LOG_INFO("Loading Cbt-Node-Count-Buffer");
     if (glIsBuffer(m_bufferCBTNodeCount))
         glDeleteBuffers(1, &m_bufferCBTNodeCount);
-    glGenBuffers(1, &m_bufferCBTNodeCount);
+    glCreateBuffers(1, &m_bufferCBTNodeCount);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_bufferCBTNodeCount);
     glBufferStorage(GL_SHADER_STORAGE_BUFFER,
                     sizeof(int32_t),
@@ -671,7 +727,7 @@ void Terrain::loadTriangleMeshletBuffers()
 
     LOG_INFO("Loading Meshlet-Buffers");
 
-    glGenBuffers(1, &m_bufferMeshletIndices);
+    glCreateBuffers(1, &m_bufferMeshletIndices);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_bufferMeshletIndices);
     glBufferData(GL_SHADER_STORAGE_BUFFER,
                  sizeof(indexBuffer[0]) * indexBuffer.size(),
@@ -679,7 +735,7 @@ void Terrain::loadTriangleMeshletBuffers()
                  GL_STATIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-    glGenBuffers(1, &m_bufferMeshletVertices);
+    glCreateBuffers(1, &m_bufferMeshletVertices);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_bufferMeshletVertices);
     glBufferData(GL_SHADER_STORAGE_BUFFER,
                  sizeof(vertexBuffer[0]) * vertexBuffer.size(),
@@ -975,6 +1031,44 @@ void Terrain::configureTopViewProgram()
     // glProgramUniform1i(g_gl.programs[PROGRAM_TOPVIEW],
     //     g_gl.uniforms[UNIFORM_TOPVIEW_DMAP_SAMPLER],
     //     TEXTURE_DMAP);
+}
+
+bool Terrain::bufferToGL(StreamBuffer *buffer, const void *data, int *offset)
+{
+    GLint buf = 0;
+    void *ptr = NULL;
+
+    // save GL state
+    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &buf);
+
+    // orphaning
+    if (buffer->offset + buffer->size > buffer->capacity) {
+        buffer->offset = 0;
+        LOG_ERROR("Terrain Stream Buffer orphaned");
+    }
+
+    // stream data asynchronously
+    glBindBuffer(GL_ARRAY_BUFFER, buffer->gl);
+    ptr = glMapBufferRange(
+        GL_ARRAY_BUFFER,
+        buffer->offset,
+        buffer->size,
+        GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT
+    );
+    if (!ptr) {
+        LOG_ERROR("Error mapping buffer to GL");
+
+        return false;
+    }
+    memcpy(ptr, data, buffer->size);
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    glBindBuffer(GL_ARRAY_BUFFER, buf);
+
+    // update buffer offset
+    if (offset) (*offset) = buffer->offset;
+    buffer->offset+= buffer->size;
+
+    return true;
 }
 
 GLuint* Terrain::getDrawTextures()

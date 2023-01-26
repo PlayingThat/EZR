@@ -16,6 +16,14 @@
 #include <map>
 #include <string>
 
+typedef struct StreamBuffer {
+    GLuint gl; // OpenGL name
+    int capacity; // total buffer capacity
+    int size;     // size of streamed data
+    int offset;   // current offset inside the buffer
+} StreamBuffer;
+typedef struct StreamBuffer StreamBuffer; 
+
 class Terrain : public Drawable, public SizeCallbackSubscriber
 {
 public:
@@ -120,6 +128,9 @@ private:
     void configureAtmosphereProgram();
     void configureTopViewProgram();
 
+    // Send to gl
+    bool bufferToGL(StreamBuffer *buffer, const void *data, int *offset);
+
     //////////////////////////////////////////////////////////
     // Textures
     GLuint m_displacementMapTexture = 0;
@@ -207,6 +218,9 @@ private:
 
     std::shared_ptr<ShaderProgram> m_cbtNodeCountShaderProgram;
     std::shared_ptr<Shader> m_cbtNodeCountShader;
+
+    StreamBuffer *m_streamTerrainVariables;
+    GLuint m_streamTerrainVariablesIndex = 0;
 
 
     //////////////////////////////////////////////////////////
