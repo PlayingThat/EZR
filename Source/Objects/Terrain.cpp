@@ -49,6 +49,7 @@ void Terrain::draw()
 void Terrain::drawGUI()
 {
     ImGui::Begin("Terrain");
+    ImGui::Text("CBT Node Count: %i", m_cbtNodeCount);
     if (ImGui::SliderInt("Max Depth", &m_maxDepth, 6, 25)) {
         setupBuffers();
         setupShaderPrograms();
@@ -608,7 +609,6 @@ void Terrain::retrieveCBTNodeCount()
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
                          m_subdivionBufferIndex,
                          0);
-        LOG_INFO(m_cbtNodeCount);
     }
 }
 
