@@ -1,10 +1,9 @@
 
-
 /*******************************************************************************
  * Uniform Data -- Global variables for terrain rendering
  *
  */
-
+layout(std140, column_major, binding = BUFFER_BINDING_TERRAIN_VARIABLES)
 uniform PerFrameVariables {
     mat4 u_ModelMatrix;
     mat4 u_ModelViewMatrix;

@@ -810,6 +810,7 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram, s
     shaderProgram->addSource("#define BUFFER_BINDING_MESHLET_INDEXES " + std::to_string(m_bufferMeshletIndices));
     shaderProgram->addSource("#define TERRAIN_PATCH_SUBD_LEVEL " + std::to_string(m_patchSubDiv));
     shaderProgram->addSource("#define TERRAIN_PATCH_TESS_FACTOR " + std::to_string((1 << m_patchSubDiv)));
+    shaderProgram->addSource("#define BUFFER_BINDING_TERRAIN_VARIABLES " + std::to_string(m_streamTerrainVariablesIndex));
     shaderProgram->addSource("#define SHADING_DIFFUSE 1");
     shaderProgram->addSource("#define FLAG_DISPLACE 1");
     shaderProgram->addSource("#define FLAG_CULL 1");
@@ -919,7 +920,7 @@ void Terrain::loadTopViewProgram()
     m_topViewShaderProgram->addSource("#define FLAG_DISPLACE 1");
     m_topViewShaderProgram->addSource("#define TERRAIN_PATCH_SUBD_LEVEL " + std::to_string(m_patchSubDiv));
     m_topViewShaderProgram->addSource("#define TERRAIN_PATCH_TESS_FACTOR " + std::to_string(1 << m_patchSubDiv));
-    // m_topViewShaderProgram->addSource("#define BUFFER_BINDING_TERRAIN_VARIABLES 0");
+    m_topViewShaderProgram->addSource("#define BUFFER_BINDING_TERRAIN_VARIABLES " + std::to_string(m_streamTerrainVariablesIndex));
     m_topViewShaderProgram->addSource("#define LEB_BUFFER_COUNT 1");
     m_topViewShaderProgram->addSource("#define BUFFER_BINDING_LEB " + std::to_string(m_subdivionBufferIndex));
     m_topViewShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
