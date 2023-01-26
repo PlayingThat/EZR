@@ -14,7 +14,8 @@ Mesh::Mesh(std::vector<glm::vec4> vertices,
            GLuint smoothnessTexture,
            GLuint heightTexture,
            GLuint ambientOcculsionTexture,
-           GLuint metallicTexture) : Drawable()
+           GLuint metallicTexture,
+           GLuint normalTexture) : Drawable()
 {
     // Set geometry information
     m_vertices = vertices;
@@ -34,6 +35,7 @@ Mesh::Mesh(std::vector<glm::vec4> vertices,
     m_heightTexture = heightTexture;
     m_ambientOcculsionTexture = ambientOcculsionTexture;
     m_metallicTexture = metallicTexture;
+    m_normalTexture = normalTexture;
 }
 
 void Mesh::draw()
