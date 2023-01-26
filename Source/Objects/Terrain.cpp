@@ -326,11 +326,11 @@ void Terrain::loadTerrainVariables()
     glm::mat4 viewMatrix = *m_scene->getState()->getCamera()->getViewMatrix();
     glm::mat4 projectionMatrix = *m_scene->getState()->getCamera()->getProjectionMatrix();
 
-    variables.model = glm::transpose(modelMatrix);
-    variables.modelView = glm::transpose(viewMatrix * modelMatrix);
-    variables.view = glm::transpose(viewMatrix);
-    variables.camera = glm::transpose(glm::inverse(viewMatrix));
-    variables.viewProjection = glm::transpose(projectionMatrix * viewMatrix);
+    variables.model = modelMatrix;
+    variables.modelView = viewMatrix * modelMatrix;
+    variables.view = viewMatrix;
+    variables.camera = glm::inverse(viewMatrix);
+    variables.viewProjection = projectionMatrix * viewMatrix;
     variables.modelViewProjection = projectionMatrix * viewMatrix * modelMatrix;
 
     glm::vec4 frustum[6];      
