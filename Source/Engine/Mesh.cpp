@@ -46,14 +46,16 @@ void Mesh::draw()
     // Bind the textures
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_diffuseTexture);
-    // glActiveTexture(GL_TEXTURE1);
-    // glBindTexture(GL_TEXTURE_2D, m_smoothnessTexture);
-    // glActiveTexture(GL_TEXTURE2);
-    // glBindTexture(GL_TEXTURE_2D, m_heightTexture);
-    // glActiveTexture(GL_TEXTURE3);
-    // glBindTexture(GL_TEXTURE_2D, m_ambientOcculsionTexture);
-    // glActiveTexture(GL_TEXTURE4);
-    // glBindTexture(GL_TEXTURE_2D, m_metallicTexture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_metallicTexture);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, m_smoothnessTexture);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, m_heightTexture);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, m_normalTexture);
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_2D, m_ambientOcculsionTexture);
 
     // Get active shader program and set the diffuse color
     GLint prog = 0;
