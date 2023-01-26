@@ -90,7 +90,6 @@ private:
     std::shared_ptr<Scene> m_scene;
 
     std::vector<std::shared_ptr<Drawable>> m_drawables;
-    std::unique_ptr<float[]> m_backgroundColor;   
     std::shared_ptr<State> m_state;
 
     // SFQ for post processing

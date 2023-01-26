@@ -16,7 +16,6 @@ void Scene::setup(std::shared_ptr<Scene> scene)
 {
     m_scene = scene;
     m_drawables = std::vector<std::shared_ptr<Drawable>>();
-    m_backgroundColor = std::make_unique<float[]>(3); 
 
     // Create FBO for GBuffer and SFQ
     m_gBufferFBO = std::make_shared<FBO>(m_scene, 8);
@@ -85,7 +84,6 @@ void Scene::update(float deltaTime)
     ImGui::Begin("Performance");
     ImGui::Text("%s", std::string("Frame Time: " + std::to_string(deltaTime * 1000.0f) + "ms").c_str());
     ImGui::Text("%s", std::string("Frames per Second: " + std::to_string(1.0f / deltaTime)).c_str());
-    ImGui::ColorPicker3("Background color", m_backgroundColor.get());
     ImGui::End();
 
     drawNPRPanel();  
