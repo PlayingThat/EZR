@@ -336,7 +336,7 @@ void Terrain::loadTerrainVariables()
     glm::vec4 frustum[6];      
 
     // extract frustum planes from modelViewProjection matrix
-    glm::mat4 mvp = glm::transpose(projectionMatrix * viewMatrix * modelMatrix);
+    glm::mat4 mvp = projectionMatrix * viewMatrix * modelMatrix;
     for (int i = 0; i < 3; ++i)
     for (int j = 0; j < 2; ++j) {
         variables.frustum[i*2+j].x = mvp[0][3] + (j == 0 ? mvp[0][i] : -mvp[0][i]);
