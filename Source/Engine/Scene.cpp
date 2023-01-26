@@ -157,6 +157,15 @@ void Scene::setupNPREffects()
     m_outlShaderProgram->addShader(m_outlFragmentShader);
     m_outlShaderProgram->link();
     addNPREffect(m_outlShaderProgram, false);
+
+    // Setup Watercolor
+    m_waterColVertexShader = std::make_shared<Shader>("./Assets/Shader/Watercolor.vert");
+    m_waterColFragmentShader = std::make_shared<Shader>("./Assets/Shader/Watercolor.frag");
+    m_waterColShaderProgram = std::make_shared<ShaderProgram>("Watercolor");
+    m_waterColShaderProgram->addShader(m_waterColVertexShader);
+    m_waterColShaderProgram->addShader(m_waterColFragmentShader);
+    m_waterColShaderProgram->link();
+    addNPREffect(m_waterColShaderProgram, false);
     
     // Setup Hatching
     m_hatchVertexShader = std::make_shared<Shader>("./Assets/Shader/Hatching.vert");
@@ -165,7 +174,7 @@ void Scene::setupNPREffects()
     m_hatchShaderProgram->addShader(m_hatchVertexShader);
     m_hatchShaderProgram->addShader(m_hatchFragmentShader);
     m_hatchShaderProgram->link();
-    addNPREffect(m_hatchShaderProgram, true);
+    addNPREffect(m_hatchShaderProgram, false);
     addNPRProperty("Hatching", "Colored", &m_hatchPropertyColored, true);
     addNPRProperty("Hatching", "Textured##Hatching", &m_hatchPropertyTextured, true);
     addNPRProperty("Hatching", "mode", &m_hatchPropertyMode, true, 0, 5);
@@ -272,6 +281,8 @@ void Scene::drawSFQuad()
             m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp5", 19, m_stipp5);
             m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp6", 20, m_stipp6);
             m_NPREffects.at(i)->shaderProgram->setSampler2D("paper", 21, m_paper);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("noise", 20, m_noise);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("canvas", 21, m_canvas);
 
             // Set NPR properties
             // Iterate over npr effect properties
@@ -352,6 +363,8 @@ void Scene::createStipplingTexture()
     m_stipp5 = createTextureFromFile("Assets/Relevant-Textures/Stippling/stipp5.jpg");
     m_stipp6 = createTextureFromFile("Assets/Relevant-Textures/Stippling/stipp6.jpg");
     m_paper = createTextureFromFile("Assets/Relevant-Textures/Stippling/paper.jpg");
+    m_noise = createTextureFromFile("Assets/Relevant-Textures/Stippling/static.png");
+    m_canvas = createTextureFromFile("Assets/Relevant-Textures/Stippling/canvas.png");
 }
 
 void Scene::drawNPRPanel()

@@ -169,6 +169,8 @@ private:
     GLuint m_stipp5 = 0;
     GLuint m_stipp6 = 0;
     GLuint m_paper = 0;
+    GLuint m_noise = 0;
+    GLuint m_canvas = 0;
 
     // Hatching shader
     std::shared_ptr<Shader> m_hatchVertexShader;
@@ -185,6 +187,11 @@ private:
     std::shared_ptr<Shader> m_outlVertexShader;
     std::shared_ptr<Shader> m_outlFragmentShader;
     std::shared_ptr<ShaderProgram> m_outlShaderProgram;
+
+    // Watercolor shader
+    std::shared_ptr<Shader> m_waterColVertexShader;
+    std::shared_ptr<Shader> m_waterColFragmentShader;
+    std::shared_ptr<ShaderProgram> m_waterColShaderProgram;
     
     //////////////////////////////////////////
     // Objects
