@@ -176,6 +176,7 @@ void Scene::setupNPREffects()
 
     // Stippling Textures
     createStipplingTexture();
+    HANDLE_GL_ERRORS("setting up NPR effects");
 
 }
 
