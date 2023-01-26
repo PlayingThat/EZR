@@ -11,7 +11,7 @@ Camera::Camera(float width, float height)
     m_farClippingPlane = 1000.0f;
     m_projectionMatrix = glm::perspective(m_fov, width / height, m_nearClippingPlane, m_farClippingPlane);
 
-    m_cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
+    m_cameraPos = glm::vec3(0.0f, 0.0f, 1.0f);
     m_center = glm::vec3(0.0f, 0.0f, 0.0f);
     m_up = glm::vec3(0.0f, 1.0f, 0.0f);
     m_cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
