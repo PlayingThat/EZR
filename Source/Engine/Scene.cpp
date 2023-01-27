@@ -16,10 +16,9 @@ void Scene::setup(std::shared_ptr<Scene> scene)
 {
     m_scene = scene;
     m_drawables = std::vector<std::shared_ptr<Drawable>>();
-    m_backgroundColor = std::make_unique<float[]>(3); 
 
     // Create FBO for GBuffer and SFQ
-    m_gBufferFBO = std::make_shared<FBO>(m_scene, 6);
+    m_gBufferFBO = std::make_shared<FBO>(m_scene, 8);
     m_sfq = std::make_shared<ScreenFillingQuad>(m_scene);
 
     // Setup shaders for GBuffer
@@ -85,7 +84,6 @@ void Scene::update(float deltaTime)
     ImGui::Begin("Performance");
     ImGui::Text("%s", std::string("Frame Time: " + std::to_string(deltaTime * 1000.0f) + "ms").c_str());
     ImGui::Text("%s", std::string("Frames per Second: " + std::to_string(1.0f / deltaTime)).c_str());
-    ImGui::ColorPicker3("Background color", m_backgroundColor.get());
     ImGui::End();
 
     drawNPRPanel();  
@@ -167,6 +165,15 @@ void Scene::setupNPREffects()
     m_outlShaderProgram->addShader(m_outlFragmentShader);
     m_outlShaderProgram->link();
     addNPREffect(m_outlShaderProgram, false);
+
+    // Setup Watercolor
+    m_waterColVertexShader = std::make_shared<Shader>("./Assets/Shader/Watercolor.vert");
+    m_waterColFragmentShader = std::make_shared<Shader>("./Assets/Shader/Watercolor.frag");
+    m_waterColShaderProgram = std::make_shared<ShaderProgram>("Watercolor");
+    m_waterColShaderProgram->addShader(m_waterColVertexShader);
+    m_waterColShaderProgram->addShader(m_waterColFragmentShader);
+    m_waterColShaderProgram->link();
+    addNPREffect(m_waterColShaderProgram, false);
     
     // Setup Hatching (by Jessica)
     m_hatchVertexShader = std::make_shared<Shader>("./Assets/Shader/Hatching.vert");
@@ -186,6 +193,7 @@ void Scene::setupNPREffects()
 
     // Stippling Textures
     createStipplingTexture();
+    HANDLE_GL_ERRORS("setting up NPR effects");
 
 }
 
@@ -271,6 +279,10 @@ void Scene::drawSFQuad()
             m_NPREffects.at(i)->shaderProgram->setSampler2D("colorDiffuse", 5, m_gBufferFBO->getColorAttachment(5));  
             m_NPREffects.at(i)->shaderProgram->setSampler2D("depth", 6, m_gBufferFBO->getDepthAttachment());
 
+             
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureMetalSmoothnessAOHeight", 7, m_gBufferFBO->getColorAttachment(6));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureNormal", 8, m_gBufferFBO->getColorAttachment(7));  
+
             m_NPREffects.at(i)->shaderProgram->setVec3("cameraPosition", glm::vec3(getState()->getCamera()->getPosition()));  // camera
 
             // Stippling Shader Textures
@@ -281,6 +293,8 @@ void Scene::drawSFQuad()
             m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp5", 19, m_stipp5);
             m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp6", 20, m_stipp6);
             m_NPREffects.at(i)->shaderProgram->setSampler2D("paper", 21, m_paper);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("noise", 20, m_noise);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("canvas", 21, m_canvas);
 
             // Set NPR properties
             // Iterate over npr effect properties
@@ -361,6 +375,8 @@ void Scene::createStipplingTexture()
     m_stipp5 = createTextureFromFile("Assets/Relevant-Textures/Stippling/stipp5.jpg");
     m_stipp6 = createTextureFromFile("Assets/Relevant-Textures/Stippling/stipp6.jpg");
     m_paper = createTextureFromFile("Assets/Relevant-Textures/Stippling/paper.jpg");
+    m_noise = createTextureFromFile("Assets/Relevant-Textures/Stippling/static.png");
+    m_canvas = createTextureFromFile("Assets/Relevant-Textures/Stippling/canvas.png");
 }
 
 void Scene::drawNPRPanel()

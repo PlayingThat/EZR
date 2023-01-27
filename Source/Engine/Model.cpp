@@ -111,20 +111,33 @@ bool Model::loadModel(std::string path,
         }
 
         // Extract the textures from the mesh
-
         GLuint diffuse = 0, metal = 0, height = 0, normal = 0, smoothness = 0, ao = 0;
 
-        diffuse = loadTexture(aiTextureType_DIFFUSE, material, mesh, scene, "diffuse");
-        metal = loadTexture(aiTextureType_METALNESS, material, mesh, scene, "metal");
-        height = loadTexture(aiTextureType_HEIGHT, material, mesh, scene, "height");
-        normal = loadTexture(aiTextureType_NORMALS, material, mesh, scene, "normal");
-        smoothness = loadTexture(aiTextureType_DIFFUSE_ROUGHNESS, material, mesh, scene, "smoothness");
-        ao = loadTexture(aiTextureType_AMBIENT_OCCLUSION, material, mesh, scene, "ao");
+        // Get diffuse texture name of the mesh as main texture reference
+        aiString textureName;
+        if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+            material->GetTexture(aiTextureType_DIFFUSE, 0, &textureName);
+        
+        std::string texturePathCString(textureName.C_Str());
+        std::string textureFileName = texturePathCString.substr(texturePathCString.find_last_of("/\\") + 1);
+        std::string texturePath = m_texturePath + textureFileName;
+
+        // Check if diffuse texture is present in object texture map
+        if (m_objectToTextureMap.find(texturePath) != m_objectToTextureMap.end())
+        {
+            // Load textures using helper function loadTextureTypeIfPossible
+            diffuse = loadTexture(aiTextureType_DIFFUSE, texturePath, "diffuse");
+            metal = loadTexture(aiTextureType_METALNESS, texturePath, "metal");
+            height = loadTexture(aiTextureType_HEIGHT, texturePath, "height");
+            normal = loadTexture(aiTextureType_NORMALS, texturePath, "normal");
+            smoothness = loadTexture(aiTextureType_DIFFUSE_ROUGHNESS, texturePath, "smoothness");
+            ao = loadTexture(aiTextureType_AMBIENT_OCCLUSION, texturePath, "ambient occlusion");
+        }
 
         GLuint textureID = 0;
         // Create a new mesh and add it to the list of meshes
         std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(vertices, normals, uvs, indices, tangents, color,
-                                                               diffuse, textureID, textureID, textureID, textureID);
+                                                               diffuse, smoothness, height, ao, metal, normal);
 
         m_meshes.push_back(newMesh);
     }
@@ -139,33 +152,35 @@ void Model::draw()
     }
 }
 
-GLuint Model::loadTexture(aiTextureType textureType, aiMaterial* material, aiMesh* mesh, const aiScene* scene, std::string type)
+GLuint Model::loadTexture(aiTextureType type, std::string path, std::string typeString)
 {
-    GLuint textureID = 0;
-    // Load metal texture
-    if (material->GetTextureCount(textureType) > 0)
+    std::string finalTexturePath;
+    if (m_objectToTextureMap.at(path).find(type) != m_objectToTextureMap.at(path).end())
     {
-        // Get the texture filename
-        aiString str;
-        scene->mMaterials[mesh->mMaterialIndex]->GetTexture(textureType, 0, &str);
-
-        std::string texturePathCString(str.C_Str());
-        std::string textureFileName = texturePathCString.substr(texturePathCString.find_last_of("/\\") + 1);
-        std::string texturePath = m_texturePath + textureFileName;
-
-        // Check if tex has already been loaded
-        if (m_textureMap.find(textureFileName) != m_textureMap.end())
-        {
-            textureID = m_textureMap[textureFileName];
-        }   
-        else
-        {
-            LOG_INFO("Loading " + type + " texture: " + texturePath);
-            textureID = createTextureFromFile(texturePath);
-            m_textureMap[textureFileName] = textureID;
-        }
+        finalTexturePath = m_objectToTextureMap.at(path).at(type);
     }
+    else
+    {
+        finalTexturePath = "./Assets/Special-Textures/black.png";
+    }
+
+    GLuint textureID = 0;
+    // Load texture from file
+
+    // Check if tex has already been loaded
+    if (m_textureMap.find(finalTexturePath) != m_textureMap.end())
+    {
+        textureID = m_textureMap[finalTexturePath];
+    }   
+    else
+    {
+        LOG_INFO("Loading " + typeString + " texture: " + finalTexturePath);
+        textureID = createTextureFromFile(finalTexturePath);
+        m_textureMap[finalTexturePath] = textureID;
+    }
+
     return textureID;
+    
 }
 
 Model::~Model()

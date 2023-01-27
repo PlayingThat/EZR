@@ -27,7 +27,8 @@ public:
          GLuint smoothnessTexture,
          GLuint heightTexture,
          GLuint ambientOcculsionTexture,
-         GLuint metallicTexture);
+         GLuint metallicTexture,
+         GLuint normal);
 
     void draw();
 
@@ -46,4 +47,5 @@ private:
     GLuint m_heightTexture;
     GLuint m_ambientOcculsionTexture;
     GLuint m_metallicTexture;
+    GLuint m_normalTexture;
 };

@@ -14,7 +14,8 @@ Mesh::Mesh(std::vector<glm::vec4> vertices,
            GLuint smoothnessTexture,
            GLuint heightTexture,
            GLuint ambientOcculsionTexture,
-           GLuint metallicTexture) : Drawable()
+           GLuint metallicTexture,
+           GLuint normalTexture) : Drawable()
 {
     // Set geometry information
     m_vertices = vertices;
@@ -34,28 +35,37 @@ Mesh::Mesh(std::vector<glm::vec4> vertices,
     m_heightTexture = heightTexture;
     m_ambientOcculsionTexture = ambientOcculsionTexture;
     m_metallicTexture = metallicTexture;
+    m_normalTexture = normalTexture;
 }
 
 void Mesh::draw()
 {
-    // Bind the shader program
-    //m_shaderProgram->use();
+    // Get active shader program and set the diffuse color
+    GLint prog = 0;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
+    glUseProgram(prog);
 
     // Bind the textures
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_diffuseTexture);
-    // glActiveTexture(GL_TEXTURE1);
-    // glBindTexture(GL_TEXTURE_2D, m_smoothnessTexture);
-    // glActiveTexture(GL_TEXTURE2);
-    // glBindTexture(GL_TEXTURE_2D, m_heightTexture);
-    // glActiveTexture(GL_TEXTURE3);
-    // glBindTexture(GL_TEXTURE_2D, m_ambientOcculsionTexture);
-    // glActiveTexture(GL_TEXTURE4);
-    // glBindTexture(GL_TEXTURE_2D, m_metallicTexture);
+    glUniform1i(glGetUniformLocation(prog, "diffuseSampler"), 0);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_metallicTexture);
+    glUniform1i(glGetUniformLocation(prog, "metalSampler"), 1);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, m_smoothnessTexture);
+    glUniform1i(glGetUniformLocation(prog, "smoothnessSampler"), 2);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, m_heightTexture);
+    glUniform1i(glGetUniformLocation(prog, "heightSampler"), 3);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, m_normalTexture);
+    glUniform1i(glGetUniformLocation(prog, "normalSampler"), 4);
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_2D, m_ambientOcculsionTexture);
+    glUniform1i(glGetUniformLocation(prog, "ambientOcclusionSampler"), 5);
 
-    // Get active shader program and set the diffuse color
-    GLint prog = 0;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
+
     GLuint uniformLocation = glGetUniformLocation(prog, "DiffuseColor");
     glUniform4fv(uniformLocation, 1, glm::value_ptr(m_diffuseColor));
     
