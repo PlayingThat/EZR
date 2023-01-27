@@ -65,8 +65,18 @@ private:
                                                        {aiTextureType_DIFFUSE_ROUGHNESS, "./Assets/Special-Textures/Gingerbread/Gingerbread_smoothness.jpg"}}},
 
         {"./Assets/Relevant-Textures/Icing.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Icing.png"}}},
-        {"./Assets/Relevant-Textures/Gummidrop-green.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Gummidrop-green.png"}}},
-        {"./Assets/Relevant-Textures/Gummidrop-pink.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Gummidrop-pink.png"}}},
+        {"./Assets/Relevant-Textures/Gummidrop-green.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Gummidrop-green.png"},
+                                                       {aiTextureType_AMBIENT_OCCLUSION, "./Assets/Special-Textures/Gummidrop/Gummidrop_ao.jpg"},
+                                                       {aiTextureType_NORMALS, "./Assets/Special-Textures/Gummidrop/Gummidrop_normal.jpg"},
+                                                       {aiTextureType_HEIGHT, "./Assets/Special-Textures/Gummidrop/Gummidrop_height.jpg"},
+                                                       {aiTextureType_DIFFUSE_ROUGHNESS, "./Assets/Special-Textures/Gummidrop/Gummidrop_smoothness.jpg"}}},
+                                                       
+        {"./Assets/Relevant-Textures/Gummidrop-pink.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Gummidrop-pink.png"},
+                                                       {aiTextureType_AMBIENT_OCCLUSION, "./Assets/Special-Textures/Gummidrop/Gummidrop_ao.jpg"},
+                                                       {aiTextureType_NORMALS, "./Assets/Special-Textures/Gummidrop/Gummidrop_normal.jpg"},
+                                                       {aiTextureType_HEIGHT, "./Assets/Special-Textures/Gummidrop/Gummidrop_height.jpg"},
+                                                       {aiTextureType_DIFFUSE_ROUGHNESS, "./Assets/Special-Textures/Gummidrop/Gummidrop_smoothness.jpg"}}},
+
         {"./Assets/Relevant-Textures/Brezel.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Brezel.png"}}},
         {"./Assets/Relevant-Textures/Smarties-yellow.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Smarties-yellow.png"}}},
         {"./Assets/Relevant-Textures/Smarties-red.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Smarties-red.png"}}},

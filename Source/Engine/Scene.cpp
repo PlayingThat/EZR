@@ -287,12 +287,12 @@ void Scene::drawSFQuad()
             m_NPREffects.at(i)->shaderProgram->setSampler2D("textureDiffuse", 4, m_gBufferFBO->getColorAttachment(4)); 
             m_NPREffects.at(i)->shaderProgram->setSampler2D("colorDiffuse", 5, m_gBufferFBO->getColorAttachment(5));  
             m_NPREffects.at(i)->shaderProgram->setSampler2D("depth", 6, m_gBufferFBO->getDepthAttachment());
-
              
             m_NPREffects.at(i)->shaderProgram->setSampler2D("textureMetalSmoothnessAOHeight", 7, m_gBufferFBO->getColorAttachment(6));  
             m_NPREffects.at(i)->shaderProgram->setSampler2D("textureNormal", 8, m_gBufferFBO->getColorAttachment(7));  
 
             m_NPREffects.at(i)->shaderProgram->setVec3("cameraPosition", glm::vec3(getState()->getCamera()->getPosition()));  // camera
+            m_NPREffects.at(i)->shaderProgram->setVec3("lightPosition", glm::vec3(100, 1000, 500));  // light
 
             // Stippling Shader Textures
             m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp1", 15, m_stipp1);  // index offset for ao, metallic, roughness, and possibly bitangents if needed
