@@ -178,16 +178,16 @@ private:
     GLuint m_noise = 0;
     GLuint m_canvas = 0;
 
-    // Hatching shader
-    std::shared_ptr<Shader> m_hatchVertexShader;
-    std::shared_ptr<Shader> m_hatchFragmentShader;
-    std::shared_ptr<ShaderProgram> m_hatchShaderProgram;
-    bool m_hatchPropertyColored = false;
-    bool m_hatchPropertyTextured = false;
-    int m_hatchPropertyMode = 0;
-    float m_hatchPropertyFrequency = 1.0;
-    bool m_hatchPropertyNoiseActive = false;
-    //float m_hatchPropertyNoise = 3.0;
+    // Pattern shader
+    std::shared_ptr<Shader> m_pattVertexShader;
+    std::shared_ptr<Shader> m_pattFragmentShader;
+    std::shared_ptr<ShaderProgram> m_pattShaderProgram;
+    bool m_pattPropertyColored = false;
+    bool m_pattPropertyTextured = false;
+    int m_pattPropertyMode = 0;
+    float m_pattPropertyFrequency = 1.0;
+    //bool m_pattPropertyNoiseActive = false;
+    float m_pattPropertyNoiseFactor = 0.0;
 
     // Outline shader
     std::shared_ptr<Shader> m_outlVertexShader;

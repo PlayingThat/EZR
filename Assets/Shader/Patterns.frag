@@ -19,18 +19,18 @@ uniform vec2 screenSize;
 uniform bool Colored;       // If true, the shader will use the base colors of the object
 uniform bool Textured;      // If true, the shader will be applied on the textured object
 
-uniform int mode;           // Stippling, Vertical Lines, Horizontal Lines...
+uniform int mode;           // Dots, Vertical Lines, Horizontal Lines...
 uniform float frequency;    // change the number of stripes / dots
 
-uniform bool noiseActive;
-uniform float noise;
+//uniform bool noiseActive;
+uniform sampler2D noise;
+uniform float noiseFactor;
 
 vec3 lightPosition = vec3(0, 10, 4);            //(test) light position in world coordinates
 
 layout (location = 0) out vec4 result;
 
-
-float computeStripes(float var){ 
+float computePattern(float var){ 
 
     // using the gradient to ajust the density of the lines
     float grad = length(vec2(dFdx(var), dFdy(var)));    // dFdx(x), dFdy(x) -> partial derivatives
@@ -39,18 +39,27 @@ float computeStripes(float var){
     float intLogGrad = floor(logGrad);                  // find the nearest integer less than or equal to logDp
     float stripes = exp2(intLogGrad);                   // number of stripes = 2^intLogGrad
 
-    float sawtooth;                                     // sawtooth wave with peaks between -1 and 1
-    if (noiseActive){
-        sawtooth = fract((var + noise * 0.1) * stripes * frequency);
+                                    // sawtooth wave with peaks between -1 and 1
+    
+    // add adjustable noise to give the lines an unique style
+    vec2 ObjPos = vec2 (gl_FragCoord.xy / screenSize) * noiseFactor;
+    float noiseTerm = texture(noise, ObjPos).x;
+    float sawtooth = fract((var + noiseTerm * 0.1) * stripes * frequency);
+    
+    // I decided not to use a bool to check if noise is active... Because if you set noiseFactor == 0.0, noise will be inactive anyways
+    /* float sawtooth;     
+    if (noiseActive){                                                            
+        vec2 ObjPos = vec2 (gl_FragCoord.xy / screenSize) * noiseFactor;
+        float noiseTerm = texture(noise, ObjPos).x;
+        
+        sawtooth = fract((var + noiseTerm * 0.1) * stripes * frequency);
     }
     else {
         sawtooth = fract(var * stripes * frequency);  
-    }
+    } */
     
-    float triangle = abs(2.0 * sawtooth - 1.0);         // triangle wave with values from 1 to 0 to 1
-    
-    float transition = logGrad - intLogGrad;            //soften the edges between frequencies
-
+    float triangle = abs(2.0 * sawtooth - 1.0);                     // triangle wave with values from 1 to 0 to 1
+    float transition = logGrad - intLogGrad;                        //soften the edges between frequencies
     triangle = abs((1.0 + transition) * triangle - transition);     //interpolation
 
     return triangle;
@@ -80,8 +89,8 @@ void main (){
     float V = ecPos.x;      // vertical stripes
     float H = ecPos.y;      // horizontal stripes
 
-    float triangleV = computeStripes(V);
-    float triangleH = computeStripes(H);
+    float triangleV = computePattern(V);
+    float triangleH = computePattern(H);
 
     // simulate lighting -> in lit regions, the stripes get thinner, in dark regions, the strips get wider
     const float edgeW = 0.5;                                    // width of smooth step

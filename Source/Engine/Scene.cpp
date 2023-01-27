@@ -166,7 +166,7 @@ void Scene::setupNPREffects()
     m_outlShaderProgram->link();
     addNPREffect(m_outlShaderProgram, false);
 
-    // Setup Watercolor
+    // Setup Watercolor (by Alyssa)
     m_waterColVertexShader = std::make_shared<Shader>("./Assets/Shader/Watercolor.vert");
     m_waterColFragmentShader = std::make_shared<Shader>("./Assets/Shader/Watercolor.frag");
     m_waterColShaderProgram = std::make_shared<ShaderProgram>("Watercolor");
@@ -175,20 +175,20 @@ void Scene::setupNPREffects()
     m_waterColShaderProgram->link();
     addNPREffect(m_waterColShaderProgram, false);
     
-    // Setup Hatching (by Jessica)
-    m_hatchVertexShader = std::make_shared<Shader>("./Assets/Shader/Hatching.vert");
-    m_hatchFragmentShader = std::make_shared<Shader>("./Assets/Shader/Hatching.frag");
-    m_hatchShaderProgram = std::make_shared<ShaderProgram>("Hatching");
-    m_hatchShaderProgram->addShader(m_hatchVertexShader);
-    m_hatchShaderProgram->addShader(m_hatchFragmentShader);
-    m_hatchShaderProgram->link();
-    addNPREffect(m_hatchShaderProgram, false);
-    addNPRProperty("Hatching", "Colored", &m_hatchPropertyColored, true);
-    addNPRProperty("Hatching", "Textured##Hatching", &m_hatchPropertyTextured, true);
-    addNPRProperty("Hatching", "mode", &m_hatchPropertyMode, true, 0, 5);
-    addNPRProperty("Hatching", "frequency", &m_hatchPropertyFrequency, true, 0.5, 2.0);
-    addNPRProperty("Hatching", "noiseActive", &m_hatchPropertyNoiseActive, true);
-    //addNPRProperty("Hatching", "noise", &m_hatchPropertyNoise, true, 0.0, 10.0);
+    // Setup Pattern Shader (by Jessica)
+    m_pattVertexShader = std::make_shared<Shader>("./Assets/Shader/Patterns.vert");
+    m_pattFragmentShader = std::make_shared<Shader>("./Assets/Shader/Patterns.frag");
+    m_pattShaderProgram = std::make_shared<ShaderProgram>("Patterns");
+    m_pattShaderProgram->addShader(m_pattVertexShader);
+    m_pattShaderProgram->addShader(m_pattFragmentShader);
+    m_pattShaderProgram->link();
+    addNPREffect(m_pattShaderProgram, true);
+    addNPRProperty("Patterns", "Colored", &m_pattPropertyColored, true);
+    addNPRProperty("Patterns", "Textured##Hatching", &m_pattPropertyTextured, true);
+    addNPRProperty("Patterns", "mode", &m_pattPropertyMode, true, 0, 5);
+    addNPRProperty("Patterns", "frequency", &m_pattPropertyFrequency, true, 0.5, 2.0);
+    //addNPRProperty("Patterns", "noiseActive", &m_pattPropertyNoiseActive, true);
+    addNPRProperty("Patterns", "noiseFactor", &m_pattPropertyNoiseFactor, true, 0.0, 0.5);
     
 
     // Stippling Textures
