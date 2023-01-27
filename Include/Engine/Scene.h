@@ -161,6 +161,13 @@ private:
     // Rim Lighting properties
     bool m_rimLPropertyTextured = false;  // wether to use a texture or not
 
+    // Alternative glow effect (by Jessica)
+    std::shared_ptr<Shader> m_glowVertexShader;
+    std::shared_ptr<Shader> m_glowFragmentShader;
+    std::shared_ptr<ShaderProgram> m_glowShaderProgram;
+    bool m_glowPropertyTextured = false;
+
+
     // Stippling Textures
     GLuint m_stipp1 = 0;
     GLuint m_stipp2 = 0;
@@ -179,7 +186,7 @@ private:
     int m_hatchPropertyMode = 0;
     float m_hatchPropertyFrequency = 1.0;
     bool m_hatchPropertyNoiseActive = false;
-    float m_hatchPropertyNoise = 3.0;
+    //float m_hatchPropertyNoise = 3.0;
 
     // Outline shader
     std::shared_ptr<Shader> m_outlVertexShader;

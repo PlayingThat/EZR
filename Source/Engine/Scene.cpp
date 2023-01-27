@@ -104,7 +104,7 @@ void Scene::setupNPREffects()
     m_basicShaderProgram->link();
     addNPREffect(m_basicShaderProgram, false);
 
-    // Setup Gooch
+    // Setup Gooch (by Jessica)
     m_goochVertexShader = std::make_shared<Shader>("./Assets/Shader/Gooch.vert");
     m_goochFragmentShader = std::make_shared<Shader>("./Assets/Shader/Gooch.frag");
     m_goochShaderProgram = std::make_shared<ShaderProgram>("Gooch");
@@ -117,7 +117,7 @@ void Scene::setupNPREffects()
     addNPRProperty("Gooch", "WarmColor", &m_goochPropertyWarmColor, true);
     
 
-    // Setup Toon
+    // Setup Toon with outline (by Alyssa)
     m_toonVertexShader = std::make_shared<Shader>("./Assets/Shader/Toon.vert");
     m_toonFragmentShader = std::make_shared<Shader>("./Assets/Shader/Toon.frag");
     m_toonShaderProgram = std::make_shared<ShaderProgram>("Toon with Outline");
@@ -127,7 +127,7 @@ void Scene::setupNPREffects()
     addNPREffect(m_toonShaderProgram, false);
     addNPRProperty("Toon with Outline", "Textured##Toon", &m_toonPropertyTextured, true);
 
-    // Setup Alternative Toon by Jess
+    // Setup Alternative Toon with adjustable parameters (by Jessica)
     m_JtoonVertexShader = std::make_shared<Shader>("./Assets/Shader/JToon.vert");
     m_JtoonFragmentShader = std::make_shared<Shader>("./Assets/Shader/JToon.frag");
     m_JtoonShaderProgram = std::make_shared<ShaderProgram>("Toon");
@@ -139,7 +139,7 @@ void Scene::setupNPREffects()
     addNPRProperty("Toon", "colorLevels", &m_JtoonPropertyColorLevels, true, 1, 20);
     addNPRProperty("Toon", "levelBrightness", &m_JtoonPropertyLevelBrightness, true);
 
-    // Setup Rim Lighting
+    // Setup Rim Lighting (by Alyssa)
     m_rimLVertexShader = std::make_shared<Shader>("./Assets/Shader/RimLighting.vert");
     m_rimLFragmentShader = std::make_shared<Shader>("./Assets/Shader/RimLighting.frag");
     m_rimLShaderProgram = std::make_shared<ShaderProgram>("RimLighting");
@@ -149,7 +149,17 @@ void Scene::setupNPREffects()
     addNPREffect(m_rimLShaderProgram, false);
     addNPRProperty("RimLighting", "Textured##RimLighing", &m_rimLPropertyTextured, true);
 
-    // Setup Outline
+    // Set up alternative glow effect (by Jessica)
+    m_glowVertexShader = std::make_shared<Shader>("./Assets/Shader/JGlow.vert");
+    m_glowFragmentShader = std::make_shared<Shader>("./Assets/Shader/JGlow.frag");
+    m_glowShaderProgram = std::make_shared<ShaderProgram>("Glow");
+    m_glowShaderProgram->addShader(m_glowVertexShader);
+    m_glowShaderProgram->addShader(m_glowFragmentShader);
+    m_glowShaderProgram->link();
+    addNPREffect(m_glowShaderProgram, false);
+    addNPRProperty("JGlow", "Textured##JGlow", &m_glowPropertyTextured, true);
+
+    // Setup Outline (by Alyssa)
     m_outlVertexShader = std::make_shared<Shader>("./Assets/Shader/Outline.vert");
     m_outlFragmentShader = std::make_shared<Shader>("./Assets/Shader/Outline.frag");
     m_outlShaderProgram = std::make_shared<ShaderProgram>("Outline");
@@ -158,20 +168,20 @@ void Scene::setupNPREffects()
     m_outlShaderProgram->link();
     addNPREffect(m_outlShaderProgram, false);
     
-    // Setup Hatching
+    // Setup Hatching (by Jessica)
     m_hatchVertexShader = std::make_shared<Shader>("./Assets/Shader/Hatching.vert");
     m_hatchFragmentShader = std::make_shared<Shader>("./Assets/Shader/Hatching.frag");
     m_hatchShaderProgram = std::make_shared<ShaderProgram>("Hatching");
     m_hatchShaderProgram->addShader(m_hatchVertexShader);
     m_hatchShaderProgram->addShader(m_hatchFragmentShader);
     m_hatchShaderProgram->link();
-    addNPREffect(m_hatchShaderProgram, true);
+    addNPREffect(m_hatchShaderProgram, false);
     addNPRProperty("Hatching", "Colored", &m_hatchPropertyColored, true);
     addNPRProperty("Hatching", "Textured##Hatching", &m_hatchPropertyTextured, true);
     addNPRProperty("Hatching", "mode", &m_hatchPropertyMode, true, 0, 5);
     addNPRProperty("Hatching", "frequency", &m_hatchPropertyFrequency, true, 0.5, 2.0);
     addNPRProperty("Hatching", "noiseActive", &m_hatchPropertyNoiseActive, true);
-    addNPRProperty("Hatching", "noise", &m_hatchPropertyNoise, true, 0.0, 10.0);
+    //addNPRProperty("Hatching", "noise", &m_hatchPropertyNoise, true, 0.0, 10.0);
     
 
     // Stippling Textures
