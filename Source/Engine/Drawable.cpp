@@ -46,6 +46,7 @@ Drawable::~Drawable()
 void Drawable::draw()
 {
     glBindVertexArray(m_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vertexbuffer);
     glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
     //glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(m_index.size()), GL_UNSIGNED_INT, 0);
 }
@@ -105,23 +106,28 @@ void Drawable::createBuffers()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_normalbuffer);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    if (m_normalbuffer > 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, m_normalbuffer);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    }
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_uvbuffer);
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    if (m_uvbuffer > 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, m_uvbuffer);
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    }
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_tangentbuffer);
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    if (m_tangentbuffer > 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, m_tangentbuffer);
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    }
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexlist);
 
     glBindVertexArray(m_vao);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vertexbuffer);
 }
 
 void Drawable::setBasePosition(glm::vec3 position)
