@@ -189,6 +189,15 @@ void Scene::setupNPREffects()
     addNPRProperty("Patterns", "frequency", &m_pattPropertyFrequency, true, 0.5, 2.0);
     //addNPRProperty("Patterns", "noiseActive", &m_pattPropertyNoiseActive, true);
     addNPRProperty("Patterns", "noiseFactor", &m_pattPropertyNoiseFactor, true, 0.0, 0.5);
+
+    // Setup PBR shader
+    m_pbrVertexShader = std::make_shared<Shader>("./Assets/Shader/PBR.vert");
+    m_pbrFragmentShader = std::make_shared<Shader>("./Assets/Shader/PBR.frag");
+    m_pbrShaderProgram = std::make_shared<ShaderProgram>("PBR");
+    m_pbrShaderProgram->addShader(m_pbrVertexShader);
+    m_pbrShaderProgram->addShader(m_pbrFragmentShader);
+    m_pbrShaderProgram->link();
+    addNPREffect(m_pbrShaderProgram, false);
     
 
     // Stippling Textures

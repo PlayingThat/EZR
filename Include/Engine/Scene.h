@@ -166,6 +166,11 @@ private:
     std::shared_ptr<ShaderProgram> m_glowShaderProgram;
     bool m_glowPropertyTextured = false;
 
+    // PBR shader
+    std::shared_ptr<Shader> m_pbrVertexShader;
+    std::shared_ptr<Shader> m_pbrFragmentShader;
+    std::shared_ptr<ShaderProgram> m_pbrShaderProgram;
+
 
     // Stippling Textures
     GLuint m_stipp1 = 0;
