@@ -122,16 +122,14 @@ bool Model::loadModel(std::string path,
         std::string textureFileName = texturePathCString.substr(texturePathCString.find_last_of("/\\") + 1);
         std::string texturePath = m_texturePath + textureFileName;
 
-        // Check if diffuse texture is present in object texture map
-        if (m_objectToTextureMap.find(texturePath) != m_objectToTextureMap.end())
-        {
-            // Load textures using helper function loadTextureTypeIfPossible
-            diffuse = loadTexture(aiTextureType_DIFFUSE, texturePath, "diffuse");
-            metal = loadTexture(aiTextureType_METALNESS, texturePath, "metal");
-            height = loadTexture(aiTextureType_HEIGHT, texturePath, "height");
-            normal = loadTexture(aiTextureType_NORMALS, texturePath, "normal");
-            smoothness = loadTexture(aiTextureType_DIFFUSE_ROUGHNESS, texturePath, "smoothness");
-            ao = loadTexture(aiTextureType_AMBIENT_OCCLUSION, texturePath, "ambient occlusion");
+        // Load the textures if any textures are asigned to the mesh
+        if (textureFileName != "") {
+            diffuse = loadTextureFromType(texturePath, "diffuseOriginal");
+            smoothness = loadTextureFromType(texturePath, "smoothness");
+            height = loadTextureFromType(texturePath, "height");
+            ao = loadTextureFromType(texturePath, "ao");
+            metal = loadTextureFromType(texturePath, "metallic");
+            normal = loadTextureFromType(texturePath, "normal");
         }
 
         GLuint textureID = 0;
@@ -152,35 +150,55 @@ void Model::draw()
     }
 }
 
-GLuint Model::loadTexture(aiTextureType type, std::string path, std::string typeString)
+GLuint Model::loadTexture(std::string path, std::string typeString)
 {
-    std::string finalTexturePath;
-    if (m_objectToTextureMap.at(path).find(type) != m_objectToTextureMap.at(path).end())
-    {
-        finalTexturePath = m_objectToTextureMap.at(path).at(type);
-    }
-    else
-    {
-        finalTexturePath = "./Assets/Special-Textures/black.png";
-    }
+    // std::string finalTexturePath;
+    // if (m_objectToTextureMap.at(path).find(type) != m_objectToTextureMap.at(path).end())
+    // {
+    //     finalTexturePath = m_objectToTextureMap.at(path).at(type);
+    // }
+    // else
+    // {
+    //     finalTexturePath = "./Assets/Special-Textures/black.png";
+    // }
 
     GLuint textureID = 0;
     // Load texture from file
 
     // Check if tex has already been loaded
-    if (m_textureMap.find(finalTexturePath) != m_textureMap.end())
+    if (m_textureMap.find(path) != m_textureMap.end())
     {
-        textureID = m_textureMap[finalTexturePath];
+        textureID = m_textureMap[path];
     }   
     else
     {
-        LOG_INFO("Loading " + typeString + " texture: " + finalTexturePath);
-        textureID = createTextureFromFile(finalTexturePath);
-        m_textureMap[finalTexturePath] = textureID;
+        LOG_INFO("Loading " + typeString + " texture: " + path);
+        textureID = createTextureFromFile(path);
+        m_textureMap[path] = textureID;
     }
 
     return textureID;
     
+}
+
+GLuint Model::loadTextureFromType(std::string diffusePath, std::string type) {
+    // Determine file name from path
+    int fileNameIndex = diffusePath.find_last_of("/");
+    int extensionIndex = diffusePath.find_last_of(".") - fileNameIndex; 
+    std::string materialName = diffusePath.substr(fileNameIndex + 1, extensionIndex - 1); 
+    if (materialName.find("diffuseOriginal") != std::string::npos) {
+        materialName = materialName.substr(0, materialName.find("diffuseOriginal") - 1);
+    }
+
+    if (materialName == "")
+        materialName = "default";
+
+    std::string folderPath = "./Assets/Special-Textures/" + materialName + "/";
+
+    // Concatenate texture path from folder path and texture type
+    std::string texturePath = folderPath + materialName + "_" + type + ".jpg";
+
+    return loadTexture(texturePath, type);
 }
 
 Model::~Model()
