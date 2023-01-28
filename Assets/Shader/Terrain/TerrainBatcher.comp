@@ -34,6 +34,7 @@ void main()
 {
     const int cbtID = u_CbtID;
     uint nodeCount = cbt_NodeCount(cbtID);
+    nodeCount = nodeCount * uint(log2(nodeCount));
 
     u_DrawArraysIndirectCommand[0] = nodeCount;
 

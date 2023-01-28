@@ -349,12 +349,12 @@ void Terrain::loadTerrainVariables()
         variables.frustum[i*2+j] *= glm::sqrt(glm::dot(glm::vec3(tmp), glm::vec3(tmp)));
     }
 
-    // for (int i = 4; i--; ) frustum[0][i]   = mvp[i][3] + mvp[i][0];
-    // for (int i = 4; i--; ) frustum[1][i]  = mvp[i][3] - mvp[i][0];
-    // for (int i = 4; i--; ) frustum[2][i] = mvp[i][3] + mvp[i][1];
-    // for (int i = 4; i--; ) frustum[3][i]    = mvp[i][3] - mvp[i][1];
-    // for (int i = 4; i--; ) frustum[4][i]   = mvp[i][3] + mvp[i][2];
-    // for (int i = 4; i--; ) frustum[5][i]    = mvp[i][3] - mvp[i][2];
+    // for (int i = 4; i--; ) variables.frustum[0][i]   = mvp[i][3] + mvp[i][0];
+    // for (int i = 4; i--; ) variables.frustum[1][i]  = mvp[i][3] - mvp[i][0];
+    // for (int i = 4; i--; ) variables.frustum[2][i] = mvp[i][3] + mvp[i][1];
+    // for (int i = 4; i--; ) variables.frustum[3][i]    = mvp[i][3] - mvp[i][1];
+    // for (int i = 4; i--; ) variables.frustum[4][i]   = mvp[i][3] + mvp[i][2];
+    // for (int i = 4; i--; ) variables.frustum[5][i]    = mvp[i][3] - mvp[i][2];
 
     // setTerrainVariables(m_terrainMergeShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
     // setTerrainVariables(m_terrainSplitShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);

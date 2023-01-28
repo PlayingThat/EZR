@@ -234,7 +234,7 @@ private:
     int m_maxDepth = 25;
 
     // Patch subdivision level to be sent to GPU
-    int m_patchSubDiv = 3;
+    int m_patchSubDiv = 1;
 
     float m_dmapFactor = 1.0f;
 
