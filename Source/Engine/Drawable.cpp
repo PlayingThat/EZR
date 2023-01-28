@@ -37,6 +37,12 @@ void Drawable::setupMemers()
     m_position = glm::vec3(0.0f);
     m_rotation = glm::vec3(0.0f, 1.0f, 0.0f);
     m_scale = glm::vec3(1.0f);
+
+    m_vertices = std::vector<glm::vec4>();
+    m_normals = std::vector<glm::vec3>();
+    m_uvs = std::vector<glm::vec2>();
+    m_indices = std::vector<unsigned int>();
+    m_tangents = std::vector<glm::vec3>();
 }
 
 Drawable::~Drawable()
