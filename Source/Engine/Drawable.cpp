@@ -106,19 +106,19 @@ void Drawable::createBuffers()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-    if (m_normalbuffer > 0) {
+    if (m_normals.size() > 0) {
         glBindBuffer(GL_ARRAY_BUFFER, m_normalbuffer);
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
     }
 
-    if (m_uvbuffer > 0) {
+    if (m_uvs.size() > 0) {
         glBindBuffer(GL_ARRAY_BUFFER, m_uvbuffer);
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
     }
 
-    if (m_tangentbuffer > 0) {
+    if (m_tangents.size() > 0) {
         glBindBuffer(GL_ARRAY_BUFFER, m_tangentbuffer);
         glEnableVertexAttribArray(3);
         glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
