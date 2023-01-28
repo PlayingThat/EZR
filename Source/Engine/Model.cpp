@@ -13,7 +13,7 @@ Model::Model(std::shared_ptr<Scene> scene)
 
     m_meshes = std::vector<std::shared_ptr<Mesh>>();
 
-    m_texturePath = "./Assets/Relevant-Textures/";
+    m_texturePath = "./Assets/Special-Textures/";
 
     m_textureMap = std::map<std::string, GLuint>();
 }

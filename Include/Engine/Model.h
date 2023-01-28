@@ -50,12 +50,78 @@ private:
     // Map between texture names and texture IDs
     std::map<std::string, GLuint> m_textureMap;
 
+    /* Max Idee
+    std::string diffuseToTypePath(std::string diffusePath, std::string type) {
+        std::string folderPath = diffusePath.split; // das sind wahrscheinlich 2-3 zeilen
+        std::string baseFileNameName = diffusePath.split("/")[1].split("."); // dateinamen holen
+        return folderPath + baseFileName + type + ".png";
+    } 
+    */ 
+
+    //Jessys Idee 1
+    std::string loadTexturePath (std::string materialName, int type) {
+
+        std::string folderPath = "./Assets/Special-Textures/" + materialName + "/";
+
+        std::string pathDiffuse = folderPath + materialName + "_diffuseOriginal.jpg";
+        std::string pathAO = folderPath + materialName + "_ao.jpg";
+        std::string pathNormal = folderPath + materialName + "_normal.jpg";
+        std::string pathHeight = folderPath + materialName + "_height.jpg";
+        std::string pathRoughness = folderPath + materialName + "_smoothness.jpg";
+        std::string pathMetallic = folderPath + materialName + "_metallic.jpg";
+
+        std::string texturePath;
+
+        if (type == 0) {texturePath = pathDiffuse;}
+        else if (type == 1) {texturePath = pathAO;}
+        else if (type == 2) {texturePath = pathNormal;}
+        else if (type == 3) {texturePath = pathHeight;}
+        else if (type == 4) {texturePath = pathRoughness;}
+        else if (type == 5) {texturePath = pathMetallic;}
+        else LOG_ERROR ("type not defined");
+    
+        return texturePath;
+    }
+
+    /* Jessys Idee 2
+    std::map<std::string, std::map<aiTextureType, std::string>> loadTexturePaths (std::string materialName) {
+
+        std::string folderPath = "./Assets/Special-Textures/" + materialName + "/";
+
+        std::string pathDiffuse = folderPath + materialName + "_diffuseOriginal.jpg";
+        std::string pathAO = folderPath + materialName + "_ao.jpg";
+        std::string pathNormal = folderPath + materialName + "_normal.jpg";
+        std::string pathHeight = folderPath + materialName + "_height.jpg";
+        std::string pathRoughness = folderPath + materialName + "_smoothness.jpg";
+        std::string pathMetallic = folderPath + materialName + "_metallic.jpg";
+
+        std::map<std::string, std::map<aiTextureType, std::string>> objectToTexture = {
+        pathDiffuse, {{aiTextureType_DIFFUSE, pathDiffuse},
+                    {aiTextureType_AMBIENT_OCCLUSION, pathAO},
+                    {aiTextureType_NORMALS, pathNormal},
+                    {aiTextureType_HEIGHT, pathHeight},
+                    {aiTextureType_DIFFUSE_ROUGHNESS, pathRoughness}}
+         };
+
+         return objectToTexture; 
+    } 
+    */  
+
     // Map between diffuse texture path of meshes and a map of their special texture types and paths
     // aiTextureType_DIFFUSE is used as a general index for the mesh's textures
     // The texture type also specifies the texture's usage, e.g. aiTextureType_DIFFUSE for diffuse textures
     // aiTextureType_DIFFUSE_ROUGHNESS is used for smoothness textures
     std::map<std::string, std::map<aiTextureType, std::string>> m_objectToTextureMap = {
-        {"./Assets/Relevant-Textures/Ghost.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Ghost.png"}}},
+        //{"./Assets/Relevant-Textures/Ghost.png", {{aiTextureType_DIFFUSE, "./Assets/Special-Textures/Ghost.png"}}},
+        // Idee 1
+        {loadTexturePath("Ghost", 0), {{aiTextureType_DIFFUSE, loadTexturePath("Ghost", 0)},
+                                        {aiTextureType_AMBIENT_OCCLUSION, loadTexturePath("Ghost", 1)},
+                                        {aiTextureType_NORMALS, loadTexturePath("Ghost", 2)},
+                                        {aiTextureType_HEIGHT, loadTexturePath("Ghost", 3)},
+                                        {aiTextureType_DIFFUSE_ROUGHNESS, loadTexturePath("Ghost", 4)}}},
+        /* Idee 2
+        {loadTexturePaths("Ghost")},  */
+                                        
         {"./Assets/Relevant-Textures/Cylinder.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Cylinder.png"}}},
         {"./Assets/Relevant-Textures/Cylinder-Band.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Cylinder-Band.png"}}},
         {"./Assets/Relevant-Textures/Gingerbread.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Gingerbread.png"},
@@ -85,7 +151,12 @@ private:
         {"./Assets/Relevant-Textures/Cookie-light.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Cookie-light.png"}}},
         {"./Assets/Relevant-Textures/Cookie-dark.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Cookie-dark.png"}}},
         {"./Assets/Relevant-Textures/Snow.jpg", {{aiTextureType_DIFFUSE, "/Assets/Relevant-Textures/Snow.jpg"}}},
-        {"./Assets/Relevant-Textures/Branches.jpg", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Branches.jpg"}}},
+        /*{loadTexturePath("Branches", 0), {{aiTextureType_DIFFUSE, loadTexturePath("Branches", 0)},
+                                        {aiTextureType_AMBIENT_OCCLUSION, loadTexturePath("Branches", 1)},
+                                        {aiTextureType_NORMALS, loadTexturePath("Branches", 2)},
+                                        {aiTextureType_HEIGHT, loadTexturePath("Branches", 3)},
+                                        {aiTextureType_DIFFUSE_ROUGHNESS, loadTexturePath("Branches", 4)}}},
+                                        */
         {"./Assets/Relevant-Textures/Carrot.jpg", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Carrot.jpg"}}},
         {"./Assets/Relevant-Textures/Metal.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Metal.png"}}},
         {"./Assets/Relevant-Textures/Scarf.png", {{aiTextureType_DIFFUSE, "./Assets/Relevant-Textures/Scarf.png"}}},
