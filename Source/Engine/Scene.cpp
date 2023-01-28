@@ -100,7 +100,7 @@ void Scene::setupNPREffects()
     m_basicShaderProgram->addShader(m_basicVertexShader);
     m_basicShaderProgram->addShader(m_basicFragmentShader);
     m_basicShaderProgram->link();
-    addNPREffect(m_basicShaderProgram, false);
+    addNPREffect(m_basicShaderProgram, true);
 
     // Setup Gooch (by Jessica)
     m_goochVertexShader = std::make_shared<Shader>("./Assets/Shader/Gooch.vert");
@@ -182,7 +182,7 @@ void Scene::setupNPREffects()
     m_pattShaderProgram->addShader(m_pattVertexShader);
     m_pattShaderProgram->addShader(m_pattFragmentShader);
     m_pattShaderProgram->link();
-    addNPREffect(m_pattShaderProgram, true);
+    addNPREffect(m_pattShaderProgram, false);
     addNPRProperty("Patterns", "Colored", &m_pattPropertyColored, true);
     addNPRProperty("Patterns", "Textured##Hatching", &m_pattPropertyTextured, true);
     addNPRProperty("Patterns", "mode", &m_pattPropertyMode, true, 0, 5);
