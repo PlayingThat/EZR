@@ -161,9 +161,11 @@ GLuint createTextureFromFile(std::string path)
 
     int width, height, nrChannels;
     // Force RGBA
-    unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha );
+    unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, STBI_rgb);
     if(data)
     {
+        // Account for pixel layout difference between OpenGL and stb_image
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         assert((1 <= nrChannels) && (4 >= nrChannels));
         GLenum glformat;
         switch(nrChannels)
@@ -172,26 +174,28 @@ GLuint createTextureFromFile(std::string path)
                 glformat = GL_RED;
                 break;
             case 2:
-                glformat = GL_RG8;
+                glformat = GL_RG;
                 break;
             case 3:
-                glformat = GL_RGB8;
+                glformat = GL_RGB;
                 break;
             case 4:
-                glformat = GL_RGBA8;
+                glformat = GL_RGBA;
                 break;
         }
-
         if (glformat == GL_RGBA8)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, glformat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         else
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, glformat, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
     } else
     {
         LOG_ERROR("failed to load texture " + path);
     }
+    
+    // Restore default pixel layout
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 0);
     stbi_image_free(data);
 
     return texture;
