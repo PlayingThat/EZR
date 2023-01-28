@@ -160,10 +160,10 @@ GLuint createTextureFromFile(std::string path)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     int width, height, nrChannels;
-    unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
+    // Force RGBA
+    unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha );
     if(data)
     {
-        // account for possible alpha channel in the data
         assert((1 <= nrChannels) && (4 >= nrChannels));
         GLenum glformat;
         switch(nrChannels)
