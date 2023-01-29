@@ -10,7 +10,5 @@ void main()
 {
     const int cbtID = u_CbtID;
 
-    uint cbtNodeCount = cbt_NodeCount(cbtID);
-    cbtNodeCount = cbtNodeCount * uint(log2(cbtNodeCount));
-    m_cbtNodeCount = cbtNodeCount;
+    m_cbtNodeCount = cbt_NodeCount(cbtID);
 }

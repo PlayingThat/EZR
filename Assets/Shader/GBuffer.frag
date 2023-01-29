@@ -39,7 +39,7 @@ void main()
     // store the tangent space basis vectors in the 5th gbuffer texture
     gTangents = vec4(Tangent, 0.0);
 
-    // Special textures
+    // Special PBR textures
     gMetalSmoothnessAOHeight.r = texture(metalSampler, uvCoords).r;
     gMetalSmoothnessAOHeight.g = texture(smoothnessSampler, uvCoords).r;
     gMetalSmoothnessAOHeight.b = texture(heightSampler, uvCoords).r;

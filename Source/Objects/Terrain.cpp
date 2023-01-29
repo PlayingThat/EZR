@@ -330,7 +330,7 @@ void Terrain::loadTerrainVariables()
     variables.model = modelMatrix;
     variables.modelView = viewMatrix * modelMatrix;
     variables.view = viewMatrix;
-    variables.camera = glm::inverse(viewMatrix);
+    variables.camera = glm::transpose(glm::inverse(viewMatrix));
     variables.viewProjection = projectionMatrix * viewMatrix;
     variables.modelViewProjection = projectionMatrix * viewMatrix * modelMatrix;
 
