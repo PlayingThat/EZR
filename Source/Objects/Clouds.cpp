@@ -97,6 +97,7 @@ void Clouds::drawGui()
 {
     ImGui::Begin("Clouds");
 //    ImGui::DragFloat3("Sun Position", &m_sunPosition.r);
+    ImGui::SliderFloat("Time of Day", &m_timeOfDay, 0.0f, 3600.0f);
     ImGui::ColorEdit3("Sun Color", &m_sunColor.r);
     ImGui::ColorEdit3("Ambient Color", &m_ambientColor.r);
     ImGui::ColorEdit3("Background Color", &m_backgroundColor.r);
