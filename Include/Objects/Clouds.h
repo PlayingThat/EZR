@@ -52,14 +52,19 @@ private:
     // scene properties
     glm::vec3 m_sunPosition;
     glm::vec3 m_sunColor;
+    glm::vec3 m_sunsetSunColor;
     glm::vec3 m_ambientColor;
 
     glm::vec3 m_backgroundColor;
+
+    /* sky colors
     glm::vec3 m_dayColor;
     glm::vec3 m_sunsetColor;
     glm::vec3 m_nightColor;
+    */ 
 
-    float m_timeOfDay = 1800.0f;  // 12pm
+    //float m_timeOfDay = 1800.0f;  // 12pm
+    float m_timeOfDay = 12.0f;      // 12am
     float m_windSpeed = 300.0f;
 
     float m_earthRadius;

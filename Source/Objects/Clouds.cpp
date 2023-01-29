@@ -16,12 +16,16 @@ Clouds::Clouds(std::shared_ptr<Scene> scene) : Drawable(scene)
     // setup default scene properties
     m_sunPosition = glm::vec3(1000.0f, 1000.0f, 1000.0f);
     m_sunColor = glm::vec3(1.6f, 1.4f, 1.0f);
+    m_sunsetSunColor = glm::vec3(1.0f, 0.55f, 0.47f);
     m_ambientColor = glm::vec3(1.f, 1.f, 1.f);
 
     m_backgroundColor = glm::vec3(0.47f, 0.55f, 0.86f);
+
+    /* sky colors
     m_dayColor = glm::vec3(0.53f, 0.92f, 1.0f);         // light blue
     m_sunsetColor = glm::vec3(0.81f, 0.33f, 0.2f);      // blood-orange
     m_nightColor = glm::vec3(0.04f, 0.03f, 0.17f);      // dark blue
+    */
 
     m_cloudScale = 100000.0f;
     m_coverageFactor = 1.0f;
@@ -97,7 +101,9 @@ void Clouds::drawGui()
 {
     ImGui::Begin("Clouds");
 //    ImGui::DragFloat3("Sun Position", &m_sunPosition.r);
-    ImGui::SliderFloat("Time of Day", &m_timeOfDay, 0.0f, 3600.0f);
+    //ImGui::SliderFloat("Time of Day", &m_timeOfDay, 0.0f, 3600.0f);
+    //Changed the range to 0 to 24, because a day has 24h -> more intuitive for the user
+    ImGui::SliderFloat("Time of Day", &m_timeOfDay, 0.0f, 24.0f);       
     ImGui::ColorEdit3("Sun Color", &m_sunColor.r);
     ImGui::ColorEdit3("Ambient Color", &m_ambientColor.r);
     ImGui::ColorEdit3("Background Color", &m_backgroundColor.r);
