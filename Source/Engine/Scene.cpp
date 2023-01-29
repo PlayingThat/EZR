@@ -146,6 +146,7 @@ void Scene::setupNPREffects()
     m_rimLShaderProgram->link();
     addNPREffect(m_rimLShaderProgram, false);
     addNPRProperty("RimLighting", "Textured##RimLighing", &m_rimLPropertyTextured, true);
+    addNPRProperty("RimLighting", "strength", &m_rimLightStrength, true, 2.0f, 10.0f);
 
     // Set up alternative glow effect (by Jessica)
     m_glowVertexShader = std::make_shared<Shader>("./Assets/Shader/JGlow.vert");

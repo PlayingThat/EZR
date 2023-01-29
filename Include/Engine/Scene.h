@@ -159,6 +159,7 @@ private:
     std::shared_ptr<ShaderProgram> m_rimLShaderProgram;
     // Rim Lighting properties
     bool m_rimLPropertyTextured = false;  // wether to use a texture or not
+    float m_rimLightStrength = 5.0f;
 
     // Alternative glow effect (by Jessica)
     std::shared_ptr<Shader> m_glowVertexShader;

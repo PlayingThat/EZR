@@ -13,6 +13,7 @@ uniform sampler2D colorDiffuse;
 uniform vec2 screenSize;
 
 uniform bool Textured;
+uniform float strength;
 
 layout (location = 0) out vec4 FragColor;
 
@@ -32,7 +33,7 @@ void main(void)
 	vec3 eye = normalize(cameraPosition-position);
 
 	// higher "strength" makes the rim lighting weaker (1.0 -> strong rim lighting)
-	float strength = 5.0;
+	//float strength = 5.0;
 	float rim = pow(1 - max(dot(tNorm, eye), 0), strength);
 
 	// final color for object
