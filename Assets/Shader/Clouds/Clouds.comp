@@ -107,6 +107,16 @@ bool raySphereintersection(vec3 ro, vec3 rd, float radius, out vec3 startPos){
     return true;
 }
 
+// calculate color of sunrays during day
+vec3 sunrayColor(float timeOfDay) {
+    // white=1 at 12, otherwise -> 0
+    float white = exp(-pow((timeOfDay-12),2));
+    // to get a smaller gradient
+    white += 0.5;
+    vec3 color = vec3(0.78f, 0.99f, 1.0f)*min(white, 1.0) + max((1.0f-white), 0.0)*vec3(1.0f, 0.0f, 0.0f);
+    return color;
+}
+
 // used to calculate ray
 vec3 coordinateToNDC(vec2 fragCoord)
 {
@@ -188,7 +198,11 @@ vec3 skyColorFromRay(vec3 rayStart, vec3 rayEnd)
     color += 0.47f * vec3(1.6f, 1.4f, 1.0f) * pow(sunDot, 350.0f) * extinction;
 
     // add sun halo
-    color += 0.4f * vec3(0.8f, 0.9f, 1.0f) * pow(sunDot, 2.0f) * extinction;
+    vec3 sunray;
+    //float white = exp(-pow((timeOfDay-12.5),2));
+    //sunray = vec3(1.0f, 1.0f, 1.0f);// vec3(1.0) * white + (1.0-white) * vec3(1.0, 1.0, 0.0);
+    sunray = sunrayColor(timeOfDay);
+    color += 0.4f * sunray * pow(sunDot, 2.0f) * extinction;
 
     return color;
 }
