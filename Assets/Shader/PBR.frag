@@ -105,11 +105,12 @@ void main()
     float ao        = metalSmoothnessAOHeight.b;
     float height    = metalSmoothnessAOHeight.a;
 
-    vec3 N = getNormalFromMap();
+    vec3 N = normalize(Normal);
     vec3 V = normalize(cameraPosition - WorldPos);
+    vec3 R = reflect(-V, N); 
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
-    // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
+    // of 0.04 and if it's a metal, use their albedo color as F0 (metallic workflow)    
     vec3 F0 = vec3(0.04); 
     F0 = mix(F0, albedo, metallic);
 
@@ -119,18 +120,16 @@ void main()
     // calculate per-light radiance
     vec3 L = normalize(lightPosition - WorldPos);
     vec3 H = normalize(V + L);
-    float distance = length(lightPosition - WorldPos);
-    float attenuation = 1.0; // 1.0 / (distance * distance); (Not applicable for sun)
-    vec3 radiance = lightColor * attenuation;
+    vec3 radiance = lightColor;
 
     // Cook-Torrance BRDF
     float NDF = DistributionGGX(N, H, roughness);   
     float G   = GeometrySmith(N, V, L, roughness);      
     vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);
         
-    vec3 numerator    = NDF * G * F; 
-    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
-    vec3 specular = numerator / denominator;
+    vec3 nominator    = NDF * G * F; 
+    float denominator = 4.0 * max(dot(V, N), 0.0) * max(dot(L, N), 0.0) + 0.001f; // 0.001 to prevent divide by zero.
+    vec3 brdf = nominator / denominator;
     
     // kS is equal to Fresnel
     vec3 kS = F;
@@ -147,19 +146,18 @@ void main()
     float NdotL = max(dot(N, L), 0.0);        
 
     // add to outgoing radiance Lo
-    Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
-    
+    Lo += (kD * albedo / PI + brdf) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again  
     
     // ambient lighting (note that the next IBL tutorial will replace 
     // this ambient lighting with environment lighting).
     vec3 ambient = vec3(0.03) * albedo * ao;
-    
+
     vec3 color = ambient + Lo;
 
     // HDR tonemapping
     color = color / (color + vec3(1.0));
     // gamma correct
-    color = pow(color, vec3(1.0/2.2)); 
+    color = pow(color, vec3(1.0/2.2));
 
     FragColor = vec4(color, 1.0);
 }
