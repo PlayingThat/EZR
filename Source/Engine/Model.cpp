@@ -23,7 +23,8 @@ bool Model::loadModel(std::string path,
                             std::vector<glm::vec3>& m_normals,
                             std::vector<glm::vec2>& m_uvs,
                             std::vector<unsigned int>& m_indices,
-                            std::vector<glm::vec3>& m_tangents)
+                            std::vector<glm::vec3>& m_tangents,
+                            std::vector<glm::vec3>& m_bitangents)
 {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(path, aiProcess_GenSmoothNormals | 
@@ -47,6 +48,7 @@ bool Model::loadModel(std::string path,
         std::vector<glm::vec2> uvs; 
         std::vector<unsigned int> indices; 
         std::vector<glm::vec3> tangents;
+        std::vector<glm::vec3> bitangents;
         
 
         aiMesh* mesh = scene->mMeshes[i];
@@ -103,11 +105,15 @@ bool Model::loadModel(std::string path,
                 uvs.push_back(glm::vec2(0.0f, 0.0f));
             }
 
-            // Tangents (what if they don't exist?)
+            // Tangents and bitangents are calculated by assimp
             aiVector3D tangent = mesh->mTangents[j];
             glm::vec3 tangentElem = glm::vec3(tangent.x, tangent.y, tangent.z);
             tangents.push_back(tangentElem);
+
             // If the mesh contains tangents, it automatically also contains bitangents.
+            aiVector3D bitangent = mesh->mBitangents[j];
+            glm::vec3 bitangentElem = glm::vec3(bitangent.x, bitangent.y, bitangent.z);
+            tangents.push_back(bitangentElem);
         }
 
         // Extract the textures from the mesh
@@ -134,7 +140,7 @@ bool Model::loadModel(std::string path,
 
         GLuint textureID = 0;
         // Create a new mesh and add it to the list of meshes
-        std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(vertices, normals, uvs, indices, tangents, color,
+        std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(vertices, normals, uvs, indices, tangents, bitangents, color,
                                                                diffuse, smoothness, height, ao, metal, normal);
 
         m_meshes.push_back(newMesh);

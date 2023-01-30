@@ -49,6 +49,7 @@ protected:
     GLuint m_uvbuffer = 0;
     GLuint m_indexlist = 0;
     GLuint m_tangentbuffer = 0;
+    GLuint m_bitangentbuffer = 0;
 
     int m_numberOfPoints; // @brief Number of points in the mesh
     int m_numberOfIndices; // @brief Number of indices in the mesh
@@ -58,6 +59,7 @@ protected:
     std::vector<glm::vec2> m_uvs; 
     std::vector<unsigned int> m_indices; 
     std::vector<glm::vec3> m_tangents;
+    std::vector<glm::vec3> m_bitangents;
 
     std::shared_ptr<Scene> m_scene;
 

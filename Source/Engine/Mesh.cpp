@@ -9,6 +9,7 @@ Mesh::Mesh(std::vector<glm::vec4> vertices,
            std::vector<glm::vec2> uvs,
            std::vector<GLuint> indices,
            std::vector<glm::vec3> tangents,
+           std::vector<glm::vec3> bitangents,
            glm::vec4 diffuseColor,
            GLuint diffuseTexture,
            GLuint smoothnessTexture,
@@ -23,6 +24,7 @@ Mesh::Mesh(std::vector<glm::vec4> vertices,
     m_uvs = uvs;
     m_indices = indices;
     m_tangents = tangents;
+    m_bitangents = bitangents;
 
     // Set material color
     m_diffuseColor = diffuseColor;

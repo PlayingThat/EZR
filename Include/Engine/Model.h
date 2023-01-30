@@ -34,7 +34,8 @@ public:
                     std::vector<glm::vec3>& m_normals,
                     std::vector<glm::vec2>& m_uvs,
                     std::vector<unsigned int>& m_indices,
-                    std::vector<glm::vec3>& m_tangents);
+                    std::vector<glm::vec3>& m_tangents,
+                    std::vector<glm::vec3>& m_bitangents);
 
     GLuint loadTexture(std::string path, std::string typeString);
 

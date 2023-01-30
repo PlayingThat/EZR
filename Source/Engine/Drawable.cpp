@@ -43,6 +43,7 @@ void Drawable::setupMemers()
     m_uvs = std::vector<glm::vec2>();
     m_indices = std::vector<unsigned int>();
     m_tangents = std::vector<glm::vec3>();
+    m_bitangents = std::vector<glm::vec3>();
 }
 
 Drawable::~Drawable()
@@ -86,13 +87,16 @@ void Drawable::createBuffers()
 
     if(m_tangentbuffer == 0 && !m_tangents.empty())
     {
-        if(m_tangents.empty())
-        {
-            //
-        }
         glGenBuffers(1, &m_tangentbuffer);
         glBindBuffer(GL_ARRAY_BUFFER, m_tangentbuffer);
         glBufferData(GL_ARRAY_BUFFER, m_tangents.size() * sizeof(glm::vec3), &m_tangents[0], GL_STATIC_DRAW);
+    }
+
+    if(m_bitangentbuffer == 0 && !m_bitangents.empty())
+    {
+        glGenBuffers(1, &m_bitangentbuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, m_bitangentbuffer);
+        glBufferData(GL_ARRAY_BUFFER, m_bitangents.size() * sizeof(glm::vec3), &m_bitangents[0], GL_STATIC_DRAW);
     }
 
     // Generate a buffer for the indices as well
@@ -128,6 +132,12 @@ void Drawable::createBuffers()
         glBindBuffer(GL_ARRAY_BUFFER, m_tangentbuffer);
         glEnableVertexAttribArray(3);
         glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    }
+
+    if (m_bitangents.size() > 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, m_bitangentbuffer);
+        glEnableVertexAttribArray(4);
+        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, 0);
     }
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexlist);

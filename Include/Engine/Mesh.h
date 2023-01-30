@@ -22,6 +22,7 @@ public:
          std::vector<glm::vec2> uvs,
          std::vector<GLuint> indices,
          std::vector<glm::vec3> tangents,
+         std::vector<glm::vec3> bitangents,
          glm::vec4 diffuseColor,
          GLuint diffuseTexture,
          GLuint smoothnessTexture,
