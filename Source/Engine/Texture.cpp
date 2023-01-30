@@ -4,6 +4,79 @@
 
 #include "Engine/Texture.h"
 
+GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log) 
+{
+    // Create array of texture handles
+    TextureData *textureData = (TextureData*)malloc(sizeof(TextureData) * paths.size());
+
+    #pragma omp parallel for
+    for (int i = 0; i < paths.size(); i++)
+    {   
+        if (log) {
+            #pragma omp critical
+            LOG_INFO("Loading texture " << paths[i]);
+        }
+
+        // Load image from file
+        textureData[i].data = stbi_load(paths[i].c_str(), &textureData[i].width, &textureData[i].height, &textureData[i].nrComponents, STBI_rgb);
+    }
+
+    // Setup OpenGL texture handles as usual
+    GLuint *textureHandles = (GLuint*)malloc(sizeof(GLuint) * paths.size());
+
+    // Create OpenGL texture handles for each texture
+    for (int i = 0; i < paths.size(); i++) 
+    {
+        glGenTextures(1, &textureHandles[i]);
+        glBindTexture(GL_TEXTURE_2D, textureHandles[i]);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        if(textureData[i].data)
+        {
+            // Account for pixel layout difference between OpenGL and stb_image
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            assert((1 <= textureData[i].nrComponents) && (4 >= textureData[i].nrComponents));
+            GLenum glformat;
+            switch(textureData[i].nrComponents)
+            {
+                case 1:
+                    glformat = GL_RED;
+                    break;
+                case 2:
+                    glformat = GL_RG;
+                    break;
+                case 3:
+                    glformat = GL_RGB;
+                    break;
+                case 4:
+                    glformat = GL_RGBA;
+                    break;
+            }
+
+            if (glformat == GL_RGBA8)
+                glTexImage2D(GL_TEXTURE_2D, 0, glformat, textureData[i].width, textureData[i].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData[i].data);
+            else
+                glTexImage2D(GL_TEXTURE_2D, 0, glformat, textureData[i].width, textureData[i].height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData[i].data);
+            glGenerateMipmap(GL_TEXTURE_2D);
+
+        } else
+        {
+            LOG_ERROR("failed to load texture " << paths[i]);
+        }
+        
+        stbi_image_free(textureData[i].data);
+    }
+
+    // Free texture data
+    free(textureData);
+
+    return textureHandles;
+}
+
 GLuint createTextureFromFile(const char* path)
 {
     // Load image from file

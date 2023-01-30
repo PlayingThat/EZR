@@ -117,7 +117,7 @@ bool Model::loadModel(std::string path,
         }
 
         // Extract the textures from the mesh
-        GLuint diffuse = 0, metal = 0, height = 0, normal = 0, smoothness = 0, ao = 0;
+        GLint diffuse = 0, metallic = 0, height = 0, normal = 0, smoothness = 0, ao = 0;
 
         // Get diffuse texture name of the mesh as main texture reference
         aiString textureName;
@@ -128,21 +128,73 @@ bool Model::loadModel(std::string path,
         std::string textureFileName = texturePathCString.substr(texturePathCString.find_last_of("/\\") + 1);
         std::string texturePath = m_texturePath + textureFileName;
 
-        // Load the textures if any textures are asigned to the mesh
+        // Load the textures in parallel if any textures are asigned to the mesh
         if (textureFileName != "") {
-            diffuse = loadTextureFromType(texturePath, "diffuseOriginal");
-            smoothness = loadTextureFromType(texturePath, "smoothness");
-            height = loadTextureFromType(texturePath, "height");
-            ao = loadTextureFromType(texturePath, "ao");
-            metal = loadTextureFromType(texturePath, "metallic");
-            normal = loadTextureFromType(texturePath, "normal");
+            std::vector<std::string> texturePaths = std::vector<std::string>();
+
+            // Get the texture IDs if the textures are already loaded; add them to the texturePaths vector for 
+            // parallel loading if not
+            diffuse = getTextureIDIfAlreadyLoaded(getTexturePathFromType(texturePath, "diffuseOriginal"));
+            if (diffuse < 0)
+                texturePaths.push_back(getTexturePathFromType(texturePath, "diffuseOriginal"));
+            smoothness = getTextureIDIfAlreadyLoaded(getTexturePathFromType(texturePath, "smoothness"));
+            if (smoothness < 0)
+                texturePaths.push_back(getTexturePathFromType(texturePath, "smoothness"));
+            height = getTextureIDIfAlreadyLoaded(getTexturePathFromType(texturePath, "height"));
+            if (height < 0)
+                texturePaths.push_back(getTexturePathFromType(texturePath, "height"));
+            ao = getTextureIDIfAlreadyLoaded(getTexturePathFromType(texturePath, "ao"));
+            if (ao < 0)
+                texturePaths.push_back(getTexturePathFromType(texturePath, "ao"));
+            metallic = getTextureIDIfAlreadyLoaded(getTexturePathFromType(texturePath, "metallic"));
+            if (metallic < 0)
+                texturePaths.push_back(getTexturePathFromType(texturePath, "metallic"));
+            normal = getTextureIDIfAlreadyLoaded(getTexturePathFromType(texturePath, "normal"));
+            if (normal < 0)
+                texturePaths.push_back(getTexturePathFromType(texturePath, "normal"));
+
+            GLuint *textureHandles = loadTexturesInParallel(texturePaths);
+            HANDLE_GL_ERRORS(":(");
+            
+            // Retrieve newly loaded textures from array
+            int indexOffset = 0;
+            if (diffuse < 0) {
+                diffuse = textureHandles[indexOffset];
+                m_textureMap.insert(std::pair<std::string, GLuint>(getTexturePathFromType(texturePath, "diffuseOriginal"), diffuse));
+                indexOffset++;
+            }
+            if (smoothness < 0) {
+                smoothness = textureHandles[indexOffset];
+                m_textureMap.insert(std::pair<std::string, GLuint>(getTexturePathFromType(texturePath, "smoothness"), smoothness));
+                indexOffset++;
+            }
+            if (height < 0) {
+                height = textureHandles[indexOffset];
+                m_textureMap.insert(std::pair<std::string, GLuint>(getTexturePathFromType(texturePath, "height"), height));
+                indexOffset++;
+            }
+            if (ao < 0) {
+                ao = textureHandles[indexOffset];
+                m_textureMap.insert(std::pair<std::string, GLuint>(getTexturePathFromType(texturePath, "ao"), ao));
+                indexOffset++;
+            }
+            if (metallic < 0) {
+                metallic = textureHandles[indexOffset];
+                m_textureMap.insert(std::pair<std::string, GLuint>(getTexturePathFromType(texturePath, "metallic"), metallic));
+                indexOffset++;
+            }
+            if (normal < 0) {
+                normal = textureHandles[indexOffset];
+                m_textureMap.insert(std::pair<std::string, GLuint>(getTexturePathFromType(texturePath, "normal"), normal));
+                indexOffset++;
+            }
         }
 
         GLuint textureID = 0;
 
         // Create a new mesh and add it to the list of meshes
         std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(vertices, normals, uvs, indices, tangents, bitangents, color,
-                                                               diffuse, smoothness, height, ao, metal, normal);
+                                                               diffuse, smoothness, height, ao, metallic, normal);
 
         m_meshes.push_back(newMesh);
     }
@@ -157,38 +209,23 @@ void Model::draw()
     }
 }
 
-GLuint Model::loadTexture(std::string path, std::string typeString)
+GLuint Model::getTextureIDIfAlreadyLoaded(std::string path)
 {
-    // std::string finalTexturePath;
-    // if (m_objectToTextureMap.at(path).find(type) != m_objectToTextureMap.at(path).end())
-    // {
-    //     finalTexturePath = m_objectToTextureMap.at(path).at(type);
-    // }
-    // else
-    // {
-    //     finalTexturePath = "./Assets/Special-Textures/black.png";
-    // }
-
     GLuint textureID = 0;
-    // Load texture from file
 
     // Check if tex has already been loaded
     if (m_textureMap.find(path) != m_textureMap.end())
     {
-        textureID = m_textureMap[path];
+        return m_textureMap[path];
     }   
     else
     {
-        LOG_INFO("Loading " + typeString + " texture: " + path);
-        textureID = createTextureFromFile(path);
-        m_textureMap[path] = textureID;
+        return -1;
     }
-
-    return textureID;
     
 }
 
-GLuint Model::loadTextureFromType(std::string diffusePath, std::string type) {
+std::string Model::getTexturePathFromType(std::string diffusePath, std::string type) {
     // Determine file name from path
     int fileNameIndex = diffusePath.find_last_of("/");
     int extensionIndex = diffusePath.find_last_of(".") - fileNameIndex; 
@@ -205,7 +242,7 @@ GLuint Model::loadTextureFromType(std::string diffusePath, std::string type) {
     // Concatenate texture path from folder path and texture type
     std::string texturePath = folderPath + materialName + "_" + type + ".jpg";
 
-    return loadTexture(texturePath, type);
+    return texturePath;
 }
 
 Model::~Model()

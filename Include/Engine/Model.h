@@ -37,13 +37,13 @@ public:
                     std::vector<glm::vec3>& m_tangents,
                     std::vector<glm::vec3>& m_bitangents);
 
-    GLuint loadTexture(std::string path, std::string typeString);
+    GLuint getTextureIDIfAlreadyLoaded(std::string path);
 
     void draw();
 
 private:
     // Load texture from provided path and type
-    GLuint loadTextureFromType(std::string diffusePath, std::string type);
+    std::string getTexturePathFromType(std::string diffusePath, std::string type);
     
     std::shared_ptr<Scene> m_scene;
     std::vector<std::shared_ptr<Mesh>> m_meshes;

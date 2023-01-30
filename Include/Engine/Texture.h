@@ -6,7 +6,21 @@
 
 #include "Defs.h"
 #include <string>
+#include <vector>
 #include <stb_image.h>
+#include <omp.h>
+
+// Used for parallel image loading
+struct TextureData
+{
+    unsigned char* data;
+    int width;
+    int height;
+    int nrComponents;
+};
+typedef struct TextureData TextureData;
+
+GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log = true);
 
 GLuint createTextureFromFile(const char* path);
 
