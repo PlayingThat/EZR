@@ -139,6 +139,7 @@ bool Model::loadModel(std::string path,
         }
 
         GLuint textureID = 0;
+
         // Create a new mesh and add it to the list of meshes
         std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(vertices, normals, uvs, indices, tangents, bitangents, color,
                                                                diffuse, smoothness, height, ao, metal, normal);

@@ -151,6 +151,7 @@ GLuint createTexture3D(std::size_t width, std::size_t height, std::size_t depth,
 GLuint createTextureFromFile(std::string path)
 {
     GLuint texture;
+
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -162,6 +163,7 @@ GLuint createTextureFromFile(std::string path)
     int width, height, nrChannels;
     // Force RGBA
     unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, STBI_rgb);
+
     if(data)
     {
         // Account for pixel layout difference between OpenGL and stb_image
@@ -183,6 +185,7 @@ GLuint createTextureFromFile(std::string path)
                 glformat = GL_RGBA;
                 break;
         }
+
         if (glformat == GL_RGBA8)
             glTexImage2D(GL_TEXTURE_2D, 0, glformat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         else
@@ -194,8 +197,6 @@ GLuint createTextureFromFile(std::string path)
         LOG_ERROR("failed to load texture " + path);
     }
     
-    // Restore default pixel layout
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 0);
     stbi_image_free(data);
 
     return texture;
