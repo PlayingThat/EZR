@@ -16,8 +16,9 @@ Clouds::Clouds(std::shared_ptr<Scene> scene) : Drawable(scene)
     // setup default scene properties
     m_sunPosition = glm::vec3(1000.0f, 1000.0f, 1000.0f);
     m_cloudHighlights = glm::vec3(1.6f, 1.4f, 1.0f);
-    m_sunColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    m_sunsetSunColor = glm::vec3(1.0f, 0.55f, 0.47f);
+    m_sunlightColorDay = glm::vec3(0.56f, 0.88f, 1.0f);
+    m_sunlightColorSunset = glm::vec3(1.0f, 0.55f, 0.47f);
+    m_sunlightColorNight = glm::vec3(0.5f, 0.5f, 0.5f);
     m_ambientColor = glm::vec3(1.f, 1.f, 1.f);
 
     m_backgroundColor = glm::vec3(0.47f, 0.55f, 0.86f);

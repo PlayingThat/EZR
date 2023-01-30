@@ -20,8 +20,13 @@ uniform uint interlaceIndex;
 
 uniform vec3 sunPosition = vec3(1000.0, 1000.0, 1000.0);
 uniform vec3 cloudHighlights;
-uniform vec3 sunColor;
-uniform vec3 sunsetSunColor;
+
+uniform vec3 sunlightColorDay = vec3(0.65f, 0.88f, 1.0f);       // light blue
+uniform vec3 sunlightColorSunsetV = vec3(1.0f, 0.47f, 0.96f);   // violet
+uniform vec3 sunlightColorSunsetR = vec3(1.0f, 0.32f, 0.16f);   // red
+uniform vec3 sunlightColorSunsetO = vec3(1.0f, 0.54f, 0.09f);   // orange
+uniform vec3 sunlightColorNight = vec3(1.0f, 0.8f, 0.25f);      // yellow ("Moon")
+
 uniform vec3 ambientColor;
 uniform vec3 backgroundColor;
 
@@ -145,6 +150,93 @@ vec3 calcScatter(float rayleigh, float mie, out vec3 extinction, float cosine)
     return inScatter;
 }
 
+// mix between different sunlight colors based on weight based on daytime, version 1
+vec3 mixSunlightColor1(){
+
+    vec3 sunlightColorSunset = sunlightColorSunsetO;
+    
+    vec3 sunlightColor1;
+    vec3 sunlightColor2;
+    float weight;
+
+    if (timeOfDay >= 0.0f && timeOfDay < 6.0f) {         // from night to sunrise
+        sunlightColor1 = sunlightColorNight;
+        sunlightColor2 = sunlightColorSunset;
+        weight = timeOfDay * (1.0f/6.0f);    
+    } 
+
+   else if (timeOfDay >= 6.0f && timeOfDay < 12.0f) {    // from sunrise to midday
+        sunlightColor1 = sunlightColorSunset;
+        sunlightColor2 = sunlightColorDay;
+        weight = (timeOfDay - 6.0f) * (1.0f/6.0f); 
+    } 
+
+    else if (timeOfDay >= 12.0f && timeOfDay < 18.0f) {  // from midday to sunset
+        sunlightColor1 = sunlightColorDay;
+        sunlightColor2 = sunlightColorSunset;
+        weight = (timeOfDay - 12.0f) * (1.0f/6.0f); 
+    } 
+
+    else if (timeOfDay >= 18.0f && timeOfDay < 24.0f) {  // from sunset to night
+        sunlightColor1 = sunlightColorSunset;
+        sunlightColor2 = sunlightColorNight;
+        weight = (timeOfDay - 18.0f) * (1.0f/6.0f); 
+    } 
+
+    else {                                              // error
+        sunlightColor1 = vec3(1.0f, 1.0f, 1.0f);
+        sunlightColor2 = vec3(1.0f, 1.0f, 1.0f);
+        weight = 1.0f;
+    }
+
+    // Da kommt die Sonnenfarbe nicht so einfach auf den Bildschirm... Sondern in den MIXEEEEER 
+    vec3 mixedSunlightColor = mix(sunlightColor1, sunlightColor2, weight);
+
+    return mixedSunlightColor;
+}
+
+// mix between different sun colors based on weight based on daytime, version 2: more colors
+vec3 mixSunlightColor2(){
+    
+    vec3 sunlightColor;
+    float weight;
+
+    if ((timeOfDay >= 0.0f && timeOfDay < 6.0f) || (timeOfDay >= 18.0f && timeOfDay < 24.0f)){  //  late sunset / night / early sunrise 
+        sunlightColor = sunlightColorSunsetO;                     
+    }
+
+    else if (timeOfDay >= 5.0f && timeOfDay < 8.0f) {           // from early sunrise to late sunrise
+        weight = (timeOfDay - 5.0f) * (1.0f/3.0f);   
+        sunlightColor = mix(sunlightColorSunsetO, sunlightColorSunsetR, weight);
+    } 
+
+   else if (timeOfDay >= 8.0f && timeOfDay < 10.0f) {           // from sunrise to day
+        weight = (timeOfDay - 8.0f) * 0.5f;  
+        sunlightColor = mix(sunlightColorSunsetR, sunlightColorDay, weight);
+    } 
+
+    else if (timeOfDay >= 10.0f && timeOfDay < 15.0f){          // day
+        sunlightColor = sunlightColorDay;
+    }
+
+    else if (timeOfDay >= 15.0f && timeOfDay < 16.0f) {         // from day to early sunset
+        weight = (timeOfDay - 15.0f) * 1.0f;  
+        sunlightColor = mix(sunlightColorDay, sunlightColorSunsetV, weight);
+    } 
+
+    else if (timeOfDay >= 16.0f && timeOfDay < 18.0f) {         // from early sunset to late sunset
+        weight = (timeOfDay - 16.0f) * 0.5f;  
+        sunlightColor = mix(sunlightColorSunsetV, sunlightColorSunsetO, weight);
+    } 
+
+    else {                                              // error
+        sunlightColor = vec3(1.0f, 1.0f, 1.0f);
+    }
+
+    return sunlightColor;
+}
+
+
 // calculates the color of the sky at the ray intersection
 vec3 skyColorFromRay(vec3 rayStart, vec3 rayEnd)
 {
@@ -194,15 +286,27 @@ vec3 skyColorFromRay(vec3 rayStart, vec3 rayEnd)
     // apply exposure
     vec3 color = scatter * (1.0f - extinction) * timeFactor;
 
-    // add sun
+    // add sun  -> Note by and for Jess: not the actual sun light
     color += 0.47f * vec3(1.6f, 1.4f, 1.0f) * pow(sunDot, 350.0f) * extinction;
 
-    // add sun halo
+    // add sun halo -> Note by and for Jess: actual sun light
+
+    // Version 0
+    //color += 0.4f * vec3(0.8f, 0.9f, 1.0f) * pow(sunDot, 2.0f) * extinction;
+
+    // Version 1 & 2 by Jess
+    //vec3 mixedSunlightColor = mixSunlightColor1();        // Version 1
+    vec3 mixedSunlightColor = mixSunlightColor2();          // Version 2
+    color += 0.4f * mixedSunlightColor * pow(sunDot, 2.0f) * extinction;
+
+/*
+    // Version 3 by Alyssa
     vec3 sunray;
     //float white = exp(-pow((timeOfDay-12.5),2));
     //sunray = vec3(1.0f, 1.0f, 1.0f);// vec3(1.0) * white + (1.0-white) * vec3(1.0, 1.0, 0.0);
     sunray = sunrayColor(timeOfDay);
     color += 0.4f * sunray * pow(sunDot, 2.0f) * extinction;
+*/
 
     return color;
 }
