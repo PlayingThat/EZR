@@ -123,6 +123,11 @@ private:
 
     //////////////////////////////////////////
     // NPR shader effects
+
+    // General properties for all NPR effects
+    float m_parallaxMappingHeightScale = 0.1f;
+    bool m_useParallaxMapping = true;
+
     // Basic FBO drawing shader
     std::shared_ptr<Shader> m_basicVertexShader;
     std::shared_ptr<Shader> m_basicFragmentShader;
@@ -171,7 +176,6 @@ private:
     std::shared_ptr<Shader> m_pbrVertexShader;
     std::shared_ptr<Shader> m_pbrFragmentShader;
     std::shared_ptr<ShaderProgram> m_pbrShaderProgram;
-
 
     // Stippling Textures
     GLuint m_stipp1 = 0;

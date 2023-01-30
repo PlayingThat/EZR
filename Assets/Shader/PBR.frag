@@ -105,7 +105,7 @@ void main()
     float ao        = metalSmoothnessAOHeight.b;
     float height    = metalSmoothnessAOHeight.a;
 
-    vec3 N = normalize(Normal);
+    vec3 N = getNormalFromMap();
     vec3 V = normalize(cameraPosition - WorldPos);
     vec3 R = reflect(-V, N); 
 
@@ -120,7 +120,8 @@ void main()
     // calculate per-light radiance
     vec3 L = normalize(lightPosition - WorldPos);
     vec3 H = normalize(V + L);
-    vec3 radiance = lightColor;
+
+    vec3 radiance = lightColor ;
 
     // Cook-Torrance BRDF
     float NDF = DistributionGGX(N, H, roughness);   

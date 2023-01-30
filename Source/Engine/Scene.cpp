@@ -54,7 +54,7 @@ void Scene::setup(std::shared_ptr<Scene> scene)
 
     // Setup scene objects
     m_ghost = std::make_shared<Ghost>(m_scene);
-
+    
     // Set camera position
     getState()->getCamera()->setPosition(glm::vec3(0.0f, 1.7f, 2.7f));
 
@@ -254,6 +254,9 @@ void Scene::drawGeometry()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     m_gBufferShaderProgram->use();
 
+    m_gBufferShaderProgram->setFloat("HeightScale", m_parallaxMappingHeightScale);
+    m_gBufferShaderProgram->setBool("UseParallaxMapping", m_useParallaxMapping);
+    m_gBufferShaderProgram->setVec3("cameraPosition", getState()->getCamera()->getPosition());
     m_gBufferShaderProgram->setMat4("projectionMatrix", *getState()->getCamera()->getProjectionMatrix());
     m_gBufferShaderProgram->setMat4("viewMatrix", *getState()->getCamera()->getViewMatrix());
 
@@ -393,7 +396,14 @@ void Scene::drawNPRPanel()
 {
 
     ImGui::Begin("NPR Effects");
-    // int move_from = -1, move_to = -1;
+
+    // Add General Category
+    ImGui::Text("General");
+    ImGui::Separator();
+    ImGui::Checkbox("Use Parallax Mapping", &m_useParallaxMapping);
+    ImGui::SliderFloat("Parallax Height Scale", &m_parallaxMappingHeightScale, 0.0f, 0.02f);
+    ImGui::Separator();
+    
     for (int n = 0; n < m_NPREffects.size(); n++)
     {
         //ImGui::Selectable(names[n]);

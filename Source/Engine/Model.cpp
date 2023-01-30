@@ -113,7 +113,7 @@ bool Model::loadModel(std::string path,
             // If the mesh contains tangents, it automatically also contains bitangents.
             aiVector3D bitangent = mesh->mBitangents[j];
             glm::vec3 bitangentElem = glm::vec3(bitangent.x, bitangent.y, bitangent.z);
-            tangents.push_back(bitangentElem);
+            bitangents.push_back(bitangentElem);
         }
 
         // Extract the textures from the mesh
