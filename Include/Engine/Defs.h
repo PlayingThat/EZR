@@ -21,10 +21,10 @@
 
 #include <glm/gtx/string_cast.hpp>
 
-#define LOG_INFO(info)  std::cout << "Information in " << __FILE__ << "(" << __LINE__ << "): " << info << std::endl
-#define LOG_WARNING(warning) std::cerr << "Warning in " << __FILE__ << "(" << __LINE__ << "): " << warning << std::endl
-#define LOG_ERROR(error)  std::cerr << "Error in " << __FILE__ << "(" << __LINE__ << "): " << error << std::endl
-#define LOG_SHADER_ERROR(shader, error)  std::cerr << "Error in " << shader << ": " << error << std::endl
+#define LOG_INFO(info)  std::cout << "Information in " << __FILE__ << "(" << __LINE__ << "): " << info << std::endl << std::flush
+#define LOG_WARNING(warning) std::cerr << "Warning in " << __FILE__ << "(" << __LINE__ << "): " << warning << std::endl << std::flush
+#define LOG_ERROR(error)  std::cerr << "Error in " << __FILE__ << "(" << __LINE__ << "): " << error << std::endl << std::flush
+#define LOG_SHADER_ERROR(shader, error)  std::cerr << "Error in " << shader << ": " << error << std::endl << std::flush
 
 // Pseudo-Macro for clearing all errors in the error buffer
 static inline void CLEAR_GL_ERRORS() {
