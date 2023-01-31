@@ -143,8 +143,8 @@ vec3 nightSky(vec3 startPos, vec3 endPos)
 	// from += vec3(time*2.,time,-2.0f);
 
     // Extract viewing angle from view direction
-    float angleVec = dot(normalize(dir), normalize(from));
-    float viewAngle = remap(acos(angleVec) * timeOfDay, 0.0f, 75.3982f, 0.0f, 4 * PI);
+    float angleVec = dot(normalize(dir-cameraPosition), normalize(from-cameraPosition));
+    float viewAngle = remap(acos(angleVec) * timeOfDay, 0.0f, PI * 24.0f, 0.0f, 4 * PI);
 
     // Rotate around arbitrary axis mimicking earths rotation
     vec3 axis = normalize(-vec3(0.0f, 0.2f, 1.0f));
@@ -159,7 +159,7 @@ vec3 nightSky(vec3 startPos, vec3 endPos)
 
 	dir = (rotMat * vec4(dir, 1.0)).xyz;
     // Avoid warping
-    // from = (rotMat * vec4(from, 1.0)).xyz;
+    from = (rotMat * vec4(from, 1.0)).xyz;
 	
 	//volumetric rendering
 	s = 0.1f;
