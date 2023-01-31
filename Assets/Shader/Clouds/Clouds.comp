@@ -112,6 +112,83 @@ bool raySphereintersection(vec3 ro, vec3 rd, float radius, out vec3 startPos){
     return true;
 }
 
+////////////////////////////////////////////////////////////
+// Star Nest
+// Adapted from https://www.shadertoy.com/view/4djSRW
+
+#define iterations 20
+#define formuparam 0.93
+
+#define volsteps 20
+#define stepsize 0.1
+
+#define zoom   0.100
+#define tile   2.850
+#define speed  0.00010 
+
+#define brightness 0.0015
+#define darkmatter 0.300
+#define distfading 0.630
+#define saturation 0.650
+
+// Calculate night sky
+vec3 nightSky(vec3 startPos, vec3 endPos)
+{
+    vec2 uv=gl_GlobalInvocationID.xy/resolution.xy-.5;
+    uv.y*=resolution.y/resolution.x;
+	// vec3 dir=vec3(uv*zoom,1.);
+    vec3 dir = endPos;
+	
+	float time = timeOfDay * speed;
+
+	vec3 from = vec3(1.0f);
+	// from += vec3(time*2.,time,-2.0f);
+
+    // Extract viewing angle from view direction
+    float angleVec = dot(normalize(dir), normalize(from));
+    float viewAngle = remap(acos(angleVec) * timeOfDay, 0.0f, 75.3982f, 0.0f, 4 * PI);
+
+    // Rotate around arbitrary axis mimicking earths rotation
+    vec3 axis = normalize(-vec3(0.0f, 0.2f, 1.0f));
+    float s = sin(viewAngle);
+    float c = cos(viewAngle);
+    float oc = 1.0 - c;
+    
+    mat4 rotMat = mat4(oc * axis.x * axis.x + c,    oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                0.0,                                0.0,                                0.0,                                1.0);
+
+	dir = (rotMat * vec4(dir, 1.0)).xyz;
+    // Avoid warping
+    // from = (rotMat * vec4(from, 1.0)).xyz;
+	
+	//volumetric rendering
+	s = 0.1f;
+    float fade = 1.0f;
+	vec3 v=vec3(0);
+	for (int r=0; r<volsteps; r++) {
+		vec3 p = from + s * dir * 0.5f;
+		p = abs(vec3(tile)-mod(p,vec3(tile*2.))); // tiling fold
+		float pa,a=pa=0.;
+		for (int i=0; i<iterations; i++) { 
+			p=abs(p)/dot(p,p)-formuparam; // the magic formula
+			a+=abs(length(p)-pa); // absolute sum of average change
+			pa=length(p);
+		}
+		float dm=max(0.,darkmatter-a*a*.001); //dark matter
+		a*=a*a; // add contrast
+		if (r>6) fade*=1.-dm; // dark matter, don't render near
+		//v+=vec3(dm,dm*.5,0.);
+		v+=fade;
+		v+=vec3(s,s*s,s*s*s*s)*a*brightness*fade; // coloring based on distance
+		fade*=distfading; // distance fading
+		s+=stepsize;
+	}
+	v=mix(vec3(length(v)),v,saturation); //color adjust
+    return vec3(v*.01);	
+}
+
 // calculate color of sunrays during day
 vec3 sunrayColor(float timeOfDay) {
     // white=1 at 12, otherwise -> 0
@@ -512,6 +589,21 @@ void main()
     }
 
     vec3 skyColor = skyColorFromRay(startPos, endPos);
+    vec3 nightColor = nightSky(startPos, rayWorld);
+    // Blend and remap time of day appropriately, can probably be done with several smoothsteps and remaps
+    float nightFactor = 1.0f;
+    if (timeOfDay < 5.0)
+        nightFactor = 1.0f;
+    else if (timeOfDay > 5.0f && timeOfDay < 7.0f)
+        nightFactor = 1.0f - remap(timeOfDay, 5.0f, 7.0f, 0.0f, 1.0f);
+    else if (timeOfDay > 7.0f && timeOfDay < 18.0f)
+        nightFactor = 0.0f;
+    else if (timeOfDay > 18.0f && timeOfDay < 22.0f)
+        nightFactor = remap(timeOfDay, 18.0f, 22.0f, 0.0f, 1.0f);
+    else if (timeOfDay > 22.0f)
+        nightFactor = 1.0f;
+    
+    skyColor = mix(skyColor, nightColor, nightFactor);
 
     float fogAmount = computeFogAmount(fogRay, 0.0002f);
 
