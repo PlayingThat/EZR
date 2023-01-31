@@ -516,26 +516,27 @@ vec4 sampleDensity(vec3 origin, vec3 dir, vec3 sky) {
             vec3 sunsetColor = sunlightColorSunsetO;
             // cloud ambient
             vec3 ambientColor = cloudHighlights * 0.5;
+            vec3 nightCloud = vec3(0.02f, 0.22f, 0.48f);
             
             // color for sunrise ("left")
             if (timeOfDay < 6.0f) {
                 float blend = timeOfDay - floor(timeOfDay);
-                cloudHighlights = vec3(0.0) * (1-blend) + blend * sunriseCloud;
+                cloudHighlights = nightCloud * (1-blend) + blend * sunriseCloud;
                 ambientColor = cloudHighlights * 0.5;
             }
             if(timeOfDay < 5.0001f) {
-                cloudHighlights = vec3(0.0);
+                cloudHighlights = nightCloud;
                 ambientColor = cloudHighlights;
             }
             
             // color for sunset ("right")
             if (timeOfDay > 18.0f) {
                 float blend = 1-(timeOfDay - floor(timeOfDay));
-                cloudHighlights = vec3(0.0) * (1-blend) + blend * sunsetColor;
+                cloudHighlights = nightCloud * (1-blend) + blend * sunsetColor;
                 ambientColor = cloudHighlights * 0.5;
             }
             if(timeOfDay > 18.9999f) {
-                cloudHighlights = vec3(0.0);
+                cloudHighlights = nightCloud;
                 ambientColor = cloudHighlights;
             }
 
