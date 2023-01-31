@@ -120,12 +120,11 @@ bool raySphereintersection(vec3 ro, vec3 rd, float radius, out vec3 startPos){
 #define volsteps 20
 #define stepsize 0.1
 
-#define zoom   0.100
+#define zoom   2.100
 #define tile   2.850
-#define speed  0.00010 
 
 #define brightness 0.0015
-#define darkmatter 0.300
+#define darkmatter 0.100
 #define distfading 0.630
 #define saturation 0.650
 
@@ -134,20 +133,17 @@ vec3 nightSky(vec3 startPos, vec3 endPos)
 {
     vec2 uv=gl_GlobalInvocationID.xy/resolution.xy-.5;
     uv.y*=resolution.y/resolution.x;
-	// vec3 dir=vec3(uv*zoom,1.);
-    vec3 dir = endPos;
-	
-	float time = timeOfDay * speed;
+    vec3 dir = normalize(endPos * zoom);
 
-	vec3 from = vec3(1.0f);
-	// from += vec3(time*2.,time,-2.0f);
+	vec3 from = vec3(12.0f);
 
     // Extract viewing angle from view direction
-    float angleVec = dot(normalize(dir-cameraPosition), normalize(from-cameraPosition));
-    float viewAngle = remap(acos(angleVec) * timeOfDay, 0.0f, PI * 24.0f, 0.0f, 4 * PI);
+    vec3 axis = normalize(-vec3(0.0f, 0.0f, 1.0f));
+    float angleVec = dot(normalize(dir), normalize(from));
+    // float viewAngle = remap(acos(angleVec) * timeOfDay, 0.0f, PI * 24.0f, 0.0f, 2 * PI);
+    float viewAngle = radians(timeOfDay * 15.0f);
 
     // Rotate around arbitrary axis mimicking earths rotation
-    vec3 axis = normalize(-vec3(0.0f, 0.2f, 1.0f));
     float s = sin(viewAngle);
     float c = cos(viewAngle);
     float oc = 1.0 - c;
@@ -157,9 +153,9 @@ vec3 nightSky(vec3 startPos, vec3 endPos)
                 oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
                 0.0,                                0.0,                                0.0,                                1.0);
 
-	dir = (rotMat * vec4(dir, 1.0)).xyz;
+	dir = (rotMat * vec4(dir, 0.0)).xyz;
     // Avoid warping
-    from = (rotMat * vec4(from, 1.0)).xyz;
+    // from = (rotMat * vec4(from, 0.0)).xyz;
 	
 	//volumetric rendering
 	s = 0.1f;
