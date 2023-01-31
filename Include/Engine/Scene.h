@@ -89,7 +89,7 @@ private:
     void createStipplingTexture();
 
     std::shared_ptr<Scene> m_scene;
-    std::shared_ptr<ProfilerGraph> m_profilerGraph;
+    std::shared_ptr<ProfilersWindow> m_profilerWindow;
 
     std::vector<std::shared_ptr<Drawable>> m_drawables;
     std::shared_ptr<State> m_state;

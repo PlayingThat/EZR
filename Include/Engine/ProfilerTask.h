@@ -8,8 +8,6 @@
 #include <cstdint>
 #include <string>
 
-namespace Colors
-{
 //https://flatuicolors.com/palette/defo
 #define RGBA_LE(col) (((col & 0xff000000) >> (3 * 8)) + ((col & 0x00ff0000) >> (1 * 8)) + ((col & 0x0000ff00) << (1 * 8)) + ((col & 0x000000ff) << (3 * 8)))
 const static uint32_t turqoise = RGBA_LE(0x1abc9cffu);
@@ -36,13 +34,14 @@ const static uint32_t pomegranate = RGBA_LE(0xc0392bffu);
 const static uint32_t clouds = RGBA_LE(0xecf0f1ffu);
 const static uint32_t silver = RGBA_LE(0xbdc3c7ffu);
 const static uint32_t imguiText = RGBA_LE(0xF2F5FAFFu);
-}
+
 struct ProfilerTask
 {
 double startTime;
 double endTime;
 std::string name;
 uint32_t color;
+GLuint query;
 double GetLength()
 {
     return endTime - startTime;

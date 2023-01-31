@@ -17,7 +17,7 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     m_scene = scene;
     m_drawables = std::vector<std::shared_ptr<Drawable>>();
 
-    m_profilerGraph = std::make_shared<ProfilerGraph>(100);
+    m_profilerWindow = std::make_shared<ProfilersWindow>();
 
     // Create FBO for GBuffer and SFQ
     m_gBufferFBO = std::make_shared<FBO>(m_scene, 8);
@@ -83,10 +83,7 @@ std::shared_ptr<State> Scene::getState() const
 void Scene::update(float deltaTime)
 {
     // GUI
-    ImGui::Begin("Performance");
-    ImGui::Text("%s", std::string("Frame Time: " + std::to_string(deltaTime * 1000.0f) + "ms").c_str());
-    ImGui::Text("%s", std::string("Frames per Second: " + std::to_string(1.0f / deltaTime)).c_str());
-    ImGui::End();
+    m_profilerWindow->Render();
 
     drawNPRPanel();  
     drawGeometry();
@@ -250,6 +247,7 @@ void Scene::addNPRProperty(std::string effectName, std::string propertyName,
 
 void Scene::drawGeometry()
 {
+    m_profilerWindow->StartCPUProfilerTask("Scene::drawGeometry");
     // Render to GBuffer
     glBindFramebuffer(GL_FRAMEBUFFER, m_gBufferFBO->getID());
     glClearColor(0.0, 0.0, 0.0, 1.0); // keep it black so it doesn't leak into g-buffer
@@ -263,10 +261,14 @@ void Scene::drawGeometry()
     m_gBufferShaderProgram->setMat4("viewMatrix", *getState()->getCamera()->getViewMatrix());
 
     renderDrawables();
+    m_profilerWindow->EndCPUProfilerTask("Scene::drawGeometry");
 }
 
 void Scene::drawSFQuad()
 {
+    m_profilerWindow->StartCPUProfilerTask("Scene::drawNPREffect");
+    m_profilerWindow->StartCPUProfilerTask("Scene::finalCompositing");
+ 
     m_enabledNPREffectCount = 0;
 
     // Render NPR effects to their corresponding FBOs
@@ -326,6 +328,7 @@ void Scene::drawSFQuad()
             m_sfq->draw();
         }
     }
+    m_profilerWindow->EndCPUProfilerTask("Scene::drawNPREffect");
 
     // Render to screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -358,6 +361,8 @@ void Scene::drawSFQuad()
     }
     
     m_sfq->draw();  
+    
+    m_profilerWindow->EndCPUProfilerTask("Scene::finalCompositing");
 }
 
 void Scene::renderDrawables()

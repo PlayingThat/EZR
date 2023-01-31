@@ -34,8 +34,8 @@ public:
     useColoredLegendText = false;
   }
 
-  void LoadFrameData(const ProfilerTask *tasks, size_t count)
-  {
+void LoadFrameData(const ProfilerTask *tasks, size_t count)
+    {
     auto &currFrame = frames[currFrameIndex];
     currFrame.tasks.resize(0);
     for (size_t taskIndex = 0; taskIndex < count; taskIndex++)
@@ -192,7 +192,7 @@ private:
       glm::vec2 markerRightRectMax = markerRightRectMin + glm::vec2(markerRightRectWidth, -markerRightRectHeight);
       RenderTaskMarker(drawList, markerLeftRectMin, markerLeftRectMax, markerRightRectMin, markerRightRectMax, task.color);
 
-      uint32_t textColor = useColoredLegendText ? task.color : Colors::imguiText;// task.color;
+      uint32_t textColor = useColoredLegendText ? task.color : imguiText;// task.color;
 
       float taskTimeMs = float(task.endTime - task.startTime);
       std::ostringstream timeText;
@@ -341,17 +341,19 @@ public:
     cpuGraph(300),
     gpuGraph(300)
   {
-    stopProfiling = false;
-    frameOffset = 0;
-    frameWidth = 3;
-    frameSpacing = 1;
-    useColoredLegendText = true;
-    prevFpsFrameTime = std::chrono::system_clock::now();
-    fpsFramesCount = 0;
-    avgFrameTime = 1.0f;
+      stopProfiling = false;
+      frameOffset = 1;
+      frameWidth = 3;
+      frameSpacing = 1;
+      useColoredLegendText = true;
+      prevFpsFrameTime = std::chrono::system_clock::now();
+      fpsFramesCount = 0;
+      avgFrameTime = 1.0f;
   }
   void Render()
   {
+    cpuGraph.LoadFrameData(CPUtasks.data(), CPUtasks.size());
+    gpuGraph.LoadFrameData(GPUtasks.data(), GPUtasks.size());
     fpsFramesCount++;
     auto currFrameTime = std::chrono::system_clock::now();
     {
@@ -405,6 +407,89 @@ public:
 
     ImGui::End();
   }
+
+  void StartCPUProfilerTask(std::string name)
+  {
+    bool found = false;
+    for (auto& task : CPUtasks)
+    {
+        if (task.name == name)
+        {
+          task.startTime = glfwGetTime();
+
+          found = true;
+          break;
+        }
+    }
+
+    if (!found)
+    {
+        ProfilerTask task;
+        task.name = name;
+
+        task.startTime = glfwGetTime();
+
+        task.color = colorProvider();
+          
+        CPUtasks.push_back(task);
+    }
+  }
+
+  void EndCPUProfilerTask(std::string name)
+  {
+    bool found = false;
+    for (auto& task : CPUtasks)
+    {
+        if (task.name == name)
+        {
+          task.endTime = glfwGetTime() - task.startTime;
+
+          found = true;
+          break;
+        }
+    }
+
+    if (!found)
+    {
+      LOG_ERROR("Profiler task " << name << " not started before ending it");
+    }
+  }
+
+  void StartGPUProfilerTask(std::string name)
+  {
+    
+  }
+
+  const uint32_t colorProvider() 
+  {
+    static int colorIndex = 0;
+
+    // Setup color palette
+    const uint32_t colors[] = { 
+      turqoise,
+      greenSea,
+      emerald,
+      nephritis,
+      peterRiver,
+      belizeHole,
+      amethyst,
+      wisteria,
+      sunFlower,
+      orange,
+      carrot,
+      pumpkin,
+      alizarin,
+      pomegranate,
+      clouds,
+      silver
+    };
+
+    const uint32_t color = colors[colorIndex];
+    colorIndex = (colorIndex + 1) % (sizeof(colors) / sizeof(uint32_t));
+    return color;
+
+  }
+
   bool stopProfiling;
   int frameOffset;
   ProfilerGraph cpuGraph;
@@ -416,4 +501,8 @@ public:
   TimePoint prevFpsFrameTime;
   size_t fpsFramesCount;
   float avgFrameTime;
+
+private:
+  std::vector<ProfilerTask> CPUtasks;
+  std::vector<ProfilerTask> GPUtasks;
 };
