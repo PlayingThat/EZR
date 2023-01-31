@@ -79,7 +79,7 @@ void Clouds::draw()
             m_timeOfDay = 0.0f;
         }
         else {
-            m_timeOfDay += 0.1f;
+            m_timeOfDay += m_timespeed;
         }
     }
 
@@ -113,8 +113,9 @@ void Clouds::drawGui()
 //    ImGui::DragFloat3("Sun Position", &m_sunPosition.r);
     //ImGui::SliderFloat("Time of Day", &m_timeOfDay, 0.0f, 3600.0f);
     //Changed the range to 0 to 24, because a day has 24h -> more intuitive for the user
-    ImGui::SliderFloat("Time of Day", &m_timeOfDay, 0.0f, 24.0f);   
-    ImGui::Checkbox("Activate Time Laps", &m_timeLapsActivated);    
+    ImGui::SliderFloat("Time of Day", &m_timeOfDay, 0.0f, 24.0f); 
+    ImGui::Checkbox("Activate Time Laps", &m_timeLapsActivated);  
+    ImGui::SliderFloat("Time speed", &m_timespeed, 0.001f, 0.1f);   
     ImGui::ColorEdit3("Background Color", &m_backgroundColor.r);
     ImGui::SliderFloat("Cloud Scale", &m_cloudScale, 10000.0f, 300000.0f);
     ImGui::SliderFloat("Earth Radius", &m_earthRadius, 100000.0f, 1000000.0f);

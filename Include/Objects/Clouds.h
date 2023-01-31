@@ -67,6 +67,7 @@ private:
     float m_timeOfDay = 12.0f;      // 12am
     bool m_timeLapsActivated = false;
     float m_windSpeed = 300.0f;
+    float m_timespeed = 0.009f;
 
     float m_earthRadius;
     float m_coverageFactor;
