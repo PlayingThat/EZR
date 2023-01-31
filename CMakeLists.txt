@@ -66,7 +66,10 @@ set(SRC_LIST Include/stb_image.h
         Source/Objects/Clouds.cpp
         
         Include/Engine/leb.h
-        Include/Engine/cbt.h)
+        Include/Engine/cbt.h
+        
+        Include/Engine/ProfilerTask.h
+        Include/Engine/Profiler.h)
         
 
 add_executable(${PROJECT_NAME} ${SRC_LIST} )

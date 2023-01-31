@@ -17,6 +17,8 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     m_scene = scene;
     m_drawables = std::vector<std::shared_ptr<Drawable>>();
 
+    m_profilerGraph = std::make_shared<ProfilerGraph>(100);
+
     // Create FBO for GBuffer and SFQ
     m_gBufferFBO = std::make_shared<FBO>(m_scene, 8);
     m_sfq = std::make_shared<ScreenFillingQuad>(m_scene);
