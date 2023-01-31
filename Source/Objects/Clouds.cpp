@@ -73,8 +73,20 @@ void Clouds::draw()
     // m_volumetricCloudsComputeShaderProgram->setInt("useComplexWeather", m_useComplexWeather);
 
     m_volumetricCloudsComputeShaderProgram->setFloat("timeOfDay", m_timeOfDay);
+    m_volumetricCloudsComputeShaderProgram->setBool("timeLapsActivated", m_timeLapsActivated);
     m_volumetricCloudsComputeShaderProgram->setFloat("time", glfwGetTime());
     m_volumetricCloudsComputeShaderProgram->setFloat("windSpeed", m_windSpeed);
+
+    // if the user has activated timeLaps, the day-night cycle runs automatically
+    if(m_timeLapsActivated == true){
+        if (m_timeOfDay >= 24.0f){
+            m_timeOfDay = 0.0f;
+        }
+        else {
+            m_timeOfDay += 0.1f;
+        }
+    }
+
 
     glDispatchCompute(m_width / 16, m_height / 16, 1);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -105,7 +117,8 @@ void Clouds::drawGui()
 //    ImGui::DragFloat3("Sun Position", &m_sunPosition.r);
     //ImGui::SliderFloat("Time of Day", &m_timeOfDay, 0.0f, 3600.0f);
     //Changed the range to 0 to 24, because a day has 24h -> more intuitive for the user
-    ImGui::SliderFloat("Time of Day", &m_timeOfDay, 0.0f, 24.0f);       
+    ImGui::SliderFloat("Time of Day", &m_timeOfDay, 0.0f, 24.0f);   
+    ImGui::Checkbox("Activate Time Laps", &m_timeLapsActivated);    
     ImGui::ColorEdit3("Cloud Highlights", &m_cloudHighlights.r);
     ImGui::ColorEdit3("Ambient Color", &m_ambientColor.r);
     ImGui::ColorEdit3("Background Color", &m_backgroundColor.r);
