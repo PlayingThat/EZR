@@ -51,11 +51,9 @@ private:
 
     // scene properties
     glm::vec3 m_sunPosition;
-    glm::vec3 m_cloudHighlights;
     glm::vec3 m_sunlightColorDay;
     glm::vec3 m_sunlightColorSunset;
     glm::vec3 m_sunlightColorNight;
-    glm::vec3 m_ambientColor;
 
     glm::vec3 m_backgroundColor;
 

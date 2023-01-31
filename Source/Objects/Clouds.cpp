@@ -15,11 +15,9 @@ Clouds::Clouds(std::shared_ptr<Scene> scene) : Drawable(scene)
 
     // setup default scene properties
     m_sunPosition = glm::vec3(1000.0f, 1000.0f, 1000.0f);
-    m_cloudHighlights = glm::vec3(1.6f, 1.4f, 1.0f);
     m_sunlightColorDay = glm::vec3(0.56f, 0.88f, 1.0f);
     m_sunlightColorSunset = glm::vec3(1.0f, 0.55f, 0.47f);
     m_sunlightColorNight = glm::vec3(0.5f, 0.5f, 0.5f);
-    m_ambientColor = glm::vec3(1.f, 1.f, 1.f);
 
     m_backgroundColor = glm::vec3(0.47f, 0.55f, 0.86f);
 
@@ -62,8 +60,6 @@ void Clouds::draw()
 
     m_volumetricCloudsComputeShaderProgram->setVec2("resolution", glm::vec2(m_scene->getState()->getWidth(), m_scene->getState()->getHeight()));
     m_volumetricCloudsComputeShaderProgram->setVec3("sunPosition", m_sunPosition);
-    m_volumetricCloudsComputeShaderProgram->setVec3("cloudHighlights", m_cloudHighlights);
-    m_volumetricCloudsComputeShaderProgram->setVec3("ambientColor", m_ambientColor);
     m_volumetricCloudsComputeShaderProgram->setVec3("backgroundColor", m_backgroundColor);
     m_volumetricCloudsComputeShaderProgram->setFloat("cloudScale", m_cloudScale);
     m_volumetricCloudsComputeShaderProgram->setFloat("earthRadius", m_earthRadius);
@@ -119,8 +115,6 @@ void Clouds::drawGui()
     //Changed the range to 0 to 24, because a day has 24h -> more intuitive for the user
     ImGui::SliderFloat("Time of Day", &m_timeOfDay, 0.0f, 24.0f);   
     ImGui::Checkbox("Activate Time Laps", &m_timeLapsActivated);    
-    ImGui::ColorEdit3("Cloud Highlights", &m_cloudHighlights.r);
-    ImGui::ColorEdit3("Ambient Color", &m_ambientColor.r);
     ImGui::ColorEdit3("Background Color", &m_backgroundColor.r);
     ImGui::SliderFloat("Cloud Scale", &m_cloudScale, 10000.0f, 300000.0f);
     ImGui::SliderFloat("Earth Radius", &m_earthRadius, 100000.0f, 1000000.0f);

@@ -19,7 +19,6 @@ uniform vec3 cameraPosition;
 uniform uint interlaceIndex;
 
 uniform vec3 sunPosition = vec3(1000.0, 1000.0, 1000.0);
-uniform vec3 cloudHighlights;
 
 uniform vec3 sunlightColorDay = vec3(0.65f, 0.88f, 1.0f);       // light blue
 uniform vec3 sunlightColorSunsetV = vec3(1.0f, 0.47f, 0.96f);   // violet
@@ -27,7 +26,6 @@ uniform vec3 sunlightColorSunsetR = vec3(1.0f, 0.32f, 0.16f);   // red
 uniform vec3 sunlightColorSunsetO = vec3(1.0f, 0.54f, 0.09f);   // orange
 uniform vec3 sunlightColorNight = vec3(1.0f, 0.8f, 0.25f);      // yellow ("Moon")
 
-uniform vec3 ambientColor;
 uniform vec3 backgroundColor;
 
 uniform float cloudScale = 1500.0f;
@@ -379,8 +377,6 @@ vec3 skyColorFromRay(vec3 rayStart, vec3 rayEnd)
 /*
     // Version 3 by Alyssa
     vec3 sunray;
-    //float white = exp(-pow((timeOfDay-12.5),2));
-    //sunray = vec3(1.0f, 1.0f, 1.0f);// vec3(1.0) * white + (1.0-white) * vec3(1.0, 1.0, 0.0);
     sunray = sunrayColor(timeOfDay);
     color += 0.4f * sunray * pow(sunDot, 2.0f) * extinction;
 */
@@ -516,6 +512,36 @@ vec4 sampleDensity(vec3 origin, vec3 dir, vec3 sky) {
             float scattering = mix(HG(lightDotEye, -0.08f), HG(lightDotEye, 0.08f), clamp(lightDotEye * 0.5f + 0.5f, 0.0f, 1.0f));
 
             float powder = 1.0f - exp(-2.0f * density);
+
+            vec3 cloudHighlights = mixSunlightColor2();
+            // color colors from mixSunlightColor2 for sunrise and sunset
+            float weight = (timeOfDay - 5.0f) * (1.0f/3.0f);   
+            vec3 sunriseCloud = mix(sunlightColorSunsetO, sunlightColorSunsetR, weight);
+            vec3 sunsetColor = sunlightColorSunsetO;
+            // cloud ambient
+            vec3 ambientColor = cloudHighlights * 0.5;
+            
+            // color for sunrise ("left")
+            if (timeOfDay < 6.0f) {
+                float blend = timeOfDay - floor(timeOfDay);
+                cloudHighlights = vec3(0.0) * (1-blend) + blend * sunriseCloud;
+                ambientColor = cloudHighlights * 0.5;
+            }
+            if(timeOfDay < 5.0001f) {
+                cloudHighlights = vec3(0.0);
+                ambientColor = cloudHighlights;
+            }
+            
+            // color for sunset ("right")
+            if (timeOfDay > 18.0f) {
+                float blend = 1-(timeOfDay - floor(timeOfDay));
+                cloudHighlights = vec3(0.0) * (1-blend) + blend * sunsetColor;
+                ambientColor = cloudHighlights * 0.5;
+            }
+            if(timeOfDay > 18.9999f) {
+                cloudHighlights = vec3(0.0);
+                ambientColor = cloudHighlights;
+            }
 
             vec3 S = 6.0f * (mix(mix(sky, ambientColor, 0.5f), 2.0f * scattering * cloudHighlights, energy * powder)) * density + (sky * exp(-density));
             float Tr = exp(density * sigmaDensity);
