@@ -33,6 +33,8 @@ Clouds::Clouds(std::shared_ptr<Scene> scene) : Drawable(scene)
 
     m_earthRadius = 600000.0f;
 
+    m_startTime = glfwGetTime();
+
     initShaders();
     initTextures();
 }
@@ -70,7 +72,7 @@ void Clouds::draw()
 
     m_volumetricCloudsComputeShaderProgram->setFloat("timeOfDay", m_timeOfDay);
     m_volumetricCloudsComputeShaderProgram->setBool("timeLapsActivated", m_timeLapsActivated);
-    m_volumetricCloudsComputeShaderProgram->setFloat("time", glfwGetTime());
+    m_volumetricCloudsComputeShaderProgram->setFloat("time", glfwGetTime() - m_startTime);  // Delta time
     m_volumetricCloudsComputeShaderProgram->setFloat("windSpeed", m_windSpeed);
 
     // if the user has activated timeLaps, the day-night cycle runs automatically

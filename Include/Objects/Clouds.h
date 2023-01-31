@@ -63,6 +63,7 @@ private:
     glm::vec3 m_nightColor;
     */ 
 
+    float m_startTime = 0.0f;  // For delta time calculation
     //float m_timeOfDay = 1800.0f;  // 12pm
     float m_timeOfDay = 12.0f;      // 12am
     bool m_timeLapsActivated = false;
