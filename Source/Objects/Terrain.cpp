@@ -157,31 +157,22 @@ void Terrain::lebReductionPass()
     if (true) {
         int cnt = ((1 << it) >> 5);// / 2;
         int numGroup = (cnt >= 256) ? (cnt >> 8) : 1;
-        // int loc = glGetUniformLocation(g_gl.programs[PROGRAM_LEB_REDUCTION_PREPASS],
-        //                                "u_PassID");
-
-        // djgc_start(g_gl.clocks[CLOCK_REDUCTION00 + it - 1]);
-        // glUniform1i(loc, it);
+        
         m_lebReductionPrepassShaderProgram->setInt("u_PassID", it);
         glDispatchCompute(numGroup, 1, 1);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-        // djgc_stop(g_gl.clocks[CLOCK_REDUCTION00 + g_terrain.maxDepth - 1]);
 
         it-= 5;
     }
 
     m_lebReductionShaderProgram->use();
     while (--it >= 0) {
-        // int loc = glGetUniformLocation(g_gl.programs[PROGRAM_LEB_REDUCTION], "u_PassID");
         int cnt = 1 << it;
         int numGroup = (cnt >= 256) ? (cnt >> 8) : 1;
 
-        // djgc_start(g_gl.clocks[CLOCK_REDUCTION00 + it]);
         m_lebReductionShaderProgram->setInt("u_PassID", it);
-        // glUniform1i(loc, it);
         glDispatchCompute(numGroup, 1, 1);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-        // djgc_stop(g_gl.clocks[CLOCK_REDUCTION00 + it]);
     }
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
 }
@@ -358,11 +349,6 @@ void Terrain::loadTerrainVariables()
     // for (int i = 4; i--; ) variables.frustum[3][i]    = mvp[i][3] - mvp[i][1];
     // for (int i = 4; i--; ) variables.frustum[4][i]   = mvp[i][3] + mvp[i][2];
     // for (int i = 4; i--; ) variables.frustum[5][i]    = mvp[i][3] - mvp[i][2];
-
-    // setTerrainVariables(m_terrainMergeShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
-    // setTerrainVariables(m_terrainSplitShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
-    // setTerrainVariables(m_terrainDrawShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
-    // setTerrainVariables(m_topViewShaderProgram, &modelMatrix, &viewMatrix, &projectionMatrix, frustum);
 
     if (!bufferToGL(m_streamTerrainVariables, (const void *)&variables, NULL))
         LOG_ERROR("bufferToGL failed");
