@@ -34,8 +34,8 @@ public:
     useColoredLegendText = false;
   }
 
-void LoadFrameData(const ProfilerTask *tasks, size_t count)
-    {
+  void LoadFrameData(const ProfilerTask *tasks, size_t count)
+  {
     auto &currFrame = frames[currFrameIndex];
     currFrame.tasks.resize(0);
     for (size_t taskIndex = 0; taskIndex < count; taskIndex++)
@@ -442,7 +442,8 @@ public:
     {
         if (task.name == name)
         {
-          task.endTime = glfwGetTime();  // Convert to milliseconds
+          task.endTime = (glfwGetTime() - task.startTime);  // Convert to milliseconds
+          task.startTime = 0.0;
 
           found = true;
           break;
@@ -466,21 +467,21 @@ public:
 
     // Setup color palette
     const uint32_t colors[] = { 
-      turqoise,
-      greenSea,
-      emerald,
-      nephritis,
-      peterRiver,
-      belizeHole,
       amethyst,
+      pomegranate,
+      greenSea,
+      peterRiver,
+      emerald,
+      belizeHole,
+      clouds,
       wisteria,
+      turqoise,
       sunFlower,
       orange,
       carrot,
       pumpkin,
       alizarin,
-      pomegranate,
-      clouds,
+      nephritis,
       silver
     };
 
