@@ -57,6 +57,9 @@ public:
 
     void addObject(std::shared_ptr<Drawable> object);
 
+    // Expose profiling window
+    std::shared_ptr<ProfilersWindow> getProfilerWindow();
+
 private:
     void drawGeometry();
     void drawSFQuad();

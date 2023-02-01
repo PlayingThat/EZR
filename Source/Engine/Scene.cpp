@@ -247,7 +247,7 @@ void Scene::addNPRProperty(std::string effectName, std::string propertyName,
 
 void Scene::drawGeometry()
 {
-    m_profilerWindow->StartCPUProfilerTask("Scene::drawGeometry");
+    m_profilerWindow->StartCPUProfilerTask("drawGeometry");
     // Render to GBuffer
     glBindFramebuffer(GL_FRAMEBUFFER, m_gBufferFBO->getID());
     glClearColor(0.0, 0.0, 0.0, 1.0); // keep it black so it doesn't leak into g-buffer
@@ -261,13 +261,12 @@ void Scene::drawGeometry()
     m_gBufferShaderProgram->setMat4("viewMatrix", *getState()->getCamera()->getViewMatrix());
 
     renderDrawables();
-    m_profilerWindow->EndCPUProfilerTask("Scene::drawGeometry");
+    m_profilerWindow->EndCPUProfilerTask("drawGeometry");
 }
 
 void Scene::drawSFQuad()
 {
-    m_profilerWindow->StartCPUProfilerTask("Scene::drawNPREffect");
-    m_profilerWindow->StartCPUProfilerTask("Scene::finalCompositing");
+    m_profilerWindow->StartCPUProfilerTask("drawNPREffect");
  
     m_enabledNPREffectCount = 0;
 
@@ -328,7 +327,9 @@ void Scene::drawSFQuad()
             m_sfq->draw();
         }
     }
-    m_profilerWindow->EndCPUProfilerTask("Scene::drawNPREffect");
+    
+    m_profilerWindow->EndCPUProfilerTask("drawNPREffect");
+    m_profilerWindow->StartCPUProfilerTask("finalCompositing");
 
     // Render to screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -362,7 +363,7 @@ void Scene::drawSFQuad()
     
     m_sfq->draw();  
     
-    m_profilerWindow->EndCPUProfilerTask("Scene::finalCompositing");
+    m_profilerWindow->EndCPUProfilerTask("finalCompositing");
 }
 
 void Scene::renderDrawables()
@@ -552,4 +553,9 @@ std::string Scene::splitString(std::string s, char del)
     std::string result;
     std::getline(ss, result, del);
     return result;
+}
+
+std::shared_ptr<ProfilersWindow> Scene::getProfilerWindow()
+{
+    return m_profilerWindow;
 }

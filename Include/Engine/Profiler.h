@@ -442,7 +442,7 @@ public:
     {
         if (task.name == name)
         {
-          task.endTime = glfwGetTime() - task.startTime;
+          task.endTime = glfwGetTime();  // Convert to milliseconds
 
           found = true;
           break;
