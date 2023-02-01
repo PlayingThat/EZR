@@ -31,6 +31,7 @@ Terrain::~Terrain()
 
 void Terrain::draw()
 {
+    m_scene->getProfilerWindow()->StartGPUProfilerTask("terrain");
     drawGUI();
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrain);
@@ -43,6 +44,8 @@ void Terrain::draw()
     glClearColor(0, 0, 300, 300);
     glClear(GL_COLOR_BUFFER_BIT);
     drawTopView();
+    
+    m_scene->getProfilerWindow()->EndGPUProfilerTask("terrain");
 }
 
 // Draw GUI controls for terrain arguments

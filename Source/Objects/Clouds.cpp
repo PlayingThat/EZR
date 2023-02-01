@@ -41,6 +41,7 @@ Clouds::Clouds(std::shared_ptr<Scene> scene) : Drawable(scene)
 
 void Clouds::draw()
 {
+    m_scene->getProfilerWindow()->StartGPUProfilerTask("clouds");
     update();
 
     m_volumetricCloudsComputeShaderProgram->use();
@@ -102,6 +103,8 @@ void Clouds::draw()
     // m_screenFillingQuad->getShaderProgram()->setSampler2D("fbo1", m_fragmentColorTextureGeometry, 0);
     // m_screenFillingQuad->getShaderProgram()->setSampler2D("fbo2", m_fragmentColorTextureCloudsBlured, 1);
     // m_screenFillingQuad->draw();
+    
+    m_scene->getProfilerWindow()->EndGPUProfilerTask("clouds");
 }
 
 void Clouds::setCloudTexture(GLuint id)

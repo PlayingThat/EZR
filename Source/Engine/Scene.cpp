@@ -329,7 +329,7 @@ void Scene::drawSFQuad()
     }
     
     m_profilerWindow->EndCPUProfilerTask("drawNPREffect");
-    m_profilerWindow->StartCPUProfilerTask("finalCompositing");
+    // m_profilerWindow->StartCPUProfilerTask("finalCompositing");
 
     // Render to screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -363,7 +363,7 @@ void Scene::drawSFQuad()
     
     m_sfq->draw();  
     
-    m_profilerWindow->EndCPUProfilerTask("finalCompositing");
+    // m_profilerWindow->EndCPUProfilerTask("finalCompositing");
 }
 
 void Scene::renderDrawables()
