@@ -153,7 +153,7 @@ private:
     float markerRigthRectMargin = 3.0f;
     float markerRightRectHeight = 10.0f;
     float markerRightRectSpacing = 4.0f;
-    float nameOffset = 30.0f;
+    float nameOffset = 38.0f;
     glm::vec2 textMargin = glm::vec2(5.0f, -3.0f);
 
     auto &currFrame = frames[(currFrameIndex - frameIndexOffset - 1 + 2 * frames.size()) % frames.size()];
@@ -452,14 +452,58 @@ public:
 
     if (!found)
     {
-      LOG_ERROR("Profiler task " << name << " not started before ending it");
+      LOG_ERROR("CPU Profiler task " << name << " not started before ending it");
     }
   }
 
   void StartGPUProfilerTask(std::string name)
   {
-    
+    bool found = false;
+    for (auto& task : GPUtasks)
+    {
+        if (task.name == name)
+        {
+          task.startTime = glfwGetTime();
+
+          found = true;
+          break;
+        }
+    }
+
+    if (!found)
+    {
+        ProfilerTask task;
+        task.name = name;
+
+        task.startTime = glfwGetTime();
+
+        task.color = colorProvider();
+          
+        GPUtasks.push_back(task);
+    }
   }
+
+  void EndGPUProfilerTask(std::string name)
+  {
+    bool found = false;
+    for (auto& task : GPUtasks)
+    {
+        if (task.name == name)
+        {
+          task.endTime = (glfwGetTime() - task.startTime);  // Convert to milliseconds
+          task.startTime = 0.0;
+
+          found = true;
+          break;
+        }
+    }
+
+    if (!found)
+    {
+      LOG_ERROR("GPU Profiler task " << name << " not started before ending it");
+    }
+  }
+  
 
   const uint32_t colorProvider() 
   {
