@@ -125,6 +125,7 @@ private:
 
     // Configure shader programs
     void configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram);
+    void configureTerrainPrograms();
     void configureAtmosphereProgram();
     void configureTopViewProgram();
 
@@ -234,9 +235,11 @@ private:
     int m_maxDepth = 25;
 
     // Patch subdivision level to be sent to GPU
-    int m_patchSubDiv = 1;
+    int m_patchSubDiv = 3;
 
     float m_dmapFactor = 1.0f;
+
+    bool m_wireframe = false;
 
     //////////////////////////////////////////////////////////
     // Misc Engine Elements

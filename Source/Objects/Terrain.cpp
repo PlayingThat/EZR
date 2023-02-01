@@ -14,7 +14,7 @@ Terrain::Terrain(std::shared_ptr<Scene> scene) : Drawable(scene)
 
     // Setup transform
     rotate(glm::vec3(1, 0, 0), -90.0f);
-    scale(glm::vec3(100, 30, 100));
+    scale(glm::vec3(1000, 30, 1000));
     setBasePosition(glm::vec3(-50, -2, 15));
 
     create();
@@ -63,6 +63,7 @@ void Terrain::drawGUI()
         setupShaderPrograms();
     }
     ImGui::SliderFloat("Height Scale", &m_dmapFactor, 0.0f, 1.0f);
+    ImGui::Checkbox("Wireframe", &m_wireframe);
     ImGui::End();
 }
 
@@ -112,15 +113,12 @@ void Terrain::renderSky()
 
 void Terrain::drawTerrain()
 {
-    // djgc_start(g_gl.clocks[CLOCK_ALL]);
-
+    configureTerrainPrograms();
     loadTerrainVariables();
     lebUpdate();
     lebReductionPass();
     lebBatchingPass();
-    lebRender(); // render pass (if applicable)
-
-    // djgc_stop(g_gl.clocks[CLOCK_ALL]);
+    lebRender();
 }
 
 void Terrain::lebUpdate()
@@ -214,6 +212,9 @@ void Terrain::lebBatchingPass()
 
 void Terrain::lebRender()
 {
+    if (m_wireframe)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    
     // set GL state
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -226,6 +227,7 @@ void Terrain::lebRender()
     glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_SHORT, ((char *)NULL + (0)));  // 0 = offset
 
     // reset GL state
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
     glBindVertexArray(0);
@@ -335,9 +337,7 @@ void Terrain::loadTerrainVariables()
     variables.view = viewMatrix;
     variables.camera = glm::transpose(glm::inverse(viewMatrix));
     variables.viewProjection = projectionMatrix * viewMatrix;
-    variables.modelViewProjection = projectionMatrix * viewMatrix * modelMatrix;
-
-    glm::vec4 frustum[6];      
+    variables.modelViewProjection = projectionMatrix * viewMatrix * modelMatrix;  
 
     // extract frustum planes from modelViewProjection matrix
     glm::mat4 mvp = projectionMatrix * viewMatrix * modelMatrix;
@@ -374,12 +374,6 @@ void Terrain::loadTerrainVariables()
     glBindBufferRange(GL_UNIFORM_BUFFER, m_streamTerrainVariablesIndex, m_streamTerrainVariables->gl, bufOffset, m_streamTerrainVariables->size);
     
     HANDLE_GL_ERRORS("setting terrain matrix uniforms");
-
-    // LOG_INFO(glm::to_string(mvp));
-
-    // for (int i = 0; i < 6; ++i) {
-    //     LOG_INFO(glm::to_string(frustum[i]));
-    // }
 }
 
 void Terrain::loadTextures()
@@ -848,7 +842,6 @@ void Terrain::loadShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram, s
     HANDLE_GL_ERRORS("setting up " + typeFlag + " shader");
     configureShaderProgram(shaderProgram);
     HANDLE_GL_ERRORS("configuring " + typeFlag + " shader");
-
 }
 
 void Terrain::loadTerrainPrograms()
@@ -856,6 +849,13 @@ void Terrain::loadTerrainPrograms()
     loadShaderProgram(m_terrainMergeShaderProgram, "FLAG_MERGE");
     loadShaderProgram(m_terrainSplitShaderProgram, "FLAG_SPLIT");
     loadShaderProgram(m_terrainDrawShaderProgram, "FLAG_DRAW");
+}
+
+void Terrain::configureTerrainPrograms()
+{
+    configureShaderProgram(m_terrainMergeShaderProgram);
+    configureShaderProgram(m_terrainSplitShaderProgram);
+    configureShaderProgram(m_terrainDrawShaderProgram);
 }
 
 void Terrain::loadLEBReductionProgram()
