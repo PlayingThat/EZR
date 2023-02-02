@@ -15,12 +15,14 @@ Scene::Scene(std::shared_ptr<State> state)
 void Scene::setup(std::shared_ptr<Scene> scene)
 {
     m_scene = scene;
-    m_drawables = std::vector<std::shared_ptr<Drawable>>();
+    m_drawables = std::vector<std::pair<std::shared_ptr<Drawable>, Transformation>>();
+    m_transparentDrawables = std::vector<std::pair<std::shared_ptr<Drawable>, Transformation>>();
 
     m_profilerWindow = std::make_shared<ProfilersWindow>();
 
     // Create FBO for GBuffer and SFQ
     m_gBufferFBO = std::make_shared<FBO>(m_scene, 8);
+    m_gBufferTransparentFBO = std::make_shared<FBO>(m_scene, 8);
     m_sfq = std::make_shared<ScreenFillingQuad>(m_scene);
 
     // Setup shaders for GBuffer
@@ -61,13 +63,11 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     getState()->getCamera()->setPosition(glm::vec3(0.0f, 1.7f, 2.7f));
 
     //addObject(m_triangle);
-    LOG_INFO("Try to add terrain");
     addObject(m_terrain);
-    LOG_INFO("Try to add clouds");
     addObject(m_clouds);
-    LOG_INFO("Try to add ghost");
-    addObject(m_ghost);
-    LOG_INFO("Finished with adding");
+    addObject(m_ghost, true, Transformation{glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_ghost, true, Transformation{glm::vec3(4, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_ghost, false, Transformation{glm::vec3(-4, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
 }
 
 Scene::~Scene()
@@ -87,6 +87,10 @@ void Scene::update(float deltaTime)
 
     drawNPRPanel();  
     drawGeometry();
+
+    applyNPREffects(m_gBufferFBO);
+    // if (m_transparency)
+    //     applyNPREffects(m_gBufferTransparentFBO);
     drawSFQuad();
 }
 
@@ -198,7 +202,6 @@ void Scene::setupNPREffects()
     m_pbrShaderProgram->addShader(m_pbrFragmentShader);
     m_pbrShaderProgram->link();
     addNPREffect(m_pbrShaderProgram, false);
-    
 
     // Stippling Textures
     createStipplingTexture();
@@ -252,6 +255,8 @@ void Scene::drawGeometry()
     glBindFramebuffer(GL_FRAMEBUFFER, m_gBufferFBO->getID());
     glClearColor(0.0, 0.0, 0.0, 1.0); // keep it black so it doesn't leak into g-buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
     m_gBufferShaderProgram->use();
 
     m_gBufferShaderProgram->setFloat("HeightScale", m_parallaxMappingHeightScale);
@@ -259,14 +264,57 @@ void Scene::drawGeometry()
     m_gBufferShaderProgram->setVec3("cameraPosition", getState()->getCamera()->getPosition());
     m_gBufferShaderProgram->setMat4("projectionMatrix", *getState()->getCamera()->getProjectionMatrix());
     m_gBufferShaderProgram->setMat4("viewMatrix", *getState()->getCamera()->getViewMatrix());
+    m_gBufferShaderProgram->setBool("isTransparent", false);
 
-    renderDrawables();
+    renderDrawables(m_drawables, m_gBufferFBO);
     m_profilerWindow->EndCPUProfilerTask("drawGeometry");
+
+    /////////////////////////////////////////////
+    // Draw transparent objects
+
+    if (m_transparency)
+        drawTransparentGeometry();
+    else
+        renderDrawables(m_transparentDrawables, m_gBufferFBO);
 }
 
-void Scene::drawSFQuad()
+void Scene::drawTransparentGeometry()
 {
-    m_profilerWindow->StartCPUProfilerTask("drawNPREffect");
+    m_profilerWindow->StartCPUProfilerTask("drawTransparentGeometry");
+
+    // Copy gbuffer to transparent gbuffer
+    // m_gBufferFBO->copyToFBO(m_gBufferTransparentFBO);
+    // Render to GBuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, m_gBufferTransparentFBO->getID());
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glDepthFunc(GL_ALWAYS);
+
+    m_gBufferShaderProgram->use();
+
+    m_gBufferShaderProgram->setFloat("HeightScale", m_parallaxMappingHeightScale);
+    m_gBufferShaderProgram->setBool("UseParallaxMapping", m_useParallaxMapping);
+    m_gBufferShaderProgram->setVec3("cameraPosition", getState()->getCamera()->getPosition());
+    m_gBufferShaderProgram->setMat4("projectionMatrix", *getState()->getCamera()->getProjectionMatrix());
+    m_gBufferShaderProgram->setMat4("viewMatrix", *getState()->getCamera()->getViewMatrix());
+    m_gBufferShaderProgram->setBool("isTransparent", true);
+
+    renderDrawables(m_transparentDrawables, m_gBufferTransparentFBO);
+
+    // Reset GL state
+    glDepthFunc(GL_LESS);
+    glDisable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+    m_profilerWindow->EndCPUProfilerTask("drawTransparentGeometry");
+}
+
+void Scene::applyNPREffects(std::shared_ptr<FBO> fbo)
+{
+    m_profilerWindow->StartCPUProfilerTask("applyNPREffects");
  
     m_enabledNPREffectCount = 0;
 
@@ -287,16 +335,16 @@ void Scene::drawSFQuad()
             m_NPREffects.at(i)->shaderProgram->setVec2("screenSize", glm::vec2(getState()->getCamera()->getWidth(),
                                                                               getState()->getCamera()->getHeight()));
             
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("positions", 0, m_gBufferFBO->getColorAttachment(0)); 
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("normals", 1, m_gBufferFBO->getColorAttachment(1));  
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("uvs", 2, m_gBufferFBO->getColorAttachment(2));  
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("tangents", 3, m_gBufferFBO->getColorAttachment(3));  
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureDiffuse", 4, m_gBufferFBO->getColorAttachment(4)); 
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("colorDiffuse", 5, m_gBufferFBO->getColorAttachment(5));  
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("depth", 6, m_gBufferFBO->getDepthAttachment());
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("positions", 0, fbo->getColorAttachment(0)); 
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("normals", 1, fbo->getColorAttachment(1));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("uvs", 2, fbo->getColorAttachment(2));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("tangents", 3, fbo->getColorAttachment(3));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureDiffuse", 4, fbo->getColorAttachment(4)); 
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("colorDiffuse", 5, fbo->getColorAttachment(5));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("depth", 6, fbo->getDepthAttachment());
              
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureMetalSmoothnessAOHeight", 7, m_gBufferFBO->getColorAttachment(6));  
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureNormal", 8, m_gBufferFBO->getColorAttachment(7));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureMetalSmoothnessAOHeight", 7, fbo->getColorAttachment(6));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureNormal", 8, fbo->getColorAttachment(7));  
 
             m_NPREffects.at(i)->shaderProgram->setVec3("cameraPosition", glm::vec3(getState()->getCamera()->getPosition()));  // camera
             m_NPREffects.at(i)->shaderProgram->setVec3("lightPosition", glm::vec3(100, 1000, 500));  // light
@@ -328,8 +376,13 @@ void Scene::drawSFQuad()
         }
     }
     
-    m_profilerWindow->EndCPUProfilerTask("drawNPREffect");
-    // m_profilerWindow->StartCPUProfilerTask("finalCompositing");
+    m_profilerWindow->EndCPUProfilerTask("applyNPREffects");
+}
+
+void Scene::drawSFQuad()
+{
+    
+    m_profilerWindow->StartCPUProfilerTask("finalCompositing");
 
     // Render to screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -344,6 +397,14 @@ void Scene::drawSFQuad()
     m_compositingShaderProgram->setSampler2D("terrain", 10, m_terrainTextures[0]);  // terrain color
     m_compositingShaderProgram->setSampler2D("terrainDepth", 11, m_terrainTextures[1]);  // terrain depth
     m_compositingShaderProgram->setSampler2D("terrainTopView", 12, m_terrainTextures[2]);  // terrain top view
+    if (m_transparency) {
+        m_compositingShaderProgram->setBool("transparency", true);
+        m_compositingShaderProgram->setSampler2D("transparencySampler", 15, m_gBufferTransparentFBO->getColorAttachment(2)); 
+        m_compositingShaderProgram->setSampler2D("transparencyTextureSampler", 16, m_gBufferTransparentFBO->getColorAttachment(4)); 
+        m_compositingShaderProgram->setSampler2D("transparencyDiffuseSampler", 17, m_gBufferTransparentFBO->getColorAttachment(5));
+        m_compositingShaderProgram->setSampler2D("transparencyDepth", 18, m_gBufferTransparentFBO->getDepthAttachment());
+
+    }
 
     // Set shader uniforms
     int shaderFBOOffset = 0;
@@ -352,8 +413,6 @@ void Scene::drawSFQuad()
     {
         if (m_NPREffects.at(i)->enabled)
         {
-            // glActiveTexture(GL_TEXTURE0);
-            // glBindTexture(GL_TEXTURE_2D, m_NPREffects.at(i)->fbo->getColorAttachment(2));
             m_compositingShaderProgram->setSampler2D(std::string("fbo0"),
                                                      0 + shaderFBOOffset, m_NPREffects.at(i)->fbo->getColorAttachment(0));
 
@@ -363,15 +422,21 @@ void Scene::drawSFQuad()
     
     m_sfq->draw();  
     
-    // m_profilerWindow->EndCPUProfilerTask("finalCompositing");
+    m_profilerWindow->EndCPUProfilerTask("finalCompositing");
 }
 
-void Scene::renderDrawables()
+void Scene::renderDrawables(std::vector<std::pair<std::shared_ptr<Drawable>, Transformation>> drawables, std::shared_ptr<FBO> fbo)
 {
-    for (std::shared_ptr<Drawable> d : m_drawables)
+    for (auto const& el : drawables)
     {
+        std::shared_ptr<Drawable> d = el.first;
+        Transformation t = el.second;
+        d->setBasePosition(t.position);
+        d->setBaseRotation(t.rotationAxis, t.rotationAngle);
+        d->setBaseScale(t.scale);
+
         // Terrain and clouds may change the FBO and shader
-        glBindFramebuffer(GL_FRAMEBUFFER, m_gBufferFBO->getID());
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo->getID());
         m_gBufferShaderProgram->use();
 
         m_gBufferShaderProgram->setMat4("modelMatrix", d->getModelMatrix());
@@ -382,9 +447,14 @@ void Scene::renderDrawables()
     }
 }
 
-void Scene::addObject(std::shared_ptr<Drawable> object)
+void Scene::addObject(std::shared_ptr<Drawable> object,
+                   bool transparent,
+                   Transformation transform)
 {
-    m_drawables.push_back(object);
+    if (transparent)
+        m_transparentDrawables.push_back({object, transform});
+    else
+        m_drawables.push_back({object, transform});
 }
 
 void Scene::createStipplingTexture()
@@ -410,10 +480,13 @@ void Scene::drawNPRPanel()
     ImGui::Separator();
     ImGui::Checkbox("Use Parallax Mapping", &m_useParallaxMapping);
     ImGui::SliderFloat("Parallax Height Scale", &m_parallaxMappingHeightScale, 0.0f, 0.02f);
+    ImGui::Checkbox("Transparency", &m_transparency);
     ImGui::Separator();
     
+    bool noEffectEnabled = true;
     for (int n = 0; n < m_NPREffects.size(); n++)
     {
+        noEffectEnabled = noEffectEnabled && !m_NPREffects.at(n)->enabled;
         //ImGui::Selectable(names[n]);
         ImGui::Checkbox(m_NPREffects.at(n)->name.c_str(), &m_NPREffects.at(n)->enabled);
 
@@ -428,48 +501,14 @@ void Scene::drawNPRPanel()
             }
             ImGui::Unindent();
         }
-
-
-
-        // ImGuiDragDropFlags src_flags = 0;
-        // src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;     // Keep the source displayed as hovered
-        // src_flags |= ImGuiDragDropFlags_SourceNoHoldToOpenOthers; // Because our dragging is local, we disable the feature of opening foreign treenodes/tabs while dragging
-        // //src_flags |= ImGuiDragDropFlags_SourceNoPreviewTooltip; // Hide the tooltip
-        // if (ImGui::BeginDragDropSource(src_flags))
-        // {
-        //     // if (!(src_flags & ImGuiDragDropFlags_SourceNoPreviewTooltip))
-        //     //     ImGui::Text("Moving \"%s\"", m_NPREffects.at(n)->name.c_str());
-        //     ImGui::SetDragDropPayload("DND_NPR_EFFECTS", &n, sizeof(int));
-        //     ImGui::EndDragDropSource();
-        // }
-
-        // if (ImGui::BeginDragDropTarget())
-        // {
-        //     ImGuiDragDropFlags target_flags = 0;
-        //     target_flags |= ImGuiDragDropFlags_AcceptBeforeDelivery;    // Don't wait until the delivery (release mouse button on a target) to do something
-        //     if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("-", target_flags))
-        //     {
-        //         int testString = 1;
-        //         move_from = *(const int*)payload->Data;
-        //         move_to = n;
-        //     }
-        //     ImGui::EndDragDropTarget();
-        // }
     }
 
-    // if (move_from != -1 && move_to != -1)
-    // {
-    //     // Reorder items
-    //     int copy_dst = (move_from < move_to) ? move_from : move_to + 1;
-    //     int copy_src = (move_from < move_to) ? move_from + 1 : move_to;
-    //     int copy_count = (move_from < move_to) ? move_to - move_from : move_from - move_to;
+    // Dont fill object with last bound texture
+    if (noEffectEnabled)
+    {
+        m_NPREffects.at(0)->enabled = true;
+    }
 
-    //     std::shared_ptr<NPREffect> temp = m_NPREffects[move_to];
-    //     m_NPREffects[move_to] = m_NPREffects[move_from];
-    //     m_NPREffects[move_from] = temp;
-        
-    //     ImGui::SetDragDropPayload("DND_NPR_EFFECTS", &move_to, sizeof(int)); // Update payload immediately so on the next frame if we move the mouse to an earlier item our index payload will be correct. This is odd and showcase how the DnD api isn't best presented in this example.
-    // }
     ImGui::End();
 }
 

@@ -51,17 +51,23 @@ public:
     void setup(std::shared_ptr<Scene> scene);
 
     void update(float deltaTime);
-    void renderDrawables();
+    void renderDrawables(std::vector<std::pair<std::shared_ptr<Drawable>, Transformation>> drawables, std::shared_ptr<FBO> fbo);
 
     std::shared_ptr<State> getState() const;
 
-    void addObject(std::shared_ptr<Drawable> object);
+    void addObject(std::shared_ptr<Drawable> object,
+                   bool transparent = false,
+                   Transformation transform = Transformation{glm::vec3(0.01f), glm::vec3(1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.01f});
 
     // Expose profiling window
     std::shared_ptr<ProfilersWindow> getProfilerWindow();
 
 private:
     void drawGeometry();
+    void drawTransparentGeometry();
+    // Apply NPR effects to either the default FBO or the transparent object FBO
+    void applyNPREffects(std::shared_ptr<FBO> fbo);
+    // Final compositing pass
     void drawSFQuad();
 
     void addNPREffect(std::shared_ptr<ShaderProgram> nprEffectProgram, bool enabledByDefault = false);
@@ -94,7 +100,8 @@ private:
     std::shared_ptr<Scene> m_scene;
     std::shared_ptr<ProfilersWindow> m_profilerWindow;
 
-    std::vector<std::shared_ptr<Drawable>> m_drawables;
+    std::vector<std::pair<std::shared_ptr<Drawable>, Transformation>> m_drawables;
+    std::vector<std::pair<std::shared_ptr<Drawable>, Transformation>> m_transparentDrawables;
     std::shared_ptr<State> m_state;
 
     // SFQ for post processing
@@ -102,6 +109,7 @@ private:
 
     // GBuffer
     std::shared_ptr<FBO> m_gBufferFBO;
+    std::shared_ptr<FBO> m_gBufferTransparentFBO;
 
     // Terrain buffer textures
     GLuint* m_terrainTextures = nullptr;
@@ -132,6 +140,7 @@ private:
     // General properties for all NPR effects
     float m_parallaxMappingHeightScale = 0.1f;
     bool m_useParallaxMapping = true;
+    bool m_transparency = true;
 
     // Basic FBO drawing shader
     std::shared_ptr<Shader> m_basicVertexShader;

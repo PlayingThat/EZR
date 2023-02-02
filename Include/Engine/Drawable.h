@@ -10,6 +10,16 @@
 // Forward declaration
 class Scene;
 
+// Struct for transformation properties
+typedef struct
+{
+    glm::vec3 position;
+    glm::vec3 scale;
+    glm::vec3 rotationAxis;
+    float rotationAngle;
+} Transformation;
+typedef Transformation Transformation;
+
 class Drawable
 {
 public:

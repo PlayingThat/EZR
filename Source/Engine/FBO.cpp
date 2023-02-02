@@ -143,6 +143,8 @@ FBO::~FBO()
 // Callback for size change will need to recreate the buffers
 void FBO::onSizeChanged(int width, int height)
 {
+    m_width = width;
+    m_height = height;
     setupBuffers(m_numberOfColorAttachments);
     LOG_INFO("Size changed to: " + std::to_string(width) + "x" + std::to_string(height));
 }
@@ -170,4 +172,26 @@ GLuint FBO::getColorAttachment(size_t i)
 GLuint FBO::getDepthAttachment()
 {
     return m_depthAttachment;
+}
+
+size_t FBO::getWidth()
+{
+    return m_width;
+}
+
+size_t FBO::getHeight()
+{
+    return m_height;
+}
+
+void FBO::copyToFBO(std::shared_ptr<FBO> fbo)
+{
+    // Copy color attachments
+    for (size_t i = 0; i < m_numberOfColorAttachments; i++)
+    {
+        glCopyImageSubData(m_colorAttachments[i], GL_TEXTURE_2D, 0, 0, 0, 0, fbo->getColorAttachment(i), GL_TEXTURE_2D, 0, 0, 0, 0, m_width, m_height, 1);
+    }
+    // Copy depth attachment
+    glCopyImageSubData(m_depthAttachment, GL_TEXTURE_2D, 0, 0, 0, 0, fbo->getDepthAttachment(), GL_TEXTURE_2D, 0, 0, 0, 0, m_width, m_height, 1);
+    HANDLE_GL_ERRORS("copying FBO");
 }

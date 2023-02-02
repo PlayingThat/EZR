@@ -70,6 +70,10 @@ void Mesh::draw()
 
     GLuint uniformLocation = glGetUniformLocation(prog, "DiffuseColor");
     glUniform4fv(uniformLocation, 1, glm::value_ptr(m_diffuseColor));
+
+    // Transparency
+    uniformLocation = glGetUniformLocation(prog, "alpha");
+    glUniform1f(uniformLocation, 0.5f);  // TODO: Make this a property of something, mybe the material?
     
     Drawable::draw();
 
