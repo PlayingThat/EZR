@@ -13,7 +13,6 @@
 #include <variant>
 #include <cctype>
 #include <algorithm>
-#include <map>
 
 #include "Objects/ColorfullTriangle.h"
 #include "Objects/Terrain.h"
@@ -52,7 +51,7 @@ public:
     void setup(std::shared_ptr<Scene> scene);
 
     void update(float deltaTime);
-    void renderDrawables(std::map<std::shared_ptr<Drawable>, Transformation> drawables, std::shared_ptr<FBO> fbo);
+    void renderDrawables(std::vector<std::pair<std::shared_ptr<Drawable>, Transformation>> drawables, std::shared_ptr<FBO> fbo);
 
     std::shared_ptr<State> getState() const;
 
@@ -101,8 +100,8 @@ private:
     std::shared_ptr<Scene> m_scene;
     std::shared_ptr<ProfilersWindow> m_profilerWindow;
 
-    std::map<std::shared_ptr<Drawable>, Transformation> m_drawables;
-    std::map<std::shared_ptr<Drawable>, Transformation> m_transparentDrawables;
+    std::vector<std::pair<std::shared_ptr<Drawable>, Transformation>> m_drawables;
+    std::vector<std::pair<std::shared_ptr<Drawable>, Transformation>> m_transparentDrawables;
     std::shared_ptr<State> m_state;
 
     // SFQ for post processing

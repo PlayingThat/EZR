@@ -15,8 +15,8 @@ Scene::Scene(std::shared_ptr<State> state)
 void Scene::setup(std::shared_ptr<Scene> scene)
 {
     m_scene = scene;
-    m_drawables = std::map<std::shared_ptr<Drawable>, Transformation>();
-    m_transparentDrawables = std::map<std::shared_ptr<Drawable>, Transformation>();
+    m_drawables = std::vector<std::pair<std::shared_ptr<Drawable>, Transformation>>();
+    m_transparentDrawables = std::vector<std::pair<std::shared_ptr<Drawable>, Transformation>>();
 
     m_profilerWindow = std::make_shared<ProfilersWindow>();
 
@@ -66,6 +66,8 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     addObject(m_terrain);
     addObject(m_clouds);
     addObject(m_ghost, true, Transformation{glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_ghost, true, Transformation{glm::vec3(4, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_ghost, false, Transformation{glm::vec3(-4, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
 }
 
 Scene::~Scene()
@@ -423,7 +425,7 @@ void Scene::drawSFQuad()
     m_profilerWindow->EndCPUProfilerTask("finalCompositing");
 }
 
-void Scene::renderDrawables(std::map<std::shared_ptr<Drawable>, Transformation> drawables, std::shared_ptr<FBO> fbo)
+void Scene::renderDrawables(std::vector<std::pair<std::shared_ptr<Drawable>, Transformation>> drawables, std::shared_ptr<FBO> fbo)
 {
     for (auto const& el : drawables)
     {
@@ -450,9 +452,9 @@ void Scene::addObject(std::shared_ptr<Drawable> object,
                    Transformation transform)
 {
     if (transparent)
-        m_transparentDrawables.insert({object, transform});
+        m_transparentDrawables.push_back({object, transform});
     else
-        m_drawables.insert({object, transform});
+        m_drawables.push_back({object, transform});
 }
 
 void Scene::createStipplingTexture()
