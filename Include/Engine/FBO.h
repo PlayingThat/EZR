@@ -41,6 +41,11 @@ public:
 
     GLuint getDepthAttachment();
 
+    size_t getWidth();
+    size_t getHeight();
+
+    void copyToFBO(std::shared_ptr<FBO> fbo);
+
 private:
     void setupBuffers(int numberOfColorAttachments);
 

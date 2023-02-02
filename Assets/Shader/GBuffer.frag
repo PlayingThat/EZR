@@ -26,6 +26,10 @@ uniform sampler2D heightSampler;
 uniform sampler2D normalSampler;
 uniform sampler2D ambientOcclusionSampler;
 
+uniform bool isTransparent = false;
+uniform float alpha = 1.0;
+uniform mat4 projectionMatrix;
+
 // Additional uniforms necessary for parallax mapping
 uniform bool UseParallaxMapping;
 uniform float HeightScale;
@@ -84,6 +88,20 @@ vec2 MultiParallaxMapping(vec2 texCoords, vec3 viewDir)
     return finalTexCoords;
 }
 
+/// color Regular RGB reflective color of fragment, not pre-multiplied
+/// alpha Alpha value of fragment
+/// wsZ Window-space-z value == gl_FragCoord.z
+vec4 writePixel(vec3 color, float alpha, float wsZ) {
+    float ndcZ = 2.0 * wsZ - 1.0;
+    // linearize depth for proper depth weighting
+    float linearZ = (projectionMatrix[2][2] + 1.0) * wsZ / (projectionMatrix[2][2] + ndcZ);
+    float tmp = (1.0 - linearZ) * alpha;
+    //float tmp = (1.0 - wsZ * 0.99) * alpha * 10.0; // <-- original weighting function from paper #2
+    float w = clamp(tmp * tmp * tmp * tmp * tmp * tmp, 0.0001, 1000.0);
+    gUVs.z = alpha * w;
+    return vec4(color * alpha* w, alpha);
+}
+
 void main()
 {    
     vec2 texCoord = uvCoords;
@@ -105,9 +123,16 @@ void main()
     gNormals = texture(normalSampler, texCoord);
     gNormal = normalize(Normal);
     // and the diffuse per-fragment color
-    gAlbedoSpec.rgb = texture(diffuseSampler, uvCoords).rgb;
+    if (isTransparent) {
+        gAlbedoSpec = texture(diffuseSampler, uvCoords);
+        gDiffuseColor = DiffuseColor;
+    }
+    else {
+        gAlbedoSpec.rgb = texture(diffuseSampler, uvCoords).rgb;
+        gDiffuseColor = DiffuseColor;
+    }
+        
     // Diffuse material color without texture information
-    gDiffuseColor = DiffuseColor;
     // store the UV coordinates in the 4th gbuffer texture
     gUVs = vec4(texCoord, 0.0, 0.0);
     // store the tangent space basis vectors in the 5th gbuffer texture

@@ -415,6 +415,11 @@ public:
     {
         if (task.name == name)
         {
+          if (task.startTime != 0.0)
+          {
+            // Task is already running
+            return;
+          }
           task.startTime = glfwGetTime();
 
           found = true;
@@ -463,6 +468,11 @@ public:
     {
         if (task.name == name)
         {
+          if (task.startTime != 0.0)
+          {
+            // Task is already running
+            return;
+          }
           task.startTime = glfwGetTime();
 
           found = true;

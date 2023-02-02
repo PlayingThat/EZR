@@ -21,6 +21,7 @@ void Scene::setup(std::shared_ptr<Scene> scene)
 
     // Create FBO for GBuffer and SFQ
     m_gBufferFBO = std::make_shared<FBO>(m_scene, 8);
+    m_gBufferTransparentFBO = std::make_shared<FBO>(m_scene, 8);
     m_sfq = std::make_shared<ScreenFillingQuad>(m_scene);
 
     // Setup shaders for GBuffer
@@ -66,7 +67,7 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     LOG_INFO("Try to add clouds");
     addObject(m_clouds);
     LOG_INFO("Try to add ghost");
-    addObject(m_ghost);
+    addObject(m_ghost, true);
     LOG_INFO("Finished with adding");
 }
 
@@ -87,6 +88,10 @@ void Scene::update(float deltaTime)
 
     drawNPRPanel();  
     drawGeometry();
+
+    applyNPREffects(m_gBufferFBO);
+    if (m_transparency)
+        applyNPREffects(m_gBufferTransparentFBO);
     drawSFQuad();
 }
 
@@ -252,6 +257,8 @@ void Scene::drawGeometry()
     glBindFramebuffer(GL_FRAMEBUFFER, m_gBufferFBO->getID());
     glClearColor(0.0, 0.0, 0.0, 1.0); // keep it black so it doesn't leak into g-buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
     m_gBufferShaderProgram->use();
 
     m_gBufferShaderProgram->setFloat("HeightScale", m_parallaxMappingHeightScale);
@@ -259,14 +266,58 @@ void Scene::drawGeometry()
     m_gBufferShaderProgram->setVec3("cameraPosition", getState()->getCamera()->getPosition());
     m_gBufferShaderProgram->setMat4("projectionMatrix", *getState()->getCamera()->getProjectionMatrix());
     m_gBufferShaderProgram->setMat4("viewMatrix", *getState()->getCamera()->getViewMatrix());
+    m_gBufferShaderProgram->setBool("isTransparent", false);
 
-    renderDrawables();
+    renderDrawables(m_drawables, m_gBufferFBO);
     m_profilerWindow->EndCPUProfilerTask("drawGeometry");
+
+    /////////////////////////////////////////////
+    // Draw transparent objects
+
+    if (m_transparency)
+        drawTransparentGeometry();
+    else
+        renderDrawables(m_transparentDrawables, m_gBufferFBO);
 }
 
-void Scene::drawSFQuad()
+void Scene::drawTransparentGeometry()
 {
-    m_profilerWindow->StartCPUProfilerTask("drawNPREffect");
+    m_profilerWindow->StartCPUProfilerTask("drawTransparentGeometry");
+
+    // Copy gbuffer to transparent gbuffer
+    // m_gBufferFBO->copyToFBO(m_gBufferTransparentFBO);
+    // Render to GBuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, m_gBufferTransparentFBO->getID());
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glDepthFunc(GL_ALWAYS);
+
+    m_gBufferShaderProgram->use();
+
+    m_gBufferShaderProgram->setFloat("HeightScale", m_parallaxMappingHeightScale);
+    m_gBufferShaderProgram->setBool("UseParallaxMapping", m_useParallaxMapping);
+    m_gBufferShaderProgram->setVec3("cameraPosition", getState()->getCamera()->getPosition());
+    m_gBufferShaderProgram->setMat4("projectionMatrix", *getState()->getCamera()->getProjectionMatrix());
+    m_gBufferShaderProgram->setMat4("viewMatrix", *getState()->getCamera()->getViewMatrix());
+    m_gBufferShaderProgram->setBool("isTransparent", true);
+
+    renderDrawables(m_transparentDrawables, m_gBufferTransparentFBO);
+
+    // Reset GL state
+    glDepthFunc(GL_LESS);
+    glDisable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+
+    m_profilerWindow->EndCPUProfilerTask("drawTransparentGeometry");
+}
+
+void Scene::applyNPREffects(std::shared_ptr<FBO> fbo)
+{
+    m_profilerWindow->StartCPUProfilerTask("applyNPREffects");
  
     m_enabledNPREffectCount = 0;
 
@@ -287,16 +338,16 @@ void Scene::drawSFQuad()
             m_NPREffects.at(i)->shaderProgram->setVec2("screenSize", glm::vec2(getState()->getCamera()->getWidth(),
                                                                               getState()->getCamera()->getHeight()));
             
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("positions", 0, m_gBufferFBO->getColorAttachment(0)); 
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("normals", 1, m_gBufferFBO->getColorAttachment(1));  
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("uvs", 2, m_gBufferFBO->getColorAttachment(2));  
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("tangents", 3, m_gBufferFBO->getColorAttachment(3));  
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureDiffuse", 4, m_gBufferFBO->getColorAttachment(4)); 
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("colorDiffuse", 5, m_gBufferFBO->getColorAttachment(5));  
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("depth", 6, m_gBufferFBO->getDepthAttachment());
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("positions", 0, fbo->getColorAttachment(0)); 
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("normals", 1, fbo->getColorAttachment(1));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("uvs", 2, fbo->getColorAttachment(2));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("tangents", 3, fbo->getColorAttachment(3));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureDiffuse", 4, fbo->getColorAttachment(4)); 
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("colorDiffuse", 5, fbo->getColorAttachment(5));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("depth", 6, fbo->getDepthAttachment());
              
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureMetalSmoothnessAOHeight", 7, m_gBufferFBO->getColorAttachment(6));  
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureNormal", 8, m_gBufferFBO->getColorAttachment(7));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureMetalSmoothnessAOHeight", 7, fbo->getColorAttachment(6));  
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("textureNormal", 8, fbo->getColorAttachment(7));  
 
             m_NPREffects.at(i)->shaderProgram->setVec3("cameraPosition", glm::vec3(getState()->getCamera()->getPosition()));  // camera
             m_NPREffects.at(i)->shaderProgram->setVec3("lightPosition", glm::vec3(100, 1000, 500));  // light
@@ -328,8 +379,13 @@ void Scene::drawSFQuad()
         }
     }
     
-    m_profilerWindow->EndCPUProfilerTask("drawNPREffect");
-    // m_profilerWindow->StartCPUProfilerTask("finalCompositing");
+    m_profilerWindow->EndCPUProfilerTask("applyNPREffects");
+}
+
+void Scene::drawSFQuad()
+{
+    
+    m_profilerWindow->StartCPUProfilerTask("finalCompositing");
 
     // Render to screen
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -344,6 +400,14 @@ void Scene::drawSFQuad()
     m_compositingShaderProgram->setSampler2D("terrain", 10, m_terrainTextures[0]);  // terrain color
     m_compositingShaderProgram->setSampler2D("terrainDepth", 11, m_terrainTextures[1]);  // terrain depth
     m_compositingShaderProgram->setSampler2D("terrainTopView", 12, m_terrainTextures[2]);  // terrain top view
+    if (m_transparency) {
+        m_compositingShaderProgram->setBool("transparency", true);
+        m_compositingShaderProgram->setSampler2D("transparencySampler", 15, m_gBufferTransparentFBO->getColorAttachment(2)); 
+        m_compositingShaderProgram->setSampler2D("transparencyTextureSampler", 16, m_gBufferTransparentFBO->getColorAttachment(4)); 
+        m_compositingShaderProgram->setSampler2D("transparencyDiffuseSampler", 17, m_gBufferTransparentFBO->getColorAttachment(5));
+        m_compositingShaderProgram->setSampler2D("transparencyDepth", 18, m_gBufferTransparentFBO->getDepthAttachment());
+
+    }
 
     // Set shader uniforms
     int shaderFBOOffset = 0;
@@ -352,8 +416,6 @@ void Scene::drawSFQuad()
     {
         if (m_NPREffects.at(i)->enabled)
         {
-            // glActiveTexture(GL_TEXTURE0);
-            // glBindTexture(GL_TEXTURE_2D, m_NPREffects.at(i)->fbo->getColorAttachment(2));
             m_compositingShaderProgram->setSampler2D(std::string("fbo0"),
                                                      0 + shaderFBOOffset, m_NPREffects.at(i)->fbo->getColorAttachment(0));
 
@@ -363,15 +425,15 @@ void Scene::drawSFQuad()
     
     m_sfq->draw();  
     
-    // m_profilerWindow->EndCPUProfilerTask("finalCompositing");
+    m_profilerWindow->EndCPUProfilerTask("finalCompositing");
 }
 
-void Scene::renderDrawables()
+void Scene::renderDrawables(std::vector<std::shared_ptr<Drawable>> drawables, std::shared_ptr<FBO> fbo)
 {
-    for (std::shared_ptr<Drawable> d : m_drawables)
+    for (std::shared_ptr<Drawable> d : drawables)
     {
         // Terrain and clouds may change the FBO and shader
-        glBindFramebuffer(GL_FRAMEBUFFER, m_gBufferFBO->getID());
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo->getID());
         m_gBufferShaderProgram->use();
 
         m_gBufferShaderProgram->setMat4("modelMatrix", d->getModelMatrix());
@@ -382,9 +444,12 @@ void Scene::renderDrawables()
     }
 }
 
-void Scene::addObject(std::shared_ptr<Drawable> object)
+void Scene::addObject(std::shared_ptr<Drawable> object, bool transparent)
 {
-    m_drawables.push_back(object);
+    if (transparent)
+        m_transparentDrawables.push_back(object);
+    else
+        m_drawables.push_back(object);
 }
 
 void Scene::createStipplingTexture()
@@ -410,6 +475,7 @@ void Scene::drawNPRPanel()
     ImGui::Separator();
     ImGui::Checkbox("Use Parallax Mapping", &m_useParallaxMapping);
     ImGui::SliderFloat("Parallax Height Scale", &m_parallaxMappingHeightScale, 0.0f, 0.02f);
+    ImGui::Checkbox("Transparency", &m_transparency);
     ImGui::Separator();
     
     for (int n = 0; n < m_NPREffects.size(); n++)

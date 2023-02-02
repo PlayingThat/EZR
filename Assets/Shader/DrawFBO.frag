@@ -21,6 +21,13 @@ uniform sampler2D terrainTopView;
 uniform vec2 screenSize;
 uniform int numberOfEnabledEffects;
 
+// Transparancy
+uniform bool transparency = false;
+uniform sampler2D transparencySampler;
+uniform sampler2D transparencyTextureSampler;
+uniform sampler2D transparencyDiffuseSampler;
+uniform sampler2D transparencyDepth;
+
 out vec4 FragColor;
 
 void main()
@@ -73,4 +80,15 @@ void main()
     }
     else
         FragColor = color;
+
+    // Blend transparency
+    if(transparency) {
+        float transparentDepth = texture(transparencyDepth, gl_FragCoord.xy / screenSize).r;
+        if (transparentDepth < 1) {
+            float alpha = 0.5f;
+            vec4 transparencyTexture = texture(transparencyTextureSampler, gl_FragCoord.xy / screenSize);
+            // vec4 transparencyDiffuse = texture(transparencyDiffuseSampler, gl_FragCoord.xy / screenSize);
+            FragColor = FragColor * (1.0f - alpha) + transparencyTexture * alpha;
+        }
+    }
 }
