@@ -40,8 +40,9 @@ void Terrain::draw()
 
     drawScene();
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClearColor(0, 0, 300, 300);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrainTopViewFBO->getID());
+    glViewport(10, 10, 300, 300);
+    glClearColor(0, 0, 1.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
     drawTopView();
     
@@ -84,16 +85,16 @@ void Terrain::drawScene()
 
 void Terrain::drawTopView()
 {
-    glDisable(GL_CULL_FACE);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrainTopViewFBO->getID());
+    // glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrainTopViewFBO->getID());
+    m_topViewShaderProgram->use();
+    configureTopViewProgram();
+    glBindVertexArray(m_vaoEmpty);
 
+    glDisable(GL_CULL_FACE);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDraw);
-    glViewport(10, 10, 300, 300);
-    glBindVertexArray(m_vaoEmpty);
     glPatchParameteri(GL_PATCH_VERTICES, 1);
 
-    m_topViewShaderProgram->use();
     glDrawArraysIndirect(GL_PATCHES, 0);
 
     // reset GL state
@@ -1015,12 +1016,6 @@ void Terrain::configureTopViewProgram()
     m_topViewShaderProgram->setFloat("u_DmapFactor", m_dmapFactor);
     m_topViewShaderProgram->setSampler2D("u_DmapSampler", 0, m_displacementMapTexture);
     HANDLE_GL_ERRORS("configuring terrain topview shader");
-    // glProgramUniform1f(g_gl.programs[PROGRAM_TOPVIEW],
-    //     g_gl.uniforms[UNIFORM_TOPVIEW_DMAP_FACTOR],
-    //     g_terrain.dmap.scale);
-    // glProgramUniform1i(g_gl.programs[PROGRAM_TOPVIEW],
-    //     g_gl.uniforms[UNIFORM_TOPVIEW_DMAP_SAMPLER],
-    //     TEXTURE_DMAP);
 }
 
 bool Terrain::bufferToGL(StreamBuffer *buffer, const void *data, int *offset)
