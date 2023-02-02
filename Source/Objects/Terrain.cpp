@@ -71,7 +71,11 @@ void Terrain::drawGUI()
 // Callback for size change will need to recreate the buffers
 void Terrain::onSizeChanged(int width, int height)
 {
-    setupBuffers();
+    loadSceneFramebufferTexture();
+    loadTerrainFramebuffer();
+    configureTerrainPrograms();
+    configureTopViewProgram();
+
     LOG_INFO("Size changed to: " + std::to_string(width) + "x" + std::to_string(height));
 }
 
@@ -266,8 +270,12 @@ void Terrain::setupBuffers()
 
     loadCBTNodeCountBuffer();
 
+    static bool first = true;
     // Setup Top view render buffer
-    m_framebufferTerrainTopViewFBO = std::make_shared<FBO>(m_scene, 1);
+    if (first) {
+        first = false;
+        m_framebufferTerrainTopViewFBO = std::make_shared<FBO>(m_scene, 1);
+    }
 
 }
 
@@ -435,6 +443,11 @@ void Terrain::loadAtmosphereTexture()
 
 void Terrain::loadSceneFramebufferTexture()
 {
+    if(glIsTexture(m_framebufferTerrainDepthTexture))
+        glDeleteTextures(1, &m_framebufferTerrainDepthTexture);
+    if(glIsTexture(m_framebufferTerrainColorTexture))
+        glDeleteTextures(1, &m_framebufferTerrainColorTexture);
+
     glGenTextures(1, &m_framebufferTerrainDepthTexture);
     glActiveTexture(GL_TEXTURE0 + m_framebufferTerrainDepthTexture);
     glBindTexture(GL_TEXTURE_2D, m_framebufferTerrainDepthTexture);

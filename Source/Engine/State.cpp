@@ -15,6 +15,7 @@ State::State(size_t width, size_t height)
     m_height = height;
 
     m_camera = std::make_shared<Camera>(m_width, m_height);
+    m_sizeCallbackSubscribers = std::vector<SizeCallbackSubscriber*>();
 }
 
 State::~State()
@@ -74,8 +75,12 @@ void State::detachWindowSizeChangeCallback(SizeCallbackSubscriber* observer)
 
 void State::notifyWindowSizeChange(int width, int height)
 {
+    m_width = width;
+    m_height = height;
+    m_camera->setWidthHeight(m_width, m_height);
+
     for (SizeCallbackSubscriber* observer : m_sizeCallbackSubscribers)
     {
-        observer->onSizeChanged(width, height);
+        observer->onSizeChanged(m_width, m_height);
     }
 }
