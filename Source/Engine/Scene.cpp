@@ -89,8 +89,8 @@ void Scene::update(float deltaTime)
     drawGeometry();
 
     applyNPREffects(m_gBufferFBO);
-    if (m_transparency)
-        applyNPREffects(m_gBufferTransparentFBO);
+    // if (m_transparency)
+    //     applyNPREffects(m_gBufferTransparentFBO);
     drawSFQuad();
 }
 
