@@ -18,7 +18,7 @@ GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log)
         }
 
         // Load image from file
-        textureData[i].data = stbi_load(paths[i].c_str(), &textureData[i].width, &textureData[i].height, &textureData[i].nrComponents, STBI_rgb);
+        textureData[i].data = stbi_load(paths[i].c_str(), &textureData[i].width, &textureData[i].height, &textureData[i].nrComponents, STBI_rgb_alpha);
     }
 
     // Setup OpenGL texture handles as usual
@@ -117,6 +117,26 @@ GLuint createTextureFromFile(const char* path)
     }
 
     return texHandle;
+}
+
+Pixel* loadTextureFromFileDirect(const char* path, int &width, int &height)
+{
+    // Load image from file
+    int nrComponents;
+    Pixel* data = (Pixel*) stbi_load(path, &width, &height, &nrComponents, STBI_rgb_alpha);
+
+    if (data)
+    {
+        // Free image memory
+    }
+    else
+    {
+        LOG_ERROR("Texture failed to load at path: " << path);
+        // Free image memory
+        stbi_image_free(data);
+    }
+
+    return data;
 }
 
 const uint16_t *createTextureFromFile16(const char* path, int &width, int &height) 

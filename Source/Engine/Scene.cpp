@@ -68,6 +68,8 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     addObject(m_ghost, true, Transformation{glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
     addObject(m_ghost, true, Transformation{glm::vec3(4, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
     addObject(m_ghost, false, Transformation{glm::vec3(-4, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+
+    loadMapTexture();
 }
 
 Scene::~Scene()
@@ -597,4 +599,17 @@ std::string Scene::splitString(std::string s, char del)
 std::shared_ptr<ProfilersWindow> Scene::getProfilerWindow()
 {
     return m_profilerWindow;
+}
+
+void Scene::loadMapTexture()
+{
+    // Load map texture
+    int width, height;
+
+    Pixel* map = loadTextureFromFileDirect("./Assets/Terrain/mapSmall.png", width, height);
+
+    for (int i = 0; i < width * height; i++)
+    {
+        // LOG_INFO("Map texture: " + std::to_string(map[i].red) + " " + std::to_string(map[i].green) + " " + std::to_string(map[i].blue));
+    }
 }

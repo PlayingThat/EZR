@@ -97,6 +97,8 @@ private:
     // Setup Stippling Textures
     void createStipplingTexture();
 
+    void loadMapTexture();
+
     std::shared_ptr<Scene> m_scene;
     std::shared_ptr<ProfilersWindow> m_profilerWindow;
 

@@ -10,6 +10,15 @@
 #include <stb_image.h>
 #include <omp.h>
 
+typedef struct RGBAPixel
+{
+    unsigned char red = 0;
+    unsigned char green = 0;
+    unsigned char blue = 0;
+    unsigned char alpha = 0;
+
+} Pixel;
+
 // Used for parallel image loading
 struct TextureData
 {
@@ -23,6 +32,8 @@ typedef struct TextureData TextureData;
 GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log = true);
 
 GLuint createTextureFromFile(const char* path);
+
+Pixel* loadTextureFromFileDirect(const char* path, int &width, int &height);
 
 const uint16_t *createTextureFromFile16(const char* path, int &width, int &height);
 
