@@ -15,7 +15,7 @@ Terrain::Terrain(std::shared_ptr<Scene> scene) : Drawable(scene)
     // Setup transform
     rotate(glm::vec3(1, 0, 0), -90.0f);
     scale(glm::vec3(1000, 30, 1000));
-    setBasePosition(glm::vec3(-50, -2, 15));
+    // setBasePosition(glm::vec3(-50, -2, 15));
 
     create();
 
@@ -320,6 +320,7 @@ void Terrain::loadTerrainVariables()
         m_streamTerrainVariables = buffer;
     }
 
+    setBasePosition(glm::vec3(-50, -2, 15));
     glm::mat4 modelMatrix = getModelMatrix();
     glm::mat4 viewMatrix = *m_scene->getState()->getCamera()->getViewMatrix();
     glm::mat4 projectionMatrix = *m_scene->getState()->getCamera()->getProjectionMatrix();

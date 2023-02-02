@@ -13,6 +13,7 @@
 #include <variant>
 #include <cctype>
 #include <algorithm>
+#include <map>
 
 #include "Objects/ColorfullTriangle.h"
 #include "Objects/Terrain.h"
@@ -51,11 +52,13 @@ public:
     void setup(std::shared_ptr<Scene> scene);
 
     void update(float deltaTime);
-    void renderDrawables(std::vector<std::shared_ptr<Drawable>> drawables, std::shared_ptr<FBO> fbo);
+    void renderDrawables(std::map<std::shared_ptr<Drawable>, Transformation> drawables, std::shared_ptr<FBO> fbo);
 
     std::shared_ptr<State> getState() const;
 
-    void addObject(std::shared_ptr<Drawable> object, bool transparent = false);
+    void addObject(std::shared_ptr<Drawable> object,
+                   bool transparent = false,
+                   Transformation transform = Transformation{glm::vec3(0.01f), glm::vec3(1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.01f});
 
     // Expose profiling window
     std::shared_ptr<ProfilersWindow> getProfilerWindow();
@@ -98,8 +101,8 @@ private:
     std::shared_ptr<Scene> m_scene;
     std::shared_ptr<ProfilersWindow> m_profilerWindow;
 
-    std::vector<std::shared_ptr<Drawable>> m_drawables;
-    std::vector<std::shared_ptr<Drawable>> m_transparentDrawables;
+    std::map<std::shared_ptr<Drawable>, Transformation> m_drawables;
+    std::map<std::shared_ptr<Drawable>, Transformation> m_transparentDrawables;
     std::shared_ptr<State> m_state;
 
     // SFQ for post processing

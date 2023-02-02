@@ -15,7 +15,8 @@ Scene::Scene(std::shared_ptr<State> state)
 void Scene::setup(std::shared_ptr<Scene> scene)
 {
     m_scene = scene;
-    m_drawables = std::vector<std::shared_ptr<Drawable>>();
+    m_drawables = std::map<std::shared_ptr<Drawable>, Transformation>();
+    m_transparentDrawables = std::map<std::shared_ptr<Drawable>, Transformation>();
 
     m_profilerWindow = std::make_shared<ProfilersWindow>();
 
@@ -62,13 +63,9 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     getState()->getCamera()->setPosition(glm::vec3(0.0f, 1.7f, 2.7f));
 
     //addObject(m_triangle);
-    LOG_INFO("Try to add terrain");
     addObject(m_terrain);
-    LOG_INFO("Try to add clouds");
     addObject(m_clouds);
-    LOG_INFO("Try to add ghost");
-    addObject(m_ghost, true);
-    LOG_INFO("Finished with adding");
+    addObject(m_ghost, true, Transformation{glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
 }
 
 Scene::~Scene()
@@ -203,7 +200,6 @@ void Scene::setupNPREffects()
     m_pbrShaderProgram->addShader(m_pbrFragmentShader);
     m_pbrShaderProgram->link();
     addNPREffect(m_pbrShaderProgram, false);
-    
 
     // Stippling Textures
     createStipplingTexture();
@@ -310,7 +306,6 @@ void Scene::drawTransparentGeometry()
     glDepthFunc(GL_LESS);
     glDisable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-
 
     m_profilerWindow->EndCPUProfilerTask("drawTransparentGeometry");
 }
@@ -428,10 +423,16 @@ void Scene::drawSFQuad()
     m_profilerWindow->EndCPUProfilerTask("finalCompositing");
 }
 
-void Scene::renderDrawables(std::vector<std::shared_ptr<Drawable>> drawables, std::shared_ptr<FBO> fbo)
+void Scene::renderDrawables(std::map<std::shared_ptr<Drawable>, Transformation> drawables, std::shared_ptr<FBO> fbo)
 {
-    for (std::shared_ptr<Drawable> d : drawables)
+    for (auto const& el : drawables)
     {
+        std::shared_ptr<Drawable> d = el.first;
+        Transformation t = el.second;
+        d->setBasePosition(t.position);
+        d->setBaseRotation(t.rotationAxis, t.rotationAngle);
+        d->setBaseScale(t.scale);
+
         // Terrain and clouds may change the FBO and shader
         glBindFramebuffer(GL_FRAMEBUFFER, fbo->getID());
         m_gBufferShaderProgram->use();
@@ -444,12 +445,14 @@ void Scene::renderDrawables(std::vector<std::shared_ptr<Drawable>> drawables, st
     }
 }
 
-void Scene::addObject(std::shared_ptr<Drawable> object, bool transparent)
+void Scene::addObject(std::shared_ptr<Drawable> object,
+                   bool transparent,
+                   Transformation transform)
 {
     if (transparent)
-        m_transparentDrawables.push_back(object);
+        m_transparentDrawables.insert({object, transform});
     else
-        m_drawables.push_back(object);
+        m_drawables.insert({object, transform});
 }
 
 void Scene::createStipplingTexture()
