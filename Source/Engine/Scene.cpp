@@ -483,8 +483,10 @@ void Scene::drawNPRPanel()
     ImGui::Checkbox("Transparency", &m_transparency);
     ImGui::Separator();
     
+    bool noEffectEnabled = true;
     for (int n = 0; n < m_NPREffects.size(); n++)
     {
+        noEffectEnabled = noEffectEnabled && !m_NPREffects.at(n)->enabled;
         //ImGui::Selectable(names[n]);
         ImGui::Checkbox(m_NPREffects.at(n)->name.c_str(), &m_NPREffects.at(n)->enabled);
 
@@ -499,48 +501,14 @@ void Scene::drawNPRPanel()
             }
             ImGui::Unindent();
         }
-
-
-
-        // ImGuiDragDropFlags src_flags = 0;
-        // src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;     // Keep the source displayed as hovered
-        // src_flags |= ImGuiDragDropFlags_SourceNoHoldToOpenOthers; // Because our dragging is local, we disable the feature of opening foreign treenodes/tabs while dragging
-        // //src_flags |= ImGuiDragDropFlags_SourceNoPreviewTooltip; // Hide the tooltip
-        // if (ImGui::BeginDragDropSource(src_flags))
-        // {
-        //     // if (!(src_flags & ImGuiDragDropFlags_SourceNoPreviewTooltip))
-        //     //     ImGui::Text("Moving \"%s\"", m_NPREffects.at(n)->name.c_str());
-        //     ImGui::SetDragDropPayload("DND_NPR_EFFECTS", &n, sizeof(int));
-        //     ImGui::EndDragDropSource();
-        // }
-
-        // if (ImGui::BeginDragDropTarget())
-        // {
-        //     ImGuiDragDropFlags target_flags = 0;
-        //     target_flags |= ImGuiDragDropFlags_AcceptBeforeDelivery;    // Don't wait until the delivery (release mouse button on a target) to do something
-        //     if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("-", target_flags))
-        //     {
-        //         int testString = 1;
-        //         move_from = *(const int*)payload->Data;
-        //         move_to = n;
-        //     }
-        //     ImGui::EndDragDropTarget();
-        // }
     }
 
-    // if (move_from != -1 && move_to != -1)
-    // {
-    //     // Reorder items
-    //     int copy_dst = (move_from < move_to) ? move_from : move_to + 1;
-    //     int copy_src = (move_from < move_to) ? move_from + 1 : move_to;
-    //     int copy_count = (move_from < move_to) ? move_to - move_from : move_from - move_to;
+    // Dont fill object with last bound texture
+    if (noEffectEnabled)
+    {
+        m_NPREffects.at(0)->enabled = true;
+    }
 
-    //     std::shared_ptr<NPREffect> temp = m_NPREffects[move_to];
-    //     m_NPREffects[move_to] = m_NPREffects[move_from];
-    //     m_NPREffects[move_from] = temp;
-        
-    //     ImGui::SetDragDropPayload("DND_NPR_EFFECTS", &move_to, sizeof(int)); // Update payload immediately so on the next frame if we move the mouse to an earlier item our index payload will be correct. This is odd and showcase how the DnD api isn't best presented in this example.
-    // }
     ImGui::End();
 }
 
