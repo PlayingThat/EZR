@@ -20,6 +20,8 @@ uniform vec2 screenSize;
 
 uniform bool textured;
 
+vec3 lightPosition = vec3(0, 10, 4); //light position in world coordinates
+
 out vec4 FragColor;
 
 
@@ -141,14 +143,34 @@ void main(void)
     col2/=cnt2*1.65;
 
     // outline + color
-    col = clamp(clamp(col*.9+.1,0.,1.)*col2,0.,1.);
+    col = clamp(clamp(col*.9+.1,0.,1.) * col2,0.,1.);
     // paper color and grain
     col = col*vec3(.93,0.93,0.85)
-        *mix(texture(canvas, (gl_FragCoord.xy / screenSize)).xyz,vec3(1.2),.7)
-        +.15*getRand(pos0*2.5).x;
+        * mix(texture(canvas, (gl_FragCoord.xy / screenSize)).xyz, vec3(1.2), 0.7)
+        + 0.15*getRand(pos0*2.5).x; //+.015
     // vignetting
     float r = length((gl_FragCoord.xy-screenSize.xy*.5)/screenSize.x);
     float vign = 1.-r*r*r*r;
+
+    // lighting
+    vec4 vPosition = texture(positions, gl_FragCoord.xy / screenSize);
+	vec3 position = vPosition.xyz;
+
+	vec3 tNorm = texture(normals, gl_FragCoord.xy / screenSize).xyz;
+	
+	vec3 viewVec = normalize(cameraPosition.xyz - position);
+
+	vec3 lightVec = normalize(lightPosition.xyz - position);
+
+	vec3 reflecVec = reflect(-lightVec, tNorm);
+
+    vec3 lightColor = vec3(1.0);
+    float spec = pow(max(dot(viewVec, reflecVec), 0.0), 32);
+    vec3 specular = 0.5 * spec * lightColor;  
     
-	FragColor = vec4(col*vign,1.0);
+    float cosTheta = dot(tNorm, lightVec);
+    float brightness = 0.4; // make it brighter
+
+    // for specular highlight: FragColor = vec4(col * (cosTheta + brightness) + specular,1.0);
+	FragColor = vec4(col * (cosTheta + brightness),1.0);
 } 
