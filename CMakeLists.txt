@@ -62,6 +62,22 @@ set(SRC_LIST Include/stb_image.h
         Source/Engine/Mesh.cpp
         Include/Objects/Ghost.h
         Source/Objects/Ghost.cpp
+        Include/Objects/GingerbreadHouse.h
+        Source/Objects/GingerbreadHouse.cpp
+        Include/Objects/Snowman.h
+        Source/Objects/Snowman.cpp
+        Include/Objects/Stone1.h
+        Source/Objects/Stone1.cpp
+        Include/Objects/Stone2.h
+        Source/Objects/Stone2.cpp
+        Include/Objects/Stone3.h
+        Source/Objects/Stone3.cpp
+        Include/Objects/Stone4.h
+        Source/Objects/Stone4.cpp
+        Include/Objects/TreePlain.h
+        Source/Objects/TreePlain.cpp
+        Include/Objects/TreeLeaves.h
+        Source/Objects/TreeLeaves.cpp
         Include/Objects/Clouds.h
         Source/Objects/Clouds.cpp
         

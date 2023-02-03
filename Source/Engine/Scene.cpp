@@ -58,6 +58,14 @@ void Scene::setup(std::shared_ptr<Scene> scene)
 
     // Setup scene objects
     m_ghost = std::make_shared<Ghost>(m_scene);
+    m_gingerbreadHouse = std::make_shared<GingerbreadHouse>(m_scene);
+    m_snowMan = std::make_shared<Snowman>(m_scene);
+    m_stone1 = std::make_shared<Stone1>(m_scene);
+    m_stone2 = std::make_shared<Stone2>(m_scene);
+    m_stone3 = std::make_shared<Stone3>(m_scene);
+    m_stone4 = std::make_shared<Stone4>(m_scene);
+    m_treePlain = std::make_shared<TreePlain>(m_scene);
+    m_treeLeaves = std::make_shared<TreeLeaves>(m_scene);
     
     // Set camera position
     getState()->getCamera()->setPosition(glm::vec3(0.0f, 1.7f, 2.7f));
@@ -68,6 +76,15 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     addObject(m_ghost, true, Transformation{glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
     addObject(m_ghost, true, Transformation{glm::vec3(4, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
     addObject(m_ghost, false, Transformation{glm::vec3(-4, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+
+    addObject(m_gingerbreadHouse, false, Transformation{glm::vec3(-3, 8, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_snowMan, false, Transformation{glm::vec3(1, 4, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_stone1, false, Transformation{glm::vec3(-3, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_stone2, false, Transformation{glm::vec3(-2, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_stone3, false, Transformation{glm::vec3(-1, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_stone4, false, Transformation{glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_treePlain, false, Transformation{glm::vec3(2, 4, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_treeLeaves, false, Transformation{glm::vec3(3, 6, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
 
     loadMapTexture();
 }

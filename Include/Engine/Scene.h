@@ -18,6 +18,14 @@
 #include "Objects/Terrain.h"
 #include "Objects/Clouds.h"
 #include "Objects/Ghost.h"
+#include "Objects/GingerbreadHouse.h"
+#include "Objects/Snowman.h"
+#include "Objects/Stone1.h"
+#include "Objects/Stone2.h"
+#include "Objects/Stone3.h"
+#include "Objects/Stone4.h"
+#include "Objects/TreePlain.h"
+#include "Objects/TreeLeaves.h"
 
 // Struct for NPR properties
 typedef struct
@@ -231,7 +239,12 @@ private:
     std::shared_ptr<Drawable> m_terrain;
     std::shared_ptr<Drawable> m_clouds;
     std::shared_ptr<Drawable> m_ghost;
-
-
-
+    std::shared_ptr<Drawable> m_gingerbreadHouse;
+    std::shared_ptr<Drawable> m_snowMan;
+    std::shared_ptr<Drawable> m_stone1;
+    std::shared_ptr<Drawable> m_stone2;
+    std::shared_ptr<Drawable> m_stone3;
+    std::shared_ptr<Drawable> m_stone4;
+    std::shared_ptr<Drawable> m_treePlain;
+    std::shared_ptr<Drawable> m_treeLeaves;
 };
