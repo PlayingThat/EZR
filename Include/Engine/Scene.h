@@ -121,6 +121,9 @@ private:
     std::shared_ptr<FBO> m_gBufferFBO;
     std::shared_ptr<FBO> m_gBufferTransparentFBO;
 
+    // Sun position from clouds
+    glm::vec3* m_sunPosition = nullptr;
+
     // Terrain buffer textures
     GLuint* m_terrainTextures = nullptr;
     GLuint m_terrainTopView = 0;
