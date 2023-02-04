@@ -2,6 +2,8 @@
 // Created by maxbr on 21.11.2022.
 //
 
+#pragma once
+
 #include "Defs.h"
 #include "Texture.h"
 #include <vector>
