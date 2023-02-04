@@ -226,30 +226,48 @@ GLuint Model::getTextureIDIfAlreadyLoaded(std::string path)
 }
 
 std::string Model::getTexturePathFromType(std::string diffusePath, std::string type) {
+
     // Determine file name from path
-    int fileNameIndex = diffusePath.find_last_of("/");
-    int extensionIndex = diffusePath.find_last_of("."); 
-    int fileNameLength = extensionIndex - fileNameIndex;
+    int fileNameIndex = diffusePath.find_last_of("/");      // here starts the file
+    int extensionIndex = diffusePath.find_last_of(".");     // here starts the extension (jpg, png)
+    int fileNameLength = extensionIndex - fileNameIndex;    // determines the length of the file
+
     std::string materialName = diffusePath.substr(fileNameIndex + 1, fileNameLength - 1); 
     std::string extensionName = diffusePath.substr(extensionIndex, 4);
+    std::string folderName = materialName;
+    std::string fileName = materialName;
 
-    if (materialName.find("diffuseOriginal") != std::string::npos) {
-        if (materialName.find("-") && type != "diffuseOriginal"){
-            materialName = materialName.substr(0, materialName.find("-") - 1);
+    if (materialName.find("diffuseOriginal") != std::string::npos) {       
+        // identical objects of different colors have identical special maps but different diffuse maps
+        // example: smarties-green and smarties-red use the same smarties_height
+        // with "-" we can find those cases
+        if (materialName.find("-") != std::string::npos) {
+            // the folder name always contains the word before the "-"
+            folderName = materialName.substr(0, materialName.find("-"));
+            // only the diffuse name contains the words before and after the "-"
+            if(type == "diffuseOriginal") { 
+                fileName = materialName.substr(0, materialName.find("diffuseOriginal") -1); 
+            }
+            else { 
+                fileName = folderName; 
+            }
         }
         else {
-            materialName = materialName.substr(0, materialName.find("diffuseOriginal") - 1);
+            folderName = materialName.substr(0, materialName.find("diffuseOriginal") -1);
+            fileName = folderName;
         }
     }
 
-    if (materialName == "")
-        materialName = "default";
+    if (materialName == "") {
+        fileName = "default";
+        folderName = "default";
+    }
 
-    std::string folderPath = "./Assets/Special-Textures/" + materialName + "/";
+    std::string folderPath = "./Assets/Special-Textures/" + folderName + "/";
 
     // Concatenate texture path from folder path and texture type
     //std::string texturePath = folderPath + materialName + "_" + type + ".jpg";    // leaves are png not jpg
-    std::string texturePath = folderPath + materialName + "_" + type + extensionName;
+    std::string texturePath = folderPath + fileName + "_" + type + extensionName;
 
     return texturePath;
 }
