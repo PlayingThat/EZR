@@ -14,11 +14,13 @@ GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log)
     {   
         if (log) {
             #pragma omp critical
-            LOG_INFO("Loading texture " << paths[i]);
+            {
+                LOG_INFO("Loading texture " << paths[i]);
+            }
         }
 
         // Load image from file
-        textureData[i].data = stbi_load(paths[i].c_str(), &textureData[i].width, &textureData[i].height, &textureData[i].nrComponents, STBI_rgb_alpha);
+        textureData[i].data = stbi_load(paths[i].c_str(), &textureData[i].width, &textureData[i].height, &textureData[i].nrComponents, STBI_rgb);
     }
 
     // Setup OpenGL texture handles as usual
