@@ -332,8 +332,12 @@ vec3 skyColorFromRay(vec3 rayStart, vec3 rayEnd)
 //    vec3 skyColor = vec3(0);
     // float timeRadians = timeOfDay / 1800.0f * PI;
     // I changed the range of timeOfDay from [0, 3600] to [0, 24] -> 3600 : 24 = 150
+
+    /////// sun position is now upadted in c++ class ///////
+
     float timeRadians = ((timeOfDay + 18) * 150) / 1800.0f * PI;
-    vec3 sundir = vec3(-cos(timeRadians) * 10000.0f, sin(timeRadians) * 10000.0f, -10000.0f);
+    // vec3 sundir = vec3(-cos(timeRadians) * 10000.0f, sin(timeRadians) * 10000.0f, -10000.0f);
+    vec3 sundir = sunPosition;
 //    vec3 color;
 //    int steps = 16;
 //

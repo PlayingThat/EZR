@@ -136,8 +136,10 @@ GLuint Clouds::getCloudTexture()
 
 void Clouds::update()
 {
-    // m_weather->setEarthRadius(m_earthRadius);
-    // m_weather->update();
+    // Update sun position
+    float timeRadians = ((m_timeOfDay + 18) * 150) / 1800.0f * 3.141592653f;
+    m_sunPosition = glm::vec3(-cos(timeRadians) * 10000.0f, sin(timeRadians) * 10000.0f, -10000.0f);
+
     drawGui();
 }
 
