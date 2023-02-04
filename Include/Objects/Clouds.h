@@ -20,6 +20,8 @@ public:
 
     GLuint getCloudTexture();
 
+    glm::vec3* getSunPosition();
+
     virtual void update();
 
 

@@ -228,3 +228,8 @@ void Clouds::initShaders()
     m_cloudPostProcessingShaderProgram->addShader(m_cloudPostProcessingShader);
     m_cloudPostProcessingShaderProgram->link();
 }
+
+glm::vec3* Clouds::getSunPosition()
+{
+    return &m_sunPosition;
+}
