@@ -58,14 +58,14 @@ void Scene::setup(std::shared_ptr<Scene> scene)
 
     // Setup scene objects
     m_ghost = std::make_shared<Ghost>(m_scene);
-    m_gingerbreadHouse = std::make_shared<GingerbreadHouse>(m_scene);
-    m_snowMan = std::make_shared<Snowman>(m_scene);
-    m_stone1 = std::make_shared<Stone1>(m_scene);
-    m_stone2 = std::make_shared<Stone2>(m_scene);
-    m_stone3 = std::make_shared<Stone3>(m_scene);
-    m_stone4 = std::make_shared<Stone4>(m_scene);
-    m_treePlain = std::make_shared<TreePlain>(m_scene);
-    m_treeLeaves = std::make_shared<TreeLeaves>(m_scene);
+    // m_gingerbreadHouse = std::make_shared<GingerbreadHouse>(m_scene);
+    // m_snowMan = std::make_shared<Snowman>(m_scene);
+    // m_stone1 = std::make_shared<Stone1>(m_scene);
+    // m_stone2 = std::make_shared<Stone2>(m_scene);
+    // m_stone3 = std::make_shared<Stone3>(m_scene);
+    // m_stone4 = std::make_shared<Stone4>(m_scene);
+    // m_treePlain = std::make_shared<TreePlain>(m_scene);
+    // m_treeLeaves = std::make_shared<TreeLeaves>(m_scene);
     
     // Set camera position
     getState()->getCamera()->setPosition(glm::vec3(0.0f, 1.7f, 2.7f));
@@ -77,14 +77,14 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     addObject(m_ghost, true, Transformation{glm::vec3(4, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
     addObject(m_ghost, false, Transformation{glm::vec3(-4, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
 
-    addObject(m_gingerbreadHouse, false, Transformation{glm::vec3(-3, 8, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_snowMan, false, Transformation{glm::vec3(1, 4, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_stone1, false, Transformation{glm::vec3(-3, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_stone2, false, Transformation{glm::vec3(-2, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_stone3, false, Transformation{glm::vec3(-1, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_stone4, false, Transformation{glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_treePlain, false, Transformation{glm::vec3(2, 4, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_treeLeaves, false, Transformation{glm::vec3(3, 6, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    // addObject(m_gingerbreadHouse, false, Transformation{glm::vec3(-3, 8, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    // addObject(m_snowMan, false, Transformation{glm::vec3(1, 4, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    // addObject(m_stone1, false, Transformation{glm::vec3(-3, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    // addObject(m_stone2, false, Transformation{glm::vec3(-2, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    // addObject(m_stone3, false, Transformation{glm::vec3(-1, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    // addObject(m_stone4, false, Transformation{glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    // addObject(m_treePlain, false, Transformation{glm::vec3(2, 4, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    // addObject(m_treeLeaves, false, Transformation{glm::vec3(3, 6, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
 
     loadMapTexture();
 }
@@ -369,15 +369,15 @@ void Scene::applyNPREffects(std::shared_ptr<FBO> fbo)
             m_NPREffects.at(i)->shaderProgram->setVec3("lightPosition", glm::vec3(100, 1000, 500));  // light
 
             // Stippling Shader Textures
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp1", 15, m_stipp1);  // index offset for ao, metallic, roughness, and possibly bitangents if needed
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp2", 16, m_stipp2);
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp3", 17, m_stipp3);
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp4", 18, m_stipp4);
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp5", 19, m_stipp5);
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp6", 20, m_stipp6);
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("paper", 21, m_paper);
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("noise", 20, m_noise);
-            m_NPREffects.at(i)->shaderProgram->setSampler2D("canvas", 21, m_canvas);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp1", 115, m_stipp1);  // index offset for ao, metallic, roughness, and possibly bitangents if needed
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp2", 116, m_stipp2);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp3", 117, m_stipp3);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp4", 118, m_stipp4);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp5", 119, m_stipp5);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp6", 120, m_stipp6);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("paper", 121, m_paper);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("noise", 120, m_noise);
+            m_NPREffects.at(i)->shaderProgram->setSampler2D("canvas", 121, m_canvas);
 
             // Set NPR properties
             // Iterate over npr effect properties
@@ -416,13 +416,13 @@ void Scene::drawSFQuad()
     m_compositingShaderProgram->setSampler2D("terrain", 10, m_terrainTextures[0]);  // terrain color
     m_compositingShaderProgram->setSampler2D("terrainDepth", 11, m_terrainTextures[1]);  // terrain depth
     m_compositingShaderProgram->setSampler2D("terrainTopView", 12, m_terrainTextures[2]);  // terrain top view
+    
+    m_compositingShaderProgram->setBool("transparency", m_transparency);
     if (m_transparency) {
-        m_compositingShaderProgram->setBool("transparency", true);
         m_compositingShaderProgram->setSampler2D("transparencySampler", 15, m_gBufferTransparentFBO->getColorAttachment(2)); 
         m_compositingShaderProgram->setSampler2D("transparencyTextureSampler", 16, m_gBufferTransparentFBO->getColorAttachment(4)); 
         m_compositingShaderProgram->setSampler2D("transparencyDiffuseSampler", 17, m_gBufferTransparentFBO->getColorAttachment(5));
         m_compositingShaderProgram->setSampler2D("transparencyDepth", 18, m_gBufferTransparentFBO->getDepthAttachment());
-
     }
 
     // Set shader uniforms
