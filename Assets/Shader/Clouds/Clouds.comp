@@ -60,14 +60,15 @@ float rand(vec2 co){
 // calculates the in/out scattering of the cloud.
 // costheta is cosine of the angle between the sun's light direction and the ray direction from the camera.
 // g specifies the type of scattering (back-, isotropic-, in-scattering)
-float HG(float costheta, float g) {
-    return 1.25f * PI_RADIANS * (1 - pow(g, 2.0f)) / pow((1 + pow(g, 2.0f) - 2 * g * costheta), 1.5f) + 0.5f;
+float HG( float sundotrd, float g) {
+	float gg = g * g;
+	return (1. - gg) / pow( 1. + gg - 2. * g * sundotrd, 1.5);
 }
 
 // calulates the phase using the Henyey-Greenstein function
 float phase(vec3 inLight, vec3 inView, float g) {
     float costheta = dot(inLight, inView) / length(inLight) / length(inView);
-    return HG(-costheta, g);
+    return HG(costheta, g);
 }
 
 // fixed coverage mapping
@@ -442,8 +443,10 @@ float castRayToSun(vec3 origin, vec3 dir, float t) {
         samplePoint = origin + deltaDirection * t;
         density = sampleCloud(samplePoint, t / 8);
 
-        float Tr = exp(sigmaDensity * density);
-        transmittance *= Tr;
+        if (density > 0.0f) {
+            float Tr = exp(sigmaDensity * density);
+            transmittance *= Tr;
+        }
     }
 
     return transmittance;
