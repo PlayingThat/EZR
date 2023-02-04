@@ -1043,7 +1043,7 @@ bool Terrain::bufferToGL(StreamBuffer *buffer, const void *data, int *offset)
     // orphaning
     if (buffer->offset + buffer->size > buffer->capacity) {
         buffer->offset = 0;
-        LOG_ERROR("Terrain Stream Buffer orphaned");
+        // LOG_ERROR("Terrain Stream Buffer orphaned");
     }
 
     // stream data asynchronously
