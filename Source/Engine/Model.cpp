@@ -232,8 +232,14 @@ std::string Model::getTexturePathFromType(std::string diffusePath, std::string t
     int fileNameLength = extensionIndex - fileNameIndex;
     std::string materialName = diffusePath.substr(fileNameIndex + 1, fileNameLength - 1); 
     std::string extensionName = diffusePath.substr(extensionIndex, 4);
+
     if (materialName.find("diffuseOriginal") != std::string::npos) {
-        materialName = materialName.substr(0, materialName.find("diffuseOriginal") - 1);
+        if (materialName.find("-") && type != "diffuseOriginal"){
+            materialName = materialName.substr(0, materialName.find("-") - 1);
+        }
+        else {
+            materialName = materialName.substr(0, materialName.find("diffuseOriginal") - 1);
+        }
     }
 
     if (materialName == "")
