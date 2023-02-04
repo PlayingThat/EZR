@@ -228,8 +228,10 @@ GLuint Model::getTextureIDIfAlreadyLoaded(std::string path)
 std::string Model::getTexturePathFromType(std::string diffusePath, std::string type) {
     // Determine file name from path
     int fileNameIndex = diffusePath.find_last_of("/");
-    int extensionIndex = diffusePath.find_last_of(".") - fileNameIndex; 
-    std::string materialName = diffusePath.substr(fileNameIndex + 1, extensionIndex - 1); 
+    int extensionIndex = diffusePath.find_last_of("."); 
+    int fileNameLength = extensionIndex - fileNameIndex;
+    std::string materialName = diffusePath.substr(fileNameIndex + 1, fileNameLength - 1); 
+    std::string extensionName = diffusePath.substr(extensionIndex, 4);
     if (materialName.find("diffuseOriginal") != std::string::npos) {
         materialName = materialName.substr(0, materialName.find("diffuseOriginal") - 1);
     }
@@ -240,7 +242,8 @@ std::string Model::getTexturePathFromType(std::string diffusePath, std::string t
     std::string folderPath = "./Assets/Special-Textures/" + materialName + "/";
 
     // Concatenate texture path from folder path and texture type
-    std::string texturePath = folderPath + materialName + "_" + type + ".jpg";
+    //std::string texturePath = folderPath + materialName + "_" + type + ".jpg";    // leaves are png not jpg
+    std::string texturePath = folderPath + materialName + "_" + type + extensionName;
 
     return texturePath;
 }
