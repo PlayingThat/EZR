@@ -6,6 +6,7 @@
 
 GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log) 
 {
+    static long long byteSize = 0;
     // Create array of texture handles
     TextureData *textureData = (TextureData*)malloc(sizeof(TextureData) * paths.size());
 
@@ -52,10 +53,10 @@ GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log)
                     glformat = GL_RG;
                     break;
                 case 3:
-                    glformat = GL_RGB;
+                    glformat = GL_RGB4;
                     break;
                 case 4:
-                    glformat = GL_RGBA;
+                    glformat = GL_RGBA4;
                     break;
             }
 
@@ -64,6 +65,7 @@ GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log)
             else
                 glTexImage2D(GL_TEXTURE_2D, 0, glformat, textureData[i].width, textureData[i].height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData[i].data);
             glGenerateMipmap(GL_TEXTURE_2D);
+            byteSize += textureData[i].width * textureData[i].height * textureData[i].nrComponents;
 
         } else
         {
@@ -75,7 +77,7 @@ GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log)
 
     // Free texture data
     free(textureData);
-
+    LOG_INFO("Loaded " + std::to_string(byteSize) + " bytes of textures");
     return textureHandles;
 }
 
