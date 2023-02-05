@@ -112,17 +112,8 @@ void main(void) {
 	
 	
 	//final color for object	
-	vec3 final_color;
-	if(edge_detection == 0){
-		final_color = (ambient + diffuse + specular * specMask)* color;
-	}
-	else{
-		float scale_origin = 0.5;
-		float scale = scale_origin + edge_thresh;
-		float factor = (visiblity + scale_origin)/scale;
-		final_color = factor * ambient * color;
-	}
-
+	vec3 final_color= (ambient + diffuse + specular * specMask)* color;
+	
 	// ---------- SOBEL ------------
 	vec4 n[9];
 	make_kernel( n, depth, gl_FragCoord.xy / screenSize);//gl_TexCoord[0].st );
