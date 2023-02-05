@@ -87,7 +87,7 @@ GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log)
 
     // Free texture data
     free(textureData);
-    LOG_INFO("Loaded " + std::to_string(byteSize) + " bytes of textures");
+    LOG_INFO("Loaded " + std::to_string(double(byteSize) / 1000000000.0) + " GB of textures");
     return textureHandles;
 }
 
