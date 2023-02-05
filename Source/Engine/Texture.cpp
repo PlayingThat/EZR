@@ -127,7 +127,7 @@ Pixel* loadTextureFromFileDirect(const char* path, int &width, int &height)
 {
     // Load image from file
     int nrComponents;
-    Pixel* data = (Pixel*) stbi_load(path, &width, &height, &nrComponents, STBI_rgb_alpha);
+    Pixel* data = (Pixel*) stbi_load(path, &width, &height, &nrComponents, STBI_rgb);
 
     if (data)
     {

@@ -13,6 +13,7 @@
 #include <variant>
 #include <cctype>
 #include <algorithm>
+#include <tuple>
 
 #include "Objects/ColorfullTriangle.h"
 #include "Objects/Terrain.h"
@@ -250,4 +251,5 @@ private:
     std::shared_ptr<Drawable> m_stone4;
     std::shared_ptr<Drawable> m_treePlain;
     std::shared_ptr<Drawable> m_treeLeaves;
+
 };

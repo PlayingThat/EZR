@@ -621,13 +621,32 @@ std::shared_ptr<ProfilersWindow> Scene::getProfilerWindow()
 
 void Scene::loadMapTexture()
 {
+    // Map between the texture rgb pixels and the object type
+    std::map<std::tuple<int, int, int>, std::shared_ptr<Drawable>> pixelToObjectMap = {
+        { std::make_tuple(41, 253, 47), m_treeLeaves }
+    };
+
     // Load map texture
     int width, height;
 
     Pixel* map = loadTextureFromFileDirect("./Assets/Terrain/mapSmall.png", width, height);
+    float scaleOffset = 1.0f;
+    glm::vec3 offset = glm::vec3(0, -800, 0);
 
-    for (int i = 0; i < width * height; i++)
-    {
-        // LOG_INFO("Map texture: " + std::to_string(map[i].red) + " " + std::to_string(map[i].green) + " " + std::to_string(map[i].blue));
+    for (size_t i = 0; i < height; i++) {
+        for (size_t j = 0; j < width; j++) {
+            // Skip white pixels
+            if (map[i * height + j].red == 255 && map[i * height + j].green == 255 && map[i * height + j].blue == 255)
+                continue;
+
+            std::tuple tmp = std::make_tuple(map[i * height + j].red, map[i * height + j].green, map[i * height + j].blue);
+            if (pixelToObjectMap.find(tmp) != pixelToObjectMap.end()) {
+                Transformation t = Transformation { offset + glm::vec3(j, i, 0) * scaleOffset, glm::vec3(1.0f), glm::vec3(1, 0, 0), 90.0f };
+                addObject(pixelToObjectMap[tmp], false, t);
+            }
+            else {
+                LOG_INFO("Unknown map texture rgb value " + std::to_string(map[i].red) + " " + std::to_string(map[i].green) + " " + std::to_string(map[i].blue));
+            }
+        }
     }
 }
