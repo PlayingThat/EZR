@@ -152,15 +152,7 @@ float TriangleLevelOfDetail(in const vec4[3] patchVertices)
 {
     vec3 v0 = (u_ModelViewMatrix * patchVertices[0]).xyz;
     vec3 v2 = (u_ModelViewMatrix * patchVertices[2]).xyz;
-#if defined(PROJECTION_RECTILINEAR)
     return TriangleLevelOfDetail_Perspective(patchVertices);
-#elif defined(PROJECTION_ORTHOGRAPHIC)
-    return TriangleLevelOfDetail_Orthographic(patchVertices);
-#elif defined(PROJECTION_FISHEYE)
-    return TriangleLevelOfDetail_Perspective(patchVertices);
-#else
-    return 0.0;
-#endif
 }
 
 #if FLAG_DISPLACE
