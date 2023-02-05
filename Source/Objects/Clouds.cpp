@@ -88,7 +88,7 @@ void Clouds::draw()
 
 
     glDispatchCompute(m_width / 16, m_height / 16, 1);
-    glMemoryBarrier(GL_ALL_BARRIER_BITS);
+    // glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
     // apply post processing before drawing
     m_cloudPostProcessingShaderProgram->use();
