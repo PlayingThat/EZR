@@ -1000,8 +1000,8 @@ void Terrain::configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgr
     shaderProgram->setInt("u_SmapSampler", m_slopeMapTexture);
     // shaderProgram->setInt("u_DmapRockSampler", TEXTURE_DMAP_ROCK);
     // shaderProgram->setInt("u_SmapRockSampler", TEXTURE_DMAP_GRASS);
-    shaderProgram->setFloat("u_TargetEdgeLength", 7.0f);  // targetEdgeLength
-    shaderProgram->setFloat("u_MinLodVariance", glm::sqrt(0.1f / 64.0f / m_dmapFactor));
+    shaderProgram->setFloat("u_TargetEdgeLength", 3.0f);  // targetEdgeLength
+    shaderProgram->setFloat("u_MinLodVariance", m_dmapFactor * 0.0001f);
     shaderProgram->setFloat2("u_ScreenResolution", m_scene->getState()->getCamera()->getWidth(), m_scene->getState()->getCamera()->getHeight());
     shaderProgram->setSampler2D("transmittanceSampler", m_transmittanceTexture, m_transmittanceTexture);
     shaderProgram->setSampler2D("skyIrradianceSampler", m_irradianceTexture, m_irradianceTexture);
@@ -1043,7 +1043,7 @@ bool Terrain::bufferToGL(StreamBuffer *buffer, const void *data, int *offset)
     // orphaning
     if (buffer->offset + buffer->size > buffer->capacity) {
         buffer->offset = 0;
-        // LOG_ERROR("Terrain Stream Buffer orphaned");
+        LOG_ERROR("Terrain Stream Buffer orphaned");
     }
 
     // stream data asynchronously
