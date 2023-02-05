@@ -22,6 +22,16 @@ GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log)
 
         // Load image from file
         textureData[i].data = stbi_load(paths[i].c_str(), &textureData[i].width, &textureData[i].height, &textureData[i].nrComponents, STBI_rgb);
+
+        // Resize image to power of 2
+        int newWidth = textureData[i].width / 1.5;
+        int newHeight = textureData[i].height / 1.5;
+        unsigned char* resizedData = (unsigned char * )malloc( textureData[i].width * textureData[i].height * textureData[i].nrComponents * sizeof(unsigned char));
+        stbir_resize_uint8(textureData[i].data, textureData[i].width, textureData[i].height, 0, resizedData, newWidth, newHeight, 0, textureData[i].nrComponents);
+        free(textureData[i].data);
+        textureData[i].data = resizedData;
+        textureData[i].width = newWidth;
+        textureData[i].height = newHeight;
     }
 
     // Setup OpenGL texture handles as usual
