@@ -84,7 +84,7 @@ void main()
     // Blend transparency
     if(transparency) {
         float transparentDepth = texture(transparencyDepth, gl_FragCoord.xy / screenSize).r;
-        if (transparentDepth < 1) {
+        if (transparentDepth < depthFrag) {
             float alpha = 0.5f;
             vec4 transparencyTexture = texture(transparencyTextureSampler, gl_FragCoord.xy / screenSize);
             // vec4 transparencyDiffuse = texture(transparencyDiffuseSampler, gl_FragCoord.xy / screenSize);
