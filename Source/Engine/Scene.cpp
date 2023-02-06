@@ -60,7 +60,7 @@ void Scene::setup(std::shared_ptr<Scene> scene)
 
     // Setup scene objects
     m_ghost = std::make_shared<Ghost>(m_scene);
-    // m_gingerbreadHouse = std::make_shared<GingerbreadHouse>(m_scene);
+    m_gingerbreadHouse = std::make_shared<GingerbreadHouse>(m_scene);
     m_snowMan = std::make_shared<Snowman>(m_scene);
     m_stone1 = std::make_shared<Stone1>(m_scene);
     m_stone2 = std::make_shared<Stone2>(m_scene);
@@ -75,18 +75,18 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     //addObject(m_triangle);
     addObject(m_terrain);
     addObject(m_clouds);
-    addObject(m_ghost, true, Transformation{glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_ghost, true, Transformation{glm::vec3(1, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
     addObject(m_ghost, true, Transformation{glm::vec3(4, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
     addObject(m_ghost, false, Transformation{glm::vec3(-4, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
 
-    // addObject(m_gingerbreadHouse, false, Transformation{glm::vec3(-3, 8, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_snowMan, false, Transformation{glm::vec3(1, 4, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_gingerbreadHouse, false, Transformation{glm::vec3(-3, -8, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_snowMan, false, Transformation{glm::vec3(1, -4, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
     addObject(m_stone1, false, Transformation{glm::vec3(-3, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
     addObject(m_stone2, false, Transformation{glm::vec3(-2, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
     addObject(m_stone3, false, Transformation{glm::vec3(-1, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
     addObject(m_stone4, false, Transformation{glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_treePlain, false, Transformation{glm::vec3(2, 4, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_treeLeaves, false, Transformation{glm::vec3(3, 6, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_treePlain, false, Transformation{glm::vec3(-8, -4, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_treeLeaves, false, Transformation{glm::vec3(3, -6, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
 
     loadMapTexture();
 }
@@ -134,10 +134,12 @@ void Scene::setupNPREffects()
     m_goochShaderProgram->addShader(m_goochFragmentShader);
     m_goochShaderProgram->link();
     addNPREffect(m_goochShaderProgram, false);
+    addNPRProperty("Gooch", "CoolColor##Gooch", &m_goochPropertyCoolColor, true);
+    addNPRProperty("Gooch", "DiffuseCool##Gooch", &m_goochPropertyDiffuseCool, true);
+    addNPRProperty("Gooch", "WarmColor##Gooch", &m_goochPropertyWarmColor, true);
+    addNPRProperty("Gooch", "DiffuseWarm##Gooch", &m_goochPropertyDiffuseWarm, true);   
     addNPRProperty("Gooch", "Textured##Gooch", &m_goochPropertyTextured, true);
-    addNPRProperty("Gooch", "CoolColor", &m_goochPropertyCoolColor, true);
-    addNPRProperty("Gooch", "WarmColor", &m_goochPropertyWarmColor, true);
-    
+    addNPRProperty("Gooch", "UseSun##Gooch", &m_goochPropertyUseSun, true);
 
     // Setup Toon with outline (by Alyssa)
     m_toonVertexShader = std::make_shared<Shader>("./Assets/Shader/Toon.vert");
@@ -157,9 +159,11 @@ void Scene::setupNPREffects()
     m_JtoonShaderProgram->addShader(m_JtoonFragmentShader);
     m_JtoonShaderProgram->link();
     addNPREffect(m_JtoonShaderProgram, false);
+    addNPRProperty("Toon", "colorLevels##JToon", &m_JtoonPropertyColorLevels, true, 1, 20);
+    addNPRProperty("Toon", "levelBrightness##JToon", &m_JtoonPropertyLevelBrightness, true);
     addNPRProperty("Toon", "Textured##JToon", &m_JtoonPropertyTextured, true);
-    addNPRProperty("Toon", "colorLevels", &m_JtoonPropertyColorLevels, true, 1, 20);
-    addNPRProperty("Toon", "levelBrightness", &m_JtoonPropertyLevelBrightness, true);
+    addNPRProperty("Toon", "UseSun##JToon", &m_JtoonPropertyUseSun, true);
+    addNPRProperty("Toon", "SunlightInfluence##JToon", &m_JtoonPropertySunlightInfluence, true);
 
     // Setup Rim Lighting (by Alyssa)
     m_rimLVertexShader = std::make_shared<Shader>("./Assets/Shader/RimLighting.vert");
@@ -208,12 +212,14 @@ void Scene::setupNPREffects()
     m_pattShaderProgram->addShader(m_pattFragmentShader);
     m_pattShaderProgram->link();
     addNPREffect(m_pattShaderProgram, false);
-    addNPRProperty("Patterns", "Colored", &m_pattPropertyColored, true);
-    addNPRProperty("Patterns", "Textured##Hatching", &m_pattPropertyTextured, true);
-    addNPRProperty("Patterns", "mode", &m_pattPropertyMode, true, 0, 5);
-    addNPRProperty("Patterns", "frequency", &m_pattPropertyFrequency, true, 0.5, 2.0);
+    addNPRProperty("Patterns", "mode##Patterns", &m_pattPropertyMode, true, 0, 5);
+    addNPRProperty("Patterns", "frequency##Patterns", &m_pattPropertyFrequency, true, 0.5, 2.0);
     //addNPRProperty("Patterns", "noiseActive", &m_pattPropertyNoiseActive, true);
-    addNPRProperty("Patterns", "noiseFactor", &m_pattPropertyNoiseFactor, true, 0.0, 0.5);
+    addNPRProperty("Patterns", "noiseFactor##Patterns", &m_pattPropertyNoiseFactor, true, 0.0, 0.5);
+    addNPRProperty("Patterns", "Colored##Patterns", &m_pattPropertyColored, true);
+    addNPRProperty("Patterns", "Textured##Patterns", &m_pattPropertyTextured, true);
+    addNPRProperty("Patterns", "UseSun##Patterns", &m_pattPropertyUseSun, true);
+    addNPRProperty("Patterns", "SunlightInfluence##Patterns", &m_pattPropertySunlightInfluence, true);
 
     // Setup PBR shader
     m_pbrVertexShader = std::make_shared<Shader>("./Assets/Shader/PBR.vert");
@@ -512,7 +518,8 @@ void Scene::drawNPRPanel()
         ImGui::Checkbox(m_NPREffects.at(n)->name.c_str(), &m_NPREffects.at(n)->enabled);
 
         // Draw properties for each effect
-        if (m_NPREffects.at(n)->properties.size() > 0) {
+        //if (m_NPREffects.at(n)->properties.size() > 0) {
+        if (m_NPREffects.at(n)->enabled == true && m_NPREffects.at(n)->properties.size() > 0) {
             ImGui::Indent();
             for(int effectPropertyIndex = 0; effectPropertyIndex < m_NPREffects.at(n)->properties.size(); effectPropertyIndex++)
             {
@@ -522,6 +529,7 @@ void Scene::drawNPRPanel()
             }
             ImGui::Unindent();
         }
+        ImGui::Separator();
     }
 
     // Dont fill object with last bound texture
@@ -579,7 +587,7 @@ void Scene::drawNPREffectProperty(NPRProperty property)
     }
     else if (std::holds_alternative<glm::vec3*>(value))
     {
-        ImGui::ColorPicker3(propertyName.c_str(), glm::value_ptr(*std::get<glm::vec3*>(value)));
+        ImGui::ColorEdit3(propertyName.c_str(), glm::value_ptr(*std::get<glm::vec3*>(value)));
     }
     else if (std::holds_alternative<glm::vec4*>(value))
     {

@@ -168,9 +168,12 @@ private:
     std::shared_ptr<Shader> m_goochFragmentShader;
     std::shared_ptr<ShaderProgram> m_goochShaderProgram;
     // Gooch properties
-    bool m_goochPropertyTextured = false;  // wether to use a texture or not
+    bool m_goochPropertyTextured = false;       // whether to use a texture or not
+    bool m_goochPropertyUseSun = false;         // whether to use the sun as light source or not
     glm::vec3 m_goochPropertyCoolColor = glm::vec3(0.35, 0.45, 0.95);    //cold blue color
     glm::vec3 m_goochPropertyWarmColor = glm::vec3(1, 0.59, 0.4);        //warm orange color
+    float m_goochPropertyDiffuseCool = 0.3f;    // scaling factor for the cool color
+    float m_goochPropertyDiffuseWarm = 0.3f;    // scaling factor for the warm color
 
     // Toon shader (by Alyssa)
     std::shared_ptr<Shader> m_toonVertexShader;
@@ -184,9 +187,11 @@ private:
     std::shared_ptr<Shader> m_JtoonFragmentShader;
     std::shared_ptr<ShaderProgram> m_JtoonShaderProgram;
     // Toon properties
-    bool m_JtoonPropertyTextured = false;  // wether to use a texture or not
+    bool m_JtoonPropertyTextured = false;         // whether to use a texture or not
+    bool m_JtoonPropertyUseSun = false;           // whether to use the sun as light source or not
     int m_JtoonPropertyColorLevels = 5;           // adjustable number of different color levels
     float m_JtoonPropertyLevelBrightness = 0.4;   // parameter to brighten the result 
+    float m_JtoonPropertySunlightInfluence = 0.4; // parameter to adjust how much the sun influences the color
 
     // Rim Lighting shader
     std::shared_ptr<Shader> m_rimLVertexShader;
@@ -222,12 +227,14 @@ private:
     std::shared_ptr<Shader> m_pattVertexShader;
     std::shared_ptr<Shader> m_pattFragmentShader;
     std::shared_ptr<ShaderProgram> m_pattShaderProgram;
-    bool m_pattPropertyColored = false;
-    bool m_pattPropertyTextured = false;
+    bool m_pattPropertyColored = false;          // whether to use object's colors or not
+    bool m_pattPropertyTextured = false;         // whether to use the textures or not
+    bool m_pattPropertyUseSun = false;           // whether to use the sun as a light source or not
     int m_pattPropertyMode = 0;
     float m_pattPropertyFrequency = 1.0;
     //bool m_pattPropertyNoiseActive = false;
     float m_pattPropertyNoiseFactor = 0.0;
+    float m_pattPropertySunlightInfluence = 0.4;   // parameter to adjust how much the sun influences the color
 
     // Outline shader
     std::shared_ptr<Shader> m_outlVertexShader;
