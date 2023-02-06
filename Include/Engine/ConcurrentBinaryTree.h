@@ -9,8 +9,8 @@
 #include <stdint.h>
 #include <cassert>
 #include <atomic>
+#include <omp.h>
 #include "Defs.h"
-#include "ParallelFor.h"
 
 
 typedef struct {
