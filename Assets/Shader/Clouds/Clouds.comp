@@ -484,8 +484,8 @@ vec4 sampleDensity(vec3 origin, vec3 dir, vec3 sky) {
     // base transmittance: 100% of the light passes through the cloud (no cloud)
     float transmittance = 1.0f;
 
-    vec3 cloudBright = vec3(0.08, 0.09, 0.12);//vec3(4.95, 4.8, 4.75);
-    vec3 cloudDark = vec3(0.87, 0.85, 1.0);//vec3(0.416, 0.518, 0.694); //vec3(0.671, 0.725, 0.753);
+    vec3 cloudDark = vec3(0.08, 0.09, 0.12);//vec3(4.95, 4.8, 4.75);
+    vec3 cloudBright = vec3(0.87, 0.85, 1.0);//vec3(0.416, 0.518, 0.694); //vec3(0.671, 0.725, 0.753);
 
     // adaptive sampling based on wether the ray is inside a cloud or not
     bool inCloud = false;
