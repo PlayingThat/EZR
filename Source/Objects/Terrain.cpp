@@ -44,8 +44,18 @@ void Terrain::draw()
 // Draw GUI controls for terrain arguments
 void Terrain::drawGUI()
 {
+    const char* displacementMapPaths[] = {
+        "./Assets/Terrain/displacement_map_kauai.png",
+        "./Assets/Terrain/island.png",
+        "./Assets/Terrain/island02.png",
+        "./Assets/Terrain/koblenz.png",
+    };
+
     ImGui::Begin("Terrain");
     ImGui::Text("CBT Node Count: %i", m_cbtNodeCount);
+    if (ImGui::Combo("Displacement Map", &m_dmapIndex, displacementMapPaths, IM_ARRAYSIZE(displacementMapPaths))) {
+        loadTerrainMaps(displacementMapPaths[m_dmapIndex]);
+    }
     if (ImGui::SliderInt("Max Depth", &m_maxDepth, 6, 25)) {
         setupBuffers();
         setupShaderPrograms();
@@ -448,7 +458,7 @@ void Terrain::loadSceneFramebufferTexture()
 
 void Terrain::loadTerrainMaps(std::string filePath)
 {
-    LOG_INFO("Loading displacement map for terrain");
+    LOG_INFO("Loading displacement " + filePath + " map for terrain");
 
     m_slopeTerrainMapPixels = createTextureFromFile16(filePath.c_str(), m_slopeTerrainMapWidth, m_slopeTerrainMapHeight);
 
@@ -528,6 +538,9 @@ void Terrain::generateSlopeMap()
             smap[1 + 2 * (i + w * j)] = slope_y;
         }
 
+    if (glIsTexture(m_slopeMapTexture))
+        glDeleteTextures(1, &m_slopeMapTexture);
+        
     glGenTextures(1, &m_slopeMapTexture);
     glActiveTexture(GL_TEXTURE0 + m_slopeMapTexture);
     glBindTexture(GL_TEXTURE_2D, m_slopeMapTexture);
@@ -584,9 +597,6 @@ void Terrain::retrieveCBTNodeCount()
 void Terrain::loadSubdivisionBuffer()
 {
     LOG_INFO("Loading Subdivision buffer for LEB and CBT");
-
-    // m_concurrentBinaryTree = std::make_unique<ConcurrentBinaryTree>(m_maxDepth, 1);
-    // m_longesEdgeBisection = std::make_unique<LongestEdgeBisection>();
 
     m_concurrentBinaryTree = std::make_shared<ConcurrentBinaryTree>(m_maxDepth, 1);
     
@@ -952,8 +962,6 @@ void Terrain::configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgr
     shaderProgram->setFloat("u_LodFactor", lodFactor);
     shaderProgram->setSampler2D("u_DmapSampler", m_displacementMapTexture, m_displacementMapTexture);
     shaderProgram->setInt("u_SmapSampler", m_slopeMapTexture);
-    // shaderProgram->setInt("u_DmapRockSampler", TEXTURE_DMAP_ROCK);
-    // shaderProgram->setInt("u_SmapRockSampler", TEXTURE_DMAP_GRASS);
     shaderProgram->setFloat("u_TargetEdgeLength", 3.0f);  // targetEdgeLength
     shaderProgram->setFloat("u_MinLodVariance", m_dmapFactor * 0.0001f);
     shaderProgram->setFloat2("u_ScreenResolution", m_scene->getState()->getCamera()->getWidth(), m_scene->getState()->getCamera()->getHeight());

@@ -44,6 +44,7 @@ public:
 protected:
     void renderScene();
     void renderViewer();
+    void loadTerrainMaps(std::string filePath);
 
     void onSizeChanged(int width, int height);
 
@@ -83,7 +84,6 @@ private:
 
     void loadTextures();
     void loadSceneFramebufferTexture();
-    void loadTerrainMaps(std::string filePath);
     void generateSlopeMap();
     void loadAtmosphereTexture();
 
@@ -238,6 +238,8 @@ private:
     float m_dmapFactor = 1.0f;
 
     bool m_wireframe = false;
+
+    int m_dmapIndex = 0;
 
     //////////////////////////////////////////////////////////
     // Misc Engine Elements
