@@ -5,6 +5,7 @@ uniform mat4 viewMatrix;            //world coordinates to camera coordinate
 uniform mat4 projectionMatrix;
 
 uniform vec3 lightPosition = vec3(0, 10, 4); //light position in world coordinates
+uniform vec3 lightColor = vec3(1, 1, 1); //light color
 
 uniform sampler2D positions;
 uniform sampler2D normals;
@@ -79,8 +80,6 @@ void main(void) {
     }
 	
 //-------------------------------------------------------------------------------------
-
-	vec3 lightColor = vec3(1.0f);
 	
 	//ambient lighting
 	float Kamb = 0.7;

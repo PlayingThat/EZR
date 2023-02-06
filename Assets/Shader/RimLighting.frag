@@ -12,6 +12,8 @@ uniform sampler2D textureDiffuse;
 uniform sampler2D colorDiffuse;
 uniform vec2 screenSize;
 
+uniform vec3 lightColor = vec3(1.0f, 1.0f, 1.0f);
+
 uniform bool Textured;
 uniform float strength;
 
@@ -46,5 +48,5 @@ void main(void)
         color = texColor.rgb;
     }
 
-	FragColor = rim * vec4(1.0f) + vec4(color, 1.0f);
+	FragColor = rim * vec4(lightColor, 1.0f) + vec4(color, 1.0f);
 }

@@ -28,7 +28,7 @@ uniform sampler2D textureMetalSmoothnessAOHeight;
 
 // lights
 uniform vec3 lightPosition = vec3(0, 10, 4);
-uniform vec3 lightColor = vec3(1, 1, 1);
+uniform vec3 lightColor = vec3(1.0f, 0.0f, 0.0f);
 
 uniform vec3 cameraPosition;
 

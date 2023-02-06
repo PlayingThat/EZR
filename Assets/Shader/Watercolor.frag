@@ -21,6 +21,7 @@ uniform vec2 screenSize;
 uniform bool textured;
 
 uniform vec3 lightPosition = vec3(0, 10, 4); //light position in world coordinates
+uniform vec3 lightColor = vec3(1, 1, 1); //light color
 
 out vec4 FragColor;
 
@@ -164,7 +165,6 @@ void main(void)
 
 	vec3 reflecVec = reflect(-lightVec, tNorm);
 
-    vec3 lightColor = vec3(1.0);
     float spec = pow(max(dot(viewVec, reflecVec), 0.0), 32);
     vec3 specular = 0.5 * spec * lightColor;  
     
