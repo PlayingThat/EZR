@@ -4,7 +4,7 @@ layout(location = 0) out vec4 FragColor;
 uniform mat4 viewMatrix;            //world coordinates to camera coordinate
 uniform mat4 projectionMatrix;
 
-vec3 lightPosition = vec3(0, 10, 4); //light position in world coordinates
+uniform vec3 lightPosition = vec3(0, 10, 4); //light position in world coordinates
 
 uniform sampler2D positions;
 uniform sampler2D normals;

@@ -20,7 +20,7 @@ uniform vec2 screenSize;
 
 uniform bool textured;
 
-vec3 lightPosition = vec3(0, 10, 4); //light position in world coordinates
+uniform vec3 lightPosition = vec3(0, 10, 4); //light position in world coordinates
 
 out vec4 FragColor;
 

@@ -26,7 +26,7 @@ uniform float frequency;    // change the number of stripes / dots
 uniform sampler2D noise;
 uniform float noiseFactor;
 
-vec3 lightPosition = vec3(0, 10, 4);            //(test) light position in world coordinates
+uniform vec3 lightPosition = vec3(0, 10, 4);            //(test) light position in world coordinates
 
 layout (location = 0) out vec4 result;
 

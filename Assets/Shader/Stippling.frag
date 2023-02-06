@@ -21,7 +21,7 @@ uniform vec2 screenSize;
 
 uniform bool textured;      // If true, the shader will be applied on the textured object
 
-vec3 lightPosition = vec3(0, 10, 4);            //(test) light position in world coordinates
+uniform vec3 lightPosition = vec3(0, 10, 4);            //(test) light position in world coordinates
 
 out vec4 FragColor;
 

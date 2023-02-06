@@ -22,7 +22,7 @@ float DiffuseWarm = 0.3;
 uniform vec3 CoolColor;
 uniform vec3 WarmColor;
 
-vec3 lightPosition = vec3(0, 10, 4);        //(test) light position in world coordinates
+uniform vec3 lightPosition = vec3(0, 10, 4);        //(test) light position in world coordinates
 
 layout (location = 0) out vec4 result;
 

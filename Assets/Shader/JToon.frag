@@ -20,7 +20,7 @@ const float scaleFactor = 1.0f / colorLevels;   // width of a color level
 
 uniform float levelBrightness;                  // adjustable parameter to brighten the result 
 
-vec3 lightPosition = vec3(0, 10, 4);            //(test) light position in world coordinates
+uniform vec3 lightPosition = vec3(0, 10, 4);            //(test) light position in world coordinates
 
 layout (location = 0) out vec4 result;
 
