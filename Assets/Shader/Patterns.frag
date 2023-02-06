@@ -26,7 +26,11 @@ uniform float frequency;    // change the number of stripes / dots
 uniform sampler2D noise;
 uniform float noiseFactor;
 
-uniform vec3 lightPosition = vec3(0, 10, 4);            //(test) light position in world coordinates
+vec3 testLightPosition = vec3(0, 10, 4);    //(test) light position in world coordinates
+uniform bool UseSun;
+uniform float SunlightInfluence;
+uniform vec3 lightPosition;
+uniform vec3 lightColor;
 
 layout (location = 0) out vec4 result;
 
@@ -75,14 +79,19 @@ void main (){
     // Deferred shading
     vec4 vPosition = texture(positions, gl_FragCoord.xy / screenSize);
     vec3 ecPos = vPosition.xyz;
+    vec3 viewVec = normalize(-ecPos);
 
     vec3 tNorm = texture(normals, gl_FragCoord.xy / screenSize).xyz;
-
-    //vec3 lightPosition = vec3(gl_LightSource[0].position);
-
-    vec3 lightVec = normalize(lightPosition - ecPos);
     vec3 normalVec = normalize(tNorm);
-    vec3 viewVec = normalize(-ecPos);
+
+    vec3 lightVec;
+    if (UseSun){        // use sun light for more realism
+        lightVec = normalize(lightPosition - ecPos);
+    }
+    else {              // use test light for presentation purposes    
+        lightVec = normalize(testLightPosition - ecPos);
+        
+    }
 
     float lightIntensity = max(dot(lightVec, normalVec), 0.0);
 
@@ -129,14 +138,15 @@ void main (){
         diffuseColor = texColor.rgb;
     }
 
-    vec3 color;
+    vec3 color = vec3(square);
 
-    if (Colored){                                       // use colors of the object
-        color = diffuseColor * vec3(square);
+    if (Colored){           // use colors of the object
+        color = color * diffuseColor;
     }
-    else { 
-        color = vec3(square);
-    } 
+
+    if (UseSun) {    // add the sunlight to the color
+        color = color + lightColor * SunlightInfluence;
+    }
 
     result = vec4(color, 1.0);
 }

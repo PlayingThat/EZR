@@ -20,7 +20,11 @@ const float scaleFactor = 1.0f / colorLevels;   // width of a color level
 
 uniform float levelBrightness;                  // adjustable parameter to brighten the result 
 
-uniform vec3 lightPosition = vec3(0, 10, 4);            //(test) light position in world coordinates
+vec3 testLightPosition = vec3(0, 10, 4);    //(test) light position in world coordinates
+uniform bool UseSun;
+uniform float SunlightInfluence;
+uniform vec3 lightPosition;
+uniform vec3 lightColor;
 
 layout (location = 0) out vec4 result;
 
@@ -33,16 +37,20 @@ void main()
 
     // Deferred shading 
     vec4 vPosition = texture(positions, gl_FragCoord.xy / screenSize);
-    vec4 vertex = vPosition;
-    vec3 ecPos = vertex.xyz;
+    vec3 ecPos = vPosition.xyz;
 
     vec3 tNorm = texture(normals, gl_FragCoord.xy / screenSize).xyz;
-
-    //vec3 lightPosition = vec3(gl_LightSource[0].position);
-
-    vec3 lightVec = normalize(lightPosition - ecPos);
     vec3 normalVec = normalize(tNorm);
     
+    vec3 lightVec;
+    if (UseSun){        // use sun light for more realism
+        lightVec = normalize(lightPosition - ecPos);
+    }
+    else {              // use test light for presentation purposes    
+        lightVec = normalize(testLightPosition - ecPos);
+        
+    }
+
     //calculate the intensity using the lightvector & normalvector
     float intensity = max(dot(lightVec, normalVec), 0.0); 
 
@@ -81,8 +89,12 @@ void main()
     // get the color by multiplying the diffuse color with the intensity level
     vec3 color = diffuseColor * (intensityLevel + levelBrightness);     //add Offset, so the result is brighter
 
+    if (UseSun) {    // add the sunlight to the color
+        color = color + lightColor * SunlightInfluence;
+    }
+
     // alternative solution (dark shadows from the dark internet, for comparison)
-    vec3 color2 = diffuseColor * floor(intensity * colorLevels)* scaleFactor;
+    //vec3 color2 = diffuseColor * floor(intensity * colorLevels)* scaleFactor;
 
     result = vec4(color, 1.0);
 }

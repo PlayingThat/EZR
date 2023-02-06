@@ -15,14 +15,16 @@ uniform vec2 screenSize;
 
 uniform bool Textured;      // If true, the shader will be applied on the textured object
 
-float DiffuseCool = 0.3;
-float DiffuseWarm = 0.3;
+uniform float DiffuseCool;
+uniform float DiffuseWarm;
 //vec3 CoolColor = vec3(0.35, 0.45, 0.95);    //cold blue color
 //vec3 WarmColor = vec3(1, 0.59, 0.4);        //warm orange color
 uniform vec3 CoolColor;
 uniform vec3 WarmColor;
 
-uniform vec3 lightPosition = vec3(0, 10, 4);        //(test) light position in world coordinates
+uniform bool UseSun;
+uniform vec3 lightPosition;        
+vec3 testLightPosition = vec3(0, 10, 4);    //(test) light position in world coordinates
 
 layout (location = 0) out vec4 result;
 
@@ -35,18 +37,24 @@ void main()
 
     // Deferred shading
     vec4 vPosition = texture(positions, gl_FragCoord.xy / screenSize);
-    vec4 vertex = vPosition;
-    vec3 ecPos = vertex.xyz;
+    vec3 ecPos = vPosition.xyz;
+    vec3 viewVec = normalize(-ecPos);
 
     vec3 tNorm = texture(normals, gl_FragCoord.xy / screenSize).xyz;
+    vec3 normalVec = normalize(tNorm);
 
-    //vec3 lightPosition = vec3(gl_LightSource[0].position);
-    
-    vec3 lightVec = normalize(lightPosition - ecPos);
+    vec3 lightVec;
+    if (UseSun){        // use sun light for more realism
+        lightVec = normalize(lightPosition - ecPos);
+    }
+    else {              // use test light for presentation purposes    
+        lightVec = normalize(testLightPosition - ecPos);
+        
+    }
 
-    vec3 reflecVec = normalize(reflect(-lightVec, tNorm));
-    vec3 viewVec = normalize(-ecPos);
-    float NdotL = (dot(lightVec, tNorm) + 1.0) * 0.5;
+    vec3 reflecVec = normalize(reflect(-lightVec, normalVec));
+
+    float NdotL = (dot(lightVec, normalVec) + 1.0) * 0.5;
 
     vec4 texColor;
     vec3 diffuseColor = texture(colorDiffuse, gl_FragCoord.xy / screenSize).rgb;
