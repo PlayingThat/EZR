@@ -63,8 +63,6 @@ private:
     // Render functions
     void drawScene();
     void drawTerrain();
-    void renderSky();
-    void drawTopView();
 
     void retrieveCBTNodeCount();
     void loadTerrainVariables();
@@ -122,14 +120,12 @@ private:
     void loadLEBReductionProgram();
     void LoadLebReductionPrepassProgram();
     void loadBatchProgram();
-    void loadTopViewProgram();
     void loadCBTNodeCountShader();
 
     // Configure shader programs
     void configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgram);
     void configureTerrainPrograms();
     void configureAtmosphereProgram();
-    void configureTopViewProgram();
 
     // Send to gl
     bool bufferToGL(StreamBuffer *buffer, const void *data, int *offset);
@@ -186,8 +182,8 @@ private:
     // Framebuffer for terrain
     GLuint m_framebufferTerrain = 0;
     GLuint m_framebufferTerrainColorTexture = 0;
+    GLuint m_framebufferTerrainNormalTexture = 0;
     GLuint m_framebufferTerrainDepthTexture = 0;
-    std::shared_ptr<FBO> m_framebufferTerrainTopViewFBO;
 
     // Queries
     GLuint m_queryCBTNodeCount = 0;
@@ -218,9 +214,6 @@ private:
 
     std::shared_ptr<ShaderProgram> m_batchShaderProgram;
     std::shared_ptr<Shader> m_terrainBatchShader;
-
-    std::shared_ptr<ShaderProgram> m_topViewShaderProgram;
-    std::shared_ptr<Shader> m_topViewShader;
 
     std::shared_ptr<ShaderProgram> m_cbtNodeCountShaderProgram;
     std::shared_ptr<Shader> m_cbtNodeCountShader;

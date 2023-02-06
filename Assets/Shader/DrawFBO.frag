@@ -16,7 +16,6 @@ uniform sampler2D depth;
 // Terrain color buffer
 uniform sampler2D terrain;
 uniform sampler2D terrainDepth;
-uniform sampler2D terrainTopView;
 
 uniform vec2 screenSize;
 uniform int numberOfEnabledEffects;
@@ -32,13 +31,6 @@ out vec4 FragColor;
 
 void main()
 {
-    // Early exit for terrain top view area
-    vec4 terrainTopViewFrag = texture(terrainTopView, gl_FragCoord.xy / screenSize);
-    if (terrainTopViewFrag.r > 0.0f) {
-        FragColor = terrainTopViewFrag;
-        return;
-    }
-
     vec4 color;
     float effectPercentage = 1.0 / numberOfEnabledEffects;
 

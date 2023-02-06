@@ -49,9 +49,11 @@ void main()
 layout(location = 0) in vec2 i_TexCoord;
 layout(location = 1) in vec3 i_WorldPos;
 layout(location = 0) out vec4 o_FragColor;
+layout(location = 1) out vec4 o_Normal;
 
 void main()
 {
     o_FragColor = ShadeFragment(i_TexCoord, i_WorldPos);
+    o_Normal = GetNormal(i_TexCoord, i_WorldPos);
 }
 #endif

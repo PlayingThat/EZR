@@ -37,12 +37,6 @@ void Terrain::draw()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     drawScene();
-
-    glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrainTopViewFBO->getID());
-    glViewport(10, 10, 300, 300);
-    glClearColor(0, 0, 1.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    drawTopView();
     
     m_scene->getProfilerWindow()->EndGPUProfilerTask("terrain");
 }
@@ -72,7 +66,6 @@ void Terrain::onSizeChanged(int width, int height)
     loadSceneFramebufferTexture();
     loadTerrainFramebuffer();
     configureTerrainPrograms();
-    configureTopViewProgram();
 
     LOG_INFO("Size changed to: " + std::to_string(width) + "x" + std::to_string(height));
 }
@@ -81,37 +74,7 @@ void Terrain::drawScene()
 {
     drawTerrain();
     retrieveCBTNodeCount();
-    renderSky();
 
-}
-
-void Terrain::drawTopView()
-{
-    // glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrainTopViewFBO->getID());
-    m_topViewShaderProgram->use();
-    configureTopViewProgram();
-    glBindVertexArray(m_vaoEmpty);
-
-    glDisable(GL_CULL_FACE);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
-    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_bufferTerrainDraw);
-    glPatchParameteri(GL_PATCH_VERTICES, 1);
-
-    glDrawArraysIndirect(GL_PATCHES, 0);
-
-    // reset GL state
-    glBindVertexArray(0);
-    glViewport(0, 0, m_scene->getState()->getWidth(), m_scene->getState()->getHeight());
-    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void Terrain::renderSky()
-{
-    // glDepthMask(GL_FALSE);
-    // m_skybox->draw();
-    // glDepthMask(GL_TRUE);
 }
 
 void Terrain::drawTerrain()
@@ -269,11 +232,6 @@ void Terrain::setupBuffers()
     loadCBTNodeCountBuffer();
 
     static bool first = true;
-    // Setup Top view render buffer
-    if (first) {
-        first = false;
-        m_framebufferTerrainTopViewFBO = std::make_shared<FBO>(m_scene, 1);
-    }
 
 }
 
@@ -445,6 +403,8 @@ void Terrain::loadSceneFramebufferTexture()
         glDeleteTextures(1, &m_framebufferTerrainDepthTexture);
     if(glIsTexture(m_framebufferTerrainColorTexture))
         glDeleteTextures(1, &m_framebufferTerrainColorTexture);
+    if(glIsFramebuffer(m_framebufferTerrainNormalTexture))
+        glDeleteFramebuffers(1, &m_framebufferTerrainNormalTexture);
 
     glGenTextures(1, &m_framebufferTerrainDepthTexture);
     glActiveTexture(GL_TEXTURE0 + m_framebufferTerrainDepthTexture);
@@ -460,6 +420,19 @@ void Terrain::loadSceneFramebufferTexture()
     glGenTextures(1, &m_framebufferTerrainColorTexture);
     glActiveTexture(GL_TEXTURE0 + m_framebufferTerrainColorTexture);
     glBindTexture(GL_TEXTURE_2D, m_framebufferTerrainColorTexture);
+    
+    glTexStorage2D(GL_TEXTURE_2D,
+        1,
+        GL_RGBA32F,
+        m_scene->getState()->getCamera()->getWidth(),
+        m_scene->getState()->getCamera()->getHeight());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glActiveTexture(GL_TEXTURE0);
+
+    glGenTextures(1, &m_framebufferTerrainNormalTexture);
+    glActiveTexture(GL_TEXTURE0 + m_framebufferTerrainNormalTexture);
+    glBindTexture(GL_TEXTURE_2D, m_framebufferTerrainNormalTexture);
     
     glTexStorage2D(GL_TEXTURE_2D,
         1,
@@ -791,7 +764,6 @@ void Terrain::setupShaderPrograms()
     loadLEBReductionProgram();
     LoadLebReductionPrepassProgram();
     loadBatchProgram();
-    loadTopViewProgram();
     loadCBTNodeCountShader();
 }
 
@@ -914,32 +886,6 @@ void Terrain::loadBatchProgram()
     HANDLE_GL_ERRORS("loading terrain batch shader");
 }
 
-void Terrain::loadTopViewProgram()
-{
-    m_topViewShaderProgram = std::make_shared<ShaderProgram>("TopView");
-    std::shared_ptr<Shader> m_topViewShader = std::make_shared<Shader>("./Assets/Shader/Terrain/TopView.comp", false);
-    
-    m_topViewShaderProgram->addSource("#define FLAG_DISPLACE 1");
-    m_topViewShaderProgram->addSource("#define TERRAIN_PATCH_SUBD_LEVEL " + std::to_string(m_patchSubDiv));
-    m_topViewShaderProgram->addSource("#define TERRAIN_PATCH_TESS_FACTOR " + std::to_string(1 << m_patchSubDiv));
-    m_topViewShaderProgram->addSource("#define BUFFER_BINDING_TERRAIN_VARIABLES " + std::to_string(m_streamTerrainVariablesIndex));
-    m_topViewShaderProgram->addSource("#define LEB_BUFFER_COUNT 1");
-    m_topViewShaderProgram->addSource("#define BUFFER_BINDING_LEB " + std::to_string(m_subdivionBufferIndex));
-    m_topViewShaderProgram->addSource("#define CBT_HEAP_BUFFER_BINDING " + std::to_string(m_subdivionBufferIndex));
-    m_topViewShaderProgram->addSource("#define CBT_READ_ONLY");
-
-    m_topViewShaderProgram->attachShader(m_terrainFrustumCullingShader);
-    m_topViewShaderProgram->attachShader(m_terrainCBTShader);
-    m_topViewShaderProgram->attachShader(m_terrainLEBShader);
-    m_topViewShaderProgram->attachShader(m_terrainRenderCommonShader);
-    m_topViewShader = std::make_shared<Shader>("./Assets/Shader/Terrain/TopView.comp", false);
-    // m_topViewShaderProgram->attachShader(m_topViewShader);
-    m_topViewShaderProgram->linkCombinedShader(m_topViewShader, m_topViewShader, m_topViewShader, m_topViewShader, m_topViewShader);
-    
-    HANDLE_GL_ERRORS("loading terrain top view shader");
-    configureTopViewProgram();
-}
-
 void Terrain::loadCBTNodeCountShader()
 {
     m_cbtNodeCountShaderProgram = std::make_shared<ShaderProgram>("CBTNodeCount");
@@ -964,17 +910,27 @@ void Terrain::loadTerrainFramebuffer()
     glGenFramebuffers(1, &m_framebufferTerrain);
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferTerrain);
 
+    // Normal color buffer + normals
+    unsigned int *attachments = new unsigned int[2];
+    attachments[0] = GL_COLOR_ATTACHMENT0;
+    attachments[1] = GL_COLOR_ATTACHMENT1;
+
     glFramebufferTexture2D(GL_FRAMEBUFFER,
         GL_COLOR_ATTACHMENT0,
         GL_TEXTURE_2D,
         m_framebufferTerrainColorTexture,
         0);
     glFramebufferTexture2D(GL_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT1,
+        GL_TEXTURE_2D,
+        m_framebufferTerrainNormalTexture,
+        0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER,
         GL_DEPTH_STENCIL_ATTACHMENT,
         GL_TEXTURE_2D,
         m_framebufferTerrainDepthTexture,
         0);
-    glDrawBuffer(GL_COLOR_ATTACHMENT0);
+    glDrawBuffers(2, attachments);
     if (GL_FRAMEBUFFER_COMPLETE != glCheckFramebufferStatus(GL_FRAMEBUFFER)) {
         LOG_ERROR("Error setting up terrain render framebuffer, error code: " << glCheckFramebufferStatus(GL_FRAMEBUFFER));
     }
@@ -1004,30 +960,6 @@ void Terrain::configureShaderProgram(std::shared_ptr<ShaderProgram> &shaderProgr
     shaderProgram->setSampler2D("transmittanceSampler", m_transmittanceTexture, m_transmittanceTexture);
     shaderProgram->setSampler2D("skyIrradianceSampler", m_irradianceTexture, m_irradianceTexture);
     shaderProgram->setSampler3D("inscatterSampler", m_inscatterTexture, m_inscatterTexture);
-}
-
-void Terrain::configureAtmosphereProgram()
-{
-    // atmosphere->setSampler2D("transmittanceSampler", 5, m_transmittanceTexture);
-    // shaderProgram->setSampler2D("skyIrradianceSampler", 6, m_irradianceTexture);
-    // shaderProgram->setSampler2D("inscatterSampler", 7, m_inscatterTexture);
-    // glProgramUniform1i(g_gl.programs[PROGRAM_SKY],
-    //                    g_gl.uniforms[UNIFORM_SKY_INSCATTER_SAMPLER],
-    //                    TEXTURE_ATMOSPHERE_INSCATTER);
-    // glProgramUniform1i(g_gl.programs[PROGRAM_SKY],
-    //                    g_gl.uniforms[UNIFORM_SKY_IRRADIANCE_SAMPLER],
-    //                    TEXTURE_ATMOSPHERE_IRRADIANCE);
-    // glProgramUniform1i(g_gl.programs[PROGRAM_SKY],
-    //                    g_gl.uniforms[UNIFORM_SKY_TRANSMITTANCE_SAMPLER],
-    //                    TEXTURE_ATMOSPHERE_TRANSMITTANCE);
-}
-
-void Terrain::configureTopViewProgram()
-{
-    m_topViewShaderProgram->use();
-    m_topViewShaderProgram->setFloat("u_DmapFactor", m_dmapFactor);
-    m_topViewShaderProgram->setSampler2D("u_DmapSampler", 0, m_displacementMapTexture);
-    HANDLE_GL_ERRORS("configuring terrain topview shader");
 }
 
 bool Terrain::bufferToGL(StreamBuffer *buffer, const void *data, int *offset)
@@ -1073,6 +1005,6 @@ GLuint* Terrain::getDrawTextures()
     GLuint* drawTextures = new GLuint[3];
     drawTextures[0] = m_framebufferTerrainColorTexture;
     drawTextures[1] = m_framebufferTerrainDepthTexture;
-    drawTextures[2] = m_framebufferTerrainTopViewFBO->getColorAttachment(0);
+    drawTextures[2] = m_framebufferTerrainNormalTexture;
     return drawTextures;
 }
