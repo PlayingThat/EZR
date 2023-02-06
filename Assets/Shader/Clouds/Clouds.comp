@@ -350,7 +350,7 @@ vec3 skyColorFromRay(vec3 rayStart, vec3 rayEnd)
 //
 //    }
 
-    vec3 atmospherePosition = rayEnd - cameraPosition + 10000.0f;
+    vec3 atmospherePosition = rayEnd - cameraPosition;
 
     vec3 extinction;
     float timeFactor =  (1.0f + sin(timeRadians)) * 0.5f;
