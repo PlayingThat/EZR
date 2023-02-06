@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Engine/ConcurrentBinaryTree.h"
+#include <omp.h>
 
 typedef struct {
     cbt_Node base, top;

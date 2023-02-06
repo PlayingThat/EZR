@@ -43,13 +43,12 @@ void ConcurrentBinaryTree::resetToDepth(int64_t depth)
 
     clearBitField();
 
-    parallel_for(maxNodeID, [&](int start, int end) {
+    #pragma omp parallel for
         for (uint64_t nodeID = minNodeID; nodeID < maxNodeID; ++nodeID) {
             cbt_Node node = createNode(nodeID, depth);
 
             writeToBitField(node, 1u);
         }
-    });
 
     computeSumReduction();
 }
@@ -71,11 +70,10 @@ void ConcurrentBinaryTree::mergeNode(const cbt_Node node)
 // Traverse tree and split or merge nodes according to user function
 void ConcurrentBinaryTree::update(cbt_UpdateCallback updater, const void *userData)
 {
-    parallel_for(getNodeCount(), [&](int start, int end) {
+    #pragma omp parallel for
         for (int64_t handle = 0; handle < getNodeCount(); ++handle) {
             updater(decodeNode(handle), userData);
         }
-    });
 
     computeSumReduction();
 }
@@ -207,11 +205,10 @@ void ConcurrentBinaryTree::clearBitField()
     int64_t bufferMinID = 1LL << (maxDepth - 5);
     int64_t bufferMaxID = heapUint64Size(maxDepth);
 
-    parallel_for(bufferMaxID, [&](int start, int end) {
+    #pragma omp parallel for
         for (int bufferID = bufferMinID; bufferID < bufferMaxID; ++bufferID) {
             m_tree->heap[bufferID] = 0;
         }
-    });
 }
 
 inline int64_t ConcurrentBinaryTree::heapUint64Size(int64_t treeMaxDepth) 
@@ -428,7 +425,7 @@ void ConcurrentBinaryTree::computeSumReduction()
     uint64_t maxNodeID = (2ULL << depth);
 
     // prepass: processes deepest levels in parallel
-    parallel_for(maxNodeID, [&](int start, int end) {
+    #pragma omp parallel for
         for (uint64_t nodeID = minNodeID; nodeID < maxNodeID; nodeID+= 64u) {
             cbt_Node heapNode = createNode(nodeID, depth);
             int64_t alignedBitOffset = nodeBitID(heapNode);
@@ -498,7 +495,7 @@ void ConcurrentBinaryTree::computeSumReduction()
             bitData = bitField;
             heapWriteExplicit(createNode(nodeID >> 6, depth - 6),  7ULL, bitData);
         }
-    });
+        
     depth-= 6;
 
     // iterate over elements atomically
@@ -506,13 +503,12 @@ void ConcurrentBinaryTree::computeSumReduction()
         uint64_t minNodeID = 1ULL << depth;
         uint64_t maxNodeID = 2ULL << depth;
 
-        parallel_for(maxNodeID, [&](int start, int end) {
+        #pragma omp parallel for
             for (uint64_t j = minNodeID; j < maxNodeID; ++j) {
                 uint64_t x0 = getHeapRead(createNode(j << 1    , depth + 1));
                 uint64_t x1 = getHeapRead(createNode(j << 1 | 1, depth + 1));
 
                 heapWrite(createNode(j, depth), x0 + x1);
             }
-        });
     }
 }
