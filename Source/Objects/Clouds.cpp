@@ -15,9 +15,6 @@ Clouds::Clouds(std::shared_ptr<Scene> scene) : Drawable(scene)
 
     // setup default scene properties
     m_sunPosition = glm::vec3(1000.0f, 1000.0f, 1000.0f);
-    m_sunlightColorDay = glm::vec3(0.56f, 0.88f, 1.0f);
-    m_sunlightColorSunset = glm::vec3(1.0f, 0.55f, 0.47f);
-    m_sunlightColorNight = glm::vec3(0.5f, 0.5f, 0.5f);
 
     m_backgroundColor = glm::vec3(0.47f, 0.55f, 0.86f);
 
@@ -36,6 +33,7 @@ Clouds::Clouds(std::shared_ptr<Scene> scene) : Drawable(scene)
     m_startTime = glfwGetTime();
 
     initShaders();
+    initSunColorSSBO();
     initTextures();
 }
 
@@ -86,6 +84,11 @@ void Clouds::draw()
         }
     }
 
+    // Bind sun color SSBO
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                7,
+                m_sunColorSSBO);
+
 
     glDispatchCompute(m_width / 16, m_height / 16, 1);
     // glMemoryBarrier(GL_ALL_BARRIER_BITS);
@@ -99,11 +102,9 @@ void Clouds::draw()
 
     glDispatchCompute(m_width / 16, m_height / 16, 1);
     glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-    // m_screenFillingQuad->getShaderProgram()->setSampler2D("fbo1", m_fragmentColorTextureGeometry, 0);
-    // m_screenFillingQuad->getShaderProgram()->setSampler2D("fbo2", m_fragmentColorTextureCloudsBlured, 1);
-    // m_screenFillingQuad->draw();
     
+    retrieveSunColor();
+
     m_scene->getProfilerWindow()->EndGPUProfilerTask("clouds");
 }
 
@@ -232,4 +233,34 @@ void Clouds::initShaders()
 glm::vec3* Clouds::getSunPosition()
 {
     return &m_sunPosition;
+}
+
+glm::vec4* Clouds::getSunColor()
+{
+    return &m_sunColor;
+}
+
+void Clouds::initSunColorSSBO()
+{
+    // create sun color ssbo
+    glCreateBuffers(1, &m_sunColorSSBO);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_sunColorSSBO);
+    glBufferStorage(GL_SHADER_STORAGE_BUFFER, 4 * sizeof(float), nullptr, GL_MAP_READ_BIT);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER,
+                    7,
+                    m_sunColorSSBO);
+}
+
+void Clouds::retrieveSunColor()
+{
+    GLsizeiptr sizeInBytes = 4 * sizeof(float);
+
+    m_cloudPostProcessingShaderProgram->use();
+    GLuint *buffer = &m_sunColorSSBO;
+
+    // Map buffer for reading
+    m_sunColor = *(glm::vec4*) 
+        glMapNamedBuffer(*buffer, GL_READ_ONLY | GL_MAP_UNSYNCHRONIZED_BIT);
+    glUnmapNamedBuffer(m_sunColorSSBO);
+
 }

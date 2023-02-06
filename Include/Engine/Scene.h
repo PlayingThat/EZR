@@ -124,6 +124,8 @@ private:
 
     // Sun position from clouds
     glm::vec3* m_sunPosition = nullptr;
+    // Sun color from clouds
+    glm::vec4* m_sunColor = nullptr;
 
     // Terrain buffer textures
     GLuint* m_terrainTextures = nullptr;

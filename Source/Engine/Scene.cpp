@@ -56,6 +56,7 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     m_clouds = std::make_shared<Clouds>(m_scene);
     m_cloudColorTexture = std::shared_ptr<Clouds>(m_clouds, reinterpret_cast<Clouds *>(m_clouds.get()))->getCloudTexture();
     m_sunPosition = std::shared_ptr<Clouds>(m_clouds, reinterpret_cast<Clouds *>(m_clouds.get()))->getSunPosition();
+    m_sunColor = std::shared_ptr<Clouds>(m_clouds, reinterpret_cast<Clouds *>(m_clouds.get()))->getSunColor();
 
     // Setup scene objects
     m_ghost = std::make_shared<Ghost>(m_scene);
@@ -367,7 +368,8 @@ void Scene::applyNPREffects(std::shared_ptr<FBO> fbo)
             m_NPREffects.at(i)->shaderProgram->setSampler2D("textureNormal", 8, fbo->getColorAttachment(7));  
 
             m_NPREffects.at(i)->shaderProgram->setVec3("cameraPosition", glm::vec3(getState()->getCamera()->getPosition()));  // camera
-            m_NPREffects.at(i)->shaderProgram->setVec3("lightPosition", *m_sunPosition);  // light
+            m_NPREffects.at(i)->shaderProgram->setVec3("lightPosition", *m_sunPosition);  // sun position
+            m_NPREffects.at(i)->shaderProgram->setVec3("lightColor", glm::vec3(*m_sunColor));  // sun color
 
             // Stippling Shader Textures
             m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp1", 115, m_stipp1);  // index offset for ao, metallic, roughness, and possibly bitangents if needed

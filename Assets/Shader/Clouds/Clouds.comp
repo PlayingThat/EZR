@@ -26,6 +26,10 @@ uniform vec3 sunlightColorSunsetR = vec3(1.0f, 0.32f, 0.16f);   // red
 uniform vec3 sunlightColorSunsetO = vec3(1.0f, 0.54f, 0.09f);   // orange
 uniform vec3 sunlightColorNight = vec3(1.0f, 0.8f, 0.25f);      // yellow ("Moon")
 
+layout(std430, binding = 7) buffer SunColorBuffer {
+    vec4 sunColor;
+};
+
 uniform vec3 backgroundColor;
 
 uniform float cloudScale = 1500.0f;
@@ -374,6 +378,9 @@ vec3 skyColorFromRay(vec3 rayStart, vec3 rayEnd)
     //vec3 mixedSunlightColor = mixSunlightColor1();        // Version 1
     vec3 mixedSunlightColor = mixSunlightColor2();          // Version 2
     color += 0.4f * mixedSunlightColor * pow(sunDot, 2.0f) * extinction;
+
+    // Set sun color for SSBO retrieval 
+    sunColor = vec4(mixedSunlightColor, 1.0f);
 
 /*
     // Version 3 by Alyssa

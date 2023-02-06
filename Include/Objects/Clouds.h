@@ -21,11 +21,15 @@ public:
     GLuint getCloudTexture();
 
     glm::vec3* getSunPosition();
+    glm::vec4* getSunColor();
 
     virtual void update();
 
 
 private:
+    void initSunColorSSBO();
+    void retrieveSunColor();    
+
     void initTextures();
 
     void initShaders();
@@ -51,11 +55,12 @@ private:
 
     size_t m_width, m_height;
 
+    // SSBO for sun color
+    GLuint m_sunColorSSBO;
+
     // scene properties
     glm::vec3 m_sunPosition;
-    glm::vec3 m_sunlightColorDay;
-    glm::vec3 m_sunlightColorSunset;
-    glm::vec3 m_sunlightColorNight;
+    glm::vec4 m_sunColor;
 
     glm::vec3 m_backgroundColor;
 
