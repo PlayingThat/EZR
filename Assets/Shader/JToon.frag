@@ -24,7 +24,7 @@ vec3 testLightPosition = vec3(0, 10, 4);    //(test) light position in world coo
 uniform bool UseSun;
 uniform float SunlightInfluence;
 uniform vec3 lightPosition;
-uniform vec3 lightColor;
+uniform vec4 lightColor;
 
 layout (location = 0) out vec4 result;
 
@@ -90,7 +90,7 @@ void main()
     vec3 color = diffuseColor * (intensityLevel + levelBrightness);     //add Offset, so the result is brighter
 
     if (UseSun) {    // add the sunlight to the color
-        color = color + lightColor * SunlightInfluence;
+        color = color + lightColor.rgb * SunlightInfluence;
     }
 
     // alternative solution (dark shadows from the dark internet, for comparison)

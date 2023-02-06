@@ -28,7 +28,7 @@ uniform sampler2D textureMetalSmoothnessAOHeight;
 
 // lights
 uniform vec3 lightPosition = vec3(0, 10, 4);
-uniform vec3 lightColor = vec3(1.0f, 0.0f, 0.0f);
+uniform vec4 lightColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
 uniform vec3 cameraPosition;
 
@@ -121,7 +121,7 @@ void main()
     vec3 L = normalize(lightPosition - WorldPos);
     vec3 H = normalize(V + L);
 
-    vec3 radiance = lightColor ;
+    vec3 radiance = lightColor.rgb;
 
     // Cook-Torrance BRDF
     float NDF = DistributionGGX(N, H, roughness);   
@@ -151,7 +151,7 @@ void main()
     
     // ambient lighting (note that the next IBL tutorial will replace 
     // this ambient lighting with environment lighting).
-    vec3 ambient = vec3(0.03) * albedo * ao;
+    vec3 ambient = vec3(0.05) * albedo * ao * lightColor.a;
 
     vec3 color = ambient + Lo;
 

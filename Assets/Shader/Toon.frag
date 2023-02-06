@@ -5,7 +5,7 @@ uniform mat4 viewMatrix;            //world coordinates to camera coordinate
 uniform mat4 projectionMatrix;
 
 uniform vec3 lightPosition = vec3(0, 10, 4); //light position in world coordinates
-uniform vec3 lightColor = vec3(1, 1, 1); //light color
+uniform vec4 lightColor = vec4(1, 1, 1, 1); //light color
 
 uniform sampler2D positions;
 uniform sampler2D normals;
@@ -83,14 +83,14 @@ void main(void) {
 	
 	//ambient lighting
 	float Kamb = 0.7;
-	vec3 ambient = Kamb * lightColor;
+	vec3 ambient = Kamb * lightColor.a * lightColor.rgb;
 	
 	//diffused lighting
 	const int levels = 6;						//number of levels for diffuse color
 	const float scaleFactor = 1.0 / levels;
 	float Kdiff = 0.5; 
 	float diff = max(dot(tNorm, lightVec), 0.0); 	//to clamp between 0 and 1
-	vec3 diffuse = Kdiff * floor(diff * levels) * scaleFactor * lightColor;  	//light intensity * cos
+	vec3 diffuse = Kdiff * floor(diff * levels) * scaleFactor * lightColor.rgb;  	//light intensity * cos
 	
 	//specular lighting
 	float Kspec = 0.5f;
@@ -98,7 +98,7 @@ void main(void) {
 	vec3 specular = vec3(0.0, 0.0, 0.0);
 	if( dot(lightVec,tNorm) > 0.0)
 	{
-		specular = Kspec*spec*lightColor;
+		specular = Kspec * spec * lightColor.rgb;
 	}
 	float spec_thresh = 0.4; //set threshold for specular lighting
 	float specMask = (pow(dot(reflecVec, tNorm), Kspec) > spec_thresh) ? 1 : 0;  //limit specular

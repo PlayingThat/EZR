@@ -375,7 +375,7 @@ void Scene::applyNPREffects(std::shared_ptr<FBO> fbo)
 
             m_NPREffects.at(i)->shaderProgram->setVec3("cameraPosition", glm::vec3(getState()->getCamera()->getPosition()));  // camera
             m_NPREffects.at(i)->shaderProgram->setVec3("lightPosition", *m_sunPosition);  // sun position
-            m_NPREffects.at(i)->shaderProgram->setVec3("lightColor", glm::vec3(*m_sunColor));  // sun color
+            m_NPREffects.at(i)->shaderProgram->setVec4("lightColor", glm::vec4(*m_sunColor));  // sun color
 
             // Stippling Shader Textures
             m_NPREffects.at(i)->shaderProgram->setSampler2D("stipp1", 115, m_stipp1);  // index offset for ao, metallic, roughness, and possibly bitangents if needed

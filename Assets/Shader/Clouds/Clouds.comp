@@ -226,6 +226,17 @@ vec3 calcScatter(float rayleigh, float mie, out vec3 extinction, float cosine)
     return inScatter;
 }
 
+float getLightIntensity()
+{
+    float lightIntensity = 0.3f;  // ambient light
+    float sunAngle = acos(dot(normalize(sunPosition), normalize(vec3(0.0f, 1.0f, 0.0f))));
+    if (sunAngle < 0.5f * PI)
+    {
+        lightIntensity = lightIntensity + (1.0f - sunAngle / (0.5f * PI));
+    }
+    return lightIntensity;
+}
+
 // mix between different sunlight colors based on weight based on daytime, version 1
 vec3 mixSunlightColor1(){
 
@@ -277,7 +288,7 @@ vec3 mixSunlightColor2(){
     vec3 sunlightColor;
     float weight;
 
-    if ((timeOfDay >= 0.0f && timeOfDay < 6.0f) || (timeOfDay >= 18.0f && timeOfDay < 24.0f)){  //  late sunset / night / early sunrise 
+    if ((timeOfDay >= 0.0f && timeOfDay < 6.0f) || (timeOfDay >= 18.0f && timeOfDay <= 24.0f)){  //  late sunset / night / early sunrise 
         sunlightColor = sunlightColorSunsetO;                     
     }
 
@@ -380,7 +391,7 @@ vec3 skyColorFromRay(vec3 rayStart, vec3 rayEnd)
     color += 0.4f * mixedSunlightColor * pow(sunDot, 2.0f) * extinction;
 
     // Set sun color for SSBO retrieval 
-    sunColor = vec4(mixedSunlightColor, 1.0f);
+    sunColor = vec4(mixedSunlightColor, getLightIntensity());
 
 /*
     // Version 3 by Alyssa
