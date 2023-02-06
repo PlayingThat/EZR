@@ -153,7 +153,8 @@ bool Model::loadModel(std::string path,
             if (normal < 0)
                 texturePaths.push_back(getTexturePathFromType(texturePath, "normal"));
 
-            GLuint *textureHandles = loadTexturesInParallel(texturePaths);
+            bool loadAlpha = textureFileName.find("Leaves") != std::string::npos;
+            GLuint *textureHandles = loadTexturesInParallel(texturePaths, true, loadAlpha);
             HANDLE_GL_ERRORS(":(");
             
             // Retrieve newly loaded textures from array

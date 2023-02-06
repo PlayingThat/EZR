@@ -27,7 +27,7 @@ struct TextureData
 };
 typedef struct TextureData TextureData;
 
-GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log = true);
+GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log = true, bool alpha = false);
 
 GLuint createTextureFromFile(const char* path);
 

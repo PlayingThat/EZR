@@ -4,7 +4,7 @@
 
 #include "Engine/Texture.h"
 
-GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log) 
+GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log, bool alpha) 
 {
     static long long byteSize = 0;
     // Create array of texture handles
@@ -20,8 +20,9 @@ GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log)
             }
         }
 
+        uint8_t mode = alpha ? STBI_rgb_alpha : STBI_rgb;
         // Load image from file
-        textureData[i].data = stbi_load(paths[i].c_str(), &textureData[i].width, &textureData[i].height, &textureData[i].nrComponents, STBI_rgb);
+        textureData[i].data = stbi_load(paths[i].c_str(), &textureData[i].width, &textureData[i].height, &textureData[i].nrComponents, mode);
     }
 
     // Setup OpenGL texture handles as usual
