@@ -645,7 +645,7 @@ void Scene::loadMapTexture()
                 addObject(pixelToObjectMap[tmp], false, t);
             }
             else {
-                LOG_INFO("Unknown map texture rgb value " + std::to_string(map[i].red) + " " + std::to_string(map[i].green) + " " + std::to_string(map[i].blue));
+                LOG_INFO("Unknown map texture rgb value " + std::to_string(map[i * height + j].red) + " " + std::to_string(map[i * height + j].green) + " " + std::to_string(map[i * height + j].blue));
             }
         }
     }
