@@ -64,6 +64,8 @@ void Clouds::draw()
     m_volumetricCloudsComputeShaderProgram->setVec3("backgroundColor", m_backgroundColor);
     m_volumetricCloudsComputeShaderProgram->setFloat("cloudScale", m_cloudScale);
     m_volumetricCloudsComputeShaderProgram->setFloat("earthRadius", m_earthRadius);
+    m_volumetricCloudsComputeShaderProgram->setFloat("innerRadius", m_earthRadius + 1000.0f);
+    m_volumetricCloudsComputeShaderProgram->setFloat("outerRadius", m_earthRadius + 10000.0f);
 
     m_volumetricCloudsComputeShaderProgram->setFloat("coverageFactor", m_coverageFactor);
     m_volumetricCloudsComputeShaderProgram->setFloat("curliness", m_curliness);
