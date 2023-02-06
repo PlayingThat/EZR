@@ -82,7 +82,7 @@ void Clouds::draw()
             m_timeOfDay = 0.0f;
         }
         else {
-            m_timeOfDay += m_timespeed;
+            m_timeOfDay += m_timespeed * 100.0f * m_scene->getState()->getDeltaTime();
         }
     }
 
