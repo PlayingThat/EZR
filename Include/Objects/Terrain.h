@@ -12,6 +12,8 @@
 #include "../Engine/Defs.h"
 #include "../Engine/FBO.h"
 #include "../Engine/Texture.h"
+#include "../Engine/ConcurrentBinaryTree.h"
+#include "../Engine/LongestEdgeBisection.h"
 
 #include <map>
 #include <string>
@@ -131,6 +133,9 @@ private:
 
     // Send to gl
     bool bufferToGL(StreamBuffer *buffer, const void *data, int *offset);
+
+    std::shared_ptr<ConcurrentBinaryTree> m_concurrentBinaryTree;
+    std::shared_ptr<LongestEdgeBisection> m_longestEdgeBisection;
 
     //////////////////////////////////////////////////////////
     // Textures

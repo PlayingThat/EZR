@@ -3,10 +3,6 @@
 //
 
 #include "Objects/Terrain.h"
-#define CBT_IMPLEMENTATION
-#include "../../Include/Engine/cbt.h"
-#define LEB_IMPLEMENTATION
-#include "../../Include/Engine/leb.h"
 
 Terrain::Terrain(std::shared_ptr<Scene> scene) : Drawable(scene)
 {
@@ -21,6 +17,8 @@ Terrain::Terrain(std::shared_ptr<Scene> scene) : Drawable(scene)
 
     // Subscribe to size change events
     m_scene->getState()->attachWindowSizeChangeCallback(this);
+
+    m_longestEdgeBisection = std::make_unique<LongestEdgeBisection>();
 
 }
 
@@ -617,7 +615,7 @@ void Terrain::loadSubdivisionBuffer()
     // m_concurrentBinaryTree = std::make_unique<ConcurrentBinaryTree>(m_maxDepth, 1);
     // m_longesEdgeBisection = std::make_unique<LongestEdgeBisection>();
 
-    cbt_Tree *cbt = cbt_CreateAtDepth(m_maxDepth, 1);
+    m_concurrentBinaryTree = std::make_shared<ConcurrentBinaryTree>(m_maxDepth, 1);
     
     if (glIsBuffer(m_subdivisionBuffer))
         glDeleteBuffers(1, &m_subdivisionBuffer);
@@ -625,13 +623,13 @@ void Terrain::loadSubdivisionBuffer()
     glCreateBuffers(1, &m_subdivisionBuffer);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_subdivisionBuffer);
     glBufferData(GL_SHADER_STORAGE_BUFFER, 
-                 cbt_HeapByteSize(cbt),
-                 cbt_GetHeap(cbt),
+                 m_concurrentBinaryTree->heapByteSize(),
+                 m_concurrentBinaryTree->getHeap(),
                  GL_STATIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_subdivionBufferIndex, m_subdivisionBuffer);
-    cbt_Release(cbt);
+    
     HANDLE_GL_ERRORS("loading terrain subdivision buffer (leb/cbt)");
 }
 
@@ -698,7 +696,7 @@ void Terrain::loadTriangleMeshletBuffers()
         cbt_Node node = {(uint64_t)(triangleCount + i), (uint64_t)2 * m_patchSubDiv};
         float attribArray[][3] = { {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f, 0.0f} };
 
-        leb_DecodeNodeAttributeArray(node, 2, attribArray);
+        m_longestEdgeBisection->decodeNodeAttributeArray(node, 2, attribArray);
 
         for (int j = 0; j < 3; ++j) {
             uint32_t vertexID = attribArray[0][j] * (edgeTessellationFactor + 1)
