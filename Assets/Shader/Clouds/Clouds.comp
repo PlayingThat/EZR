@@ -317,7 +317,7 @@ vec3 mixSunlightColor2(){
     } 
 
     else {                                              // error
-        sunlightColor = vec3(1.0f, 1.0f, 1.0f);
+        sunlightColor = sunlightColorSunsetO;
     }
 
     return sunlightColor;
