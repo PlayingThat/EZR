@@ -414,8 +414,8 @@ float sampleCloud(vec3 v, float lod) {
 
     vec3 weatherSamplePoint = v / cloudScale;
 
-    vec4 perlinWorley = textureLod(perlinWorleySampler, v / cloudScale * 8.0f, lod);
-    vec4 worley = textureLod(worleySampler, samplePosition * 8.0f * curliness, lod);
+    vec4 perlinWorley = textureLod(perlinWorleySampler, v / cloudScale, lod);
+    vec4 worley = textureLod(worleySampler, samplePosition * 0.001f * curliness, lod);
     // float weatherSample = textureLod(weatherSampler, weatherSamplePoint, lod).y;
     float weatherSample = 0.5f;
 
