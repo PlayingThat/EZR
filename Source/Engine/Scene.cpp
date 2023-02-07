@@ -633,13 +633,18 @@ void Scene::loadMapTexture()
 {
     // Map between the texture rgb pixels and the object type
     std::map<std::tuple<int, int, int>, std::shared_ptr<Drawable>> pixelToObjectMap = {
-        { std::make_tuple(41, 253, 47), m_treeLeaves }
+        { std::make_tuple(41, 253, 47), m_treeLeaves },
+        { std::make_tuple(211, 131, 31), m_snowMan },
+        { std::make_tuple(255, 245, 117), m_stone1 },
+        { std::make_tuple(11, 36, 251), m_stone2 },
+        { std::make_tuple(152, 50, 186), m_stone3 },
+        { std::make_tuple(252, 13, 27), m_stone4 }
     };
 
     // Load map texture
     int width, height;
 
-    Pixel* map = loadTextureFromFileDirect("./Assets/Terrain/mapSmall.png", width, height);
+    Pixel* map = loadTextureFromFileDirect("./Assets/Terrain/mapSmall02.png", width, height);
     float scaleOffset = 1.0f;
     glm::vec3 offset = glm::vec3(0, -800, 0);
 
