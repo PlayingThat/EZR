@@ -41,6 +41,9 @@ public:
     // [2] = Top View texture
     GLuint* getDrawTextures();
 
+    // Get displacement map pixels, width and height
+    const uint16_t* getDisplacementMapPixels(int *width, int *height);
+    
 protected:
     void renderScene();
     void renderViewer();

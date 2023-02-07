@@ -657,12 +657,19 @@ void Scene::loadMapTexture()
         { std::make_tuple(252, 13, 27), m_stone4 }
     };
 
+    int displacementMapWidth, displacementMapHeight;
+    const uint16_t* displacementMap = std::shared_ptr<Terrain>(m_terrain, reinterpret_cast<Terrain *>(m_terrain.get()))
+        ->getDisplacementMapPixels(&displacementMapWidth, &displacementMapHeight);
+
     // Load map texture
     int width, height;
 
     Pixel* map = loadTextureFromFileDirect("./Assets/Terrain/mapSmall02.png", width, height);
     float scaleOffset = 1.0f;
     glm::vec3 offset = glm::vec3(0, -800, 0);
+
+    float pixelMappingOffsetWidth = displacementMapWidth / (float)width;
+    float pixelMappingOffsetHeight = displacementMapHeight / (float)height;
 
     for (size_t i = 0; i < height; i++) {
         for (size_t j = 0; j < width; j++) {
@@ -672,7 +679,11 @@ void Scene::loadMapTexture()
 
             std::tuple tmp = std::make_tuple(map[i * height + j].red, map[i * height + j].green, map[i * height + j].blue);
             if (pixelToObjectMap.find(tmp) != pixelToObjectMap.end()) {
-                Transformation t = Transformation { offset + glm::vec3(j, i, 0) * scaleOffset, glm::vec3(1.0f), glm::vec3(1, 0, 0), 90.0f };
+                // Calculate the height of the terrain at the position of the object
+                int displacementMapIndex = (int)(i * pixelMappingOffsetHeight) * displacementMapHeight + (int)(j * pixelMappingOffsetWidth);
+                float height = displacementMap[displacementMapIndex]; // in [0,2^16-1]
+                float zf = float(height) / float((1 << 16) - 1) * -100.0f;
+                Transformation t = Transformation { offset + glm::vec3(j, i, 0) * scaleOffset + glm::vec3(0, 0, zf), glm::vec3(1.0f), glm::vec3(1, 0, 0), 90.0f };
                 addObject(pixelToObjectMap[tmp], false, t);
             }
             else {

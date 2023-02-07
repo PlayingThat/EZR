@@ -460,7 +460,10 @@ void Terrain::loadTerrainMaps(std::string filePath)
 {
     LOG_INFO("Loading displacement " + filePath + " map for terrain");
 
+    if (m_slopeTerrainMapPixels != nullptr)
+        delete[] m_slopeTerrainMapPixels;
     m_slopeTerrainMapPixels = createTextureFromFile16(filePath.c_str(), m_slopeTerrainMapWidth, m_slopeTerrainMapHeight);
+    float height = m_slopeTerrainMapPixels[25592];
 
     // const uint16_t *texels = (const uint16_t *)djgt->next->texels;
     std::vector<uint16_t> dmap(m_slopeTerrainMapWidth * m_slopeTerrainMapHeight * 2);
@@ -504,7 +507,6 @@ void Terrain::loadTerrainMaps(std::string filePath)
                     GL_TEXTURE_WRAP_T,
                     GL_CLAMP_TO_EDGE);
     glActiveTexture(GL_TEXTURE0);
-    delete[] m_slopeTerrainMapPixels;
 
     HANDLE_GL_ERRORS("loading terrain displacement map");
 }
@@ -1015,4 +1017,11 @@ GLuint* Terrain::getDrawTextures()
     drawTextures[1] = m_framebufferTerrainDepthTexture;
     drawTextures[2] = m_framebufferTerrainNormalTexture;
     return drawTextures;
+}
+
+const uint16_t* Terrain::getDisplacementMapPixels(int *width, int *height)
+{
+    *width = m_slopeTerrainMapWidth;
+    *height = m_slopeTerrainMapHeight;
+    return m_slopeTerrainMapPixels;
 }
