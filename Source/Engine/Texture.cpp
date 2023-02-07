@@ -57,11 +57,11 @@ GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log, bool al
                     glformat = GL_RGB4;
                     break;
                 case 4:
-                    glformat = GL_RGBA4;
+                    glformat = alpha ? GL_RGBA8 : GL_RGBA4;
                     break;
             }
 
-            if (glformat == GL_RGBA8)
+            if (alpha)
                 glTexImage2D(GL_TEXTURE_2D, 0, glformat, textureData[i].width, textureData[i].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData[i].data);
             else
                 glTexImage2D(GL_TEXTURE_2D, 0, glformat, textureData[i].width, textureData[i].height, 0, GL_RGB, GL_UNSIGNED_BYTE, textureData[i].data);

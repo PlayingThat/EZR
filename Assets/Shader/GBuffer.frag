@@ -104,6 +104,10 @@ vec4 writePixel(vec3 color, float alpha, float wsZ) {
 
 void main()
 {    
+    // Discard transparent fragments (leaves)
+    if (texture(diffuseSampler, uvCoords).a < 0.5)
+        discard;
+
     vec2 texCoord = uvCoords;
 
     // Parallel mapping
