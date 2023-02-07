@@ -169,7 +169,7 @@ void main(void)
     vec3 specular = 0.5 * spec * lightColor.rgb;  
     
     float cosTheta = dot(tNorm, lightVec);
-    float brightness = lightColor.z; // make it brighter
+    float brightness = max(lightColor.z + 0.3, 1.0); // make it brighter
 
     // for specular highlight: FragColor = vec4(col * (cosTheta + brightness) + specular,1.0);
 	FragColor = vec4(col * (cosTheta + brightness),1.0);
