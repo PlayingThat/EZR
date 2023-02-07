@@ -540,8 +540,8 @@ vec4 sampleDensity(vec3 origin, vec3 dir, vec3 sky) {
             vec3 sunriseCloud = mix(sunlightColorSunsetO, sunlightColorSunsetR, weight);
             vec3 sunsetColor = sunlightColorSunsetO;
             // cloud ambient
-            vec3 ambientColor = cloudHighlights * 0.5;
-            vec3 nightCloud = vec3(0.02f, 0.22f, 0.48f);
+            vec3 ambientColor = cloudBright * 10.0f;
+            vec3 nightCloud = cloudBright;
             
             // color for sunrise ("left")
             if (timeOfDay < 6.0f) {
