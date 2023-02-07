@@ -67,7 +67,10 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     m_stone3 = std::make_shared<Stone3>(m_scene);
     m_stone4 = std::make_shared<Stone4>(m_scene);
     m_treePlain = std::make_shared<TreePlain>(m_scene);
-    m_treeLeaves = std::make_shared<TreeLeaves>(m_scene);
+    m_treeGreen = std::make_shared<TreeGreen>(m_scene);
+    m_treeOlive = std::make_shared<TreeOlive>(m_scene);
+    m_treeGold = std::make_shared<TreeGold>(m_scene);
+    m_treeBrown = std::make_shared<TreeBrown>(m_scene);
     
     // Set camera position
     getState()->getCamera()->setPosition(glm::vec3(0.0f, 1.7f, 2.7f));
@@ -86,7 +89,10 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     addObject(m_stone3, false, Transformation{glm::vec3(-1, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
     addObject(m_stone4, false, Transformation{glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
     addObject(m_treePlain, false, Transformation{glm::vec3(-8, -4, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_treeLeaves, false, Transformation{glm::vec3(3, -6, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_treeGreen, false, Transformation{glm::vec3(3, -6, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_treeOlive, false, Transformation{glm::vec3(8, -6, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_treeGold, false, Transformation{glm::vec3(13, -6, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_treeBrown, false, Transformation{glm::vec3(18, -6, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
 
     loadMapTexture();
 }
@@ -643,7 +649,7 @@ void Scene::loadMapTexture()
 {
     // Map between the texture rgb pixels and the object type
     std::map<std::tuple<int, int, int>, std::shared_ptr<Drawable>> pixelToObjectMap = {
-        { std::make_tuple(41, 253, 47), m_treeLeaves },
+        { std::make_tuple(41, 253, 47), m_treeGreen },
         { std::make_tuple(211, 131, 31), m_snowMan },
         { std::make_tuple(255, 245, 117), m_stone1 },
         { std::make_tuple(11, 36, 251), m_stone2 },

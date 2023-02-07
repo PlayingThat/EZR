@@ -26,7 +26,10 @@
 #include "Objects/Stone3.h"
 #include "Objects/Stone4.h"
 #include "Objects/TreePlain.h"
-#include "Objects/TreeLeaves.h"
+#include "Objects/TreeGreen.h"
+#include "Objects/TreeOlive.h"
+#include "Objects/TreeGold.h"
+#include "Objects/TreeBrown.h"
 
 // Struct for NPR properties
 typedef struct
@@ -266,6 +269,9 @@ private:
     std::shared_ptr<Drawable> m_stone3;
     std::shared_ptr<Drawable> m_stone4;
     std::shared_ptr<Drawable> m_treePlain;
-    std::shared_ptr<Drawable> m_treeLeaves;
+    std::shared_ptr<Drawable> m_treeGreen;
+    std::shared_ptr<Drawable> m_treeOlive;
+    std::shared_ptr<Drawable> m_treeGold;
+    std::shared_ptr<Drawable> m_treeBrown;
 
 };

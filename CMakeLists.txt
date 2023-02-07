@@ -83,8 +83,14 @@ set(SRC_LIST Include/stb_image.h
         Source/Objects/Stone4.cpp
         Include/Objects/TreePlain.h
         Source/Objects/TreePlain.cpp
-        Include/Objects/TreeLeaves.h
-        Source/Objects/TreeLeaves.cpp
+        Include/Objects/TreeGreen.h
+        Source/Objects/TreeGreen.cpp
+        Include/Objects/TreeOlive.h
+        Source/Objects/TreeOlive.cpp
+        Include/Objects/TreeGold.h
+        Source/Objects/TreeGold.cpp
+        Include/Objects/TreeBrown.h
+        Source/Objects/TreeBrown.cpp
         Include/Objects/Clouds.h
         Source/Objects/Clouds.cpp
         Include/Engine/ProfilerTask.h

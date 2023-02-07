@@ -3,18 +3,18 @@
 // 
 
 
-#include "Objects/TreeLeaves.h"
+#include "Objects/TreeGreen.h"
 
-TreeLeaves::TreeLeaves(std::shared_ptr<Scene> scene) : Drawable(scene)
+TreeGreen::TreeGreen(std::shared_ptr<Scene> scene) : Drawable(scene)
 {
     m_model = std::make_unique<Model>(m_scene);
     create();
 }
 
-void TreeLeaves::create()
+void TreeGreen::create()
 {
     // Load model
-    m_model->loadModel("./Assets/Models/Tree1_leaves.fbx", m_vertices, m_normals, m_uvs, m_indices, m_tangents, m_bitangents);
+    m_model->loadModel("./Assets/Models/Tree-green.fbx", m_vertices, m_normals, m_uvs, m_indices, m_tangents, m_bitangents);
     createBuffers();
 
     Drawable::setBaseRotation(glm::vec3(1.0f, 0.0f, 0.0f), 90.0f);
@@ -22,9 +22,10 @@ void TreeLeaves::create()
     // Silence is golden
 }
 
-void TreeLeaves::draw()
+void TreeGreen::draw()
 {
     Drawable::rotate(glm::vec3(0.0f, 0.0f, 1.0f), 90.0f);
+    Drawable::scale(glm::vec3(0.9f, 0.9f, 0.9f));
 
     m_model->draw();
 }

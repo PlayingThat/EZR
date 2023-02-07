@@ -14,7 +14,7 @@ TreePlain::TreePlain(std::shared_ptr<Scene> scene) : Drawable(scene)
 void TreePlain::create()
 {
     // Load model
-    m_model->loadModel("./Assets/Models/Tree1_nacked.fbx", m_vertices, m_normals, m_uvs, m_indices, m_tangents, m_bitangents);
+    m_model->loadModel("./Assets/Models/Tree_nacked.fbx", m_vertices, m_normals, m_uvs, m_indices, m_tangents, m_bitangents);
     createBuffers();
 
     Drawable::setBaseRotation(glm::vec3(1.0f, 0.0f, 0.0f), 90.0f);

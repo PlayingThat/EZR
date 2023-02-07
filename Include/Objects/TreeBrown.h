@@ -9,10 +9,10 @@
 #include "../Engine/Model.h"
 #include "../Engine/Texture.h"
 
-class TreeLeaves : public Drawable
+class TreeBrown : public Drawable
 {
 public:
-    TreeLeaves(std::shared_ptr<Scene> scene);
+    TreeBrown(std::shared_ptr<Scene> scene);
 
     void draw();
 
