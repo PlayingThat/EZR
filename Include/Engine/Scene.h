@@ -246,6 +246,12 @@ private:
     std::shared_ptr<Shader> m_waterColVertexShader;
     std::shared_ptr<Shader> m_waterColFragmentShader;
     std::shared_ptr<ShaderProgram> m_waterColShaderProgram;
+
+    // Oil painting shader
+    std::shared_ptr<Shader> m_oilVertexShader;
+    std::shared_ptr<Shader> m_oilFragmentShader;
+    std::shared_ptr<ShaderProgram> m_oilShaderProgram;
+    bool m_oilPropertyTextured = true;         // whether to use the textures or not
     
     //////////////////////////////////////////
     // Objects
