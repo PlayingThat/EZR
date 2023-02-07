@@ -240,6 +240,7 @@ private:
     std::shared_ptr<Shader> m_outlVertexShader;
     std::shared_ptr<Shader> m_outlFragmentShader;
     std::shared_ptr<ShaderProgram> m_outlShaderProgram;
+    bool m_OutlinePropertyColored = true;
 
     // Watercolor shader
     std::shared_ptr<Shader> m_waterColVertexShader;

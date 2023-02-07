@@ -13,6 +13,7 @@ uniform sampler2D colorDiffuse;
 uniform vec2 screenSize;
 uniform sampler2D heightMap;
 
+uniform bool colored;
 //uniform bool Textured;
 
 out vec4 FragColor;
@@ -53,11 +54,18 @@ void main(void)
 	// -----------------------------------------------------------------------
 
 	vec4 n[9];
-	make_kernel( n, colorDiffuse, gl_FragCoord.xy / screenSize);//gl_TexCoord[0].st );
+	make_kernel( n, normals, gl_FragCoord.xy / screenSize);//gl_TexCoord[0].st );
 
 	vec4 sobel_edge_h = n[2] + (2.0*n[5]) + n[8] - (n[0] + (2.0*n[3]) + n[6]);
   	vec4 sobel_edge_v = n[0] + (2.0*n[1]) + n[2] - (n[6] + (2.0*n[7]) + n[8]);
 	vec4 sobel = sqrt((sobel_edge_h * sobel_edge_h) + (sobel_edge_v * sobel_edge_v));
+	
+	float strength = length(sobel.xyz);//sqrt(sobel_edge_h.x*sobel_edge_h.x + sobel_edge_h.y*sobel_edge_h.y + sobel_edge_h.z*sobel_edge_h.z + sobel_edge_v.x*sobel_edge_v.x + sobel_edge_v.y*sobel_edge_v.y + sobel_edge_v.z*sobel_edge_v.z);
+	vec3 color = vec3(1.0);
+	if (colored)
+	{
+		color = texture(colorDiffuse, gl_FragCoord.xy / screenSize).xyz;
+	}
 
-    FragColor = vec4(sobel.xyz, 1.0);
+	FragColor = vec4(color * strength, 1.0);
 } 
