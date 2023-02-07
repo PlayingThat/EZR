@@ -4,7 +4,7 @@ layout(location = 0) out vec4 FragColor;
 uniform mat4 viewMatrix;            //world coordinates to camera coordinate
 uniform mat4 projectionMatrix;
 
-uniform vec3 lightPosition = vec3(0, 10, 4); //light position in world coordinates
+vec3 lightPosition = vec3(0, 10, 4); //light position in world coordinates
 uniform vec4 lightColor = vec4(1, 1, 1, 1); //light color
 
 uniform sampler2D positions;
@@ -61,7 +61,8 @@ void main(void) {
 	vec4 vPosition = texture(positions, gl_FragCoord.xy / screenSize);
 	vec3 position = vPosition.xyz;
 
-	vec3 tNorm = texture(normals, gl_FragCoord.xy / screenSize).xyz;
+	vec3 normal = texture(normals, gl_FragCoord.xy / screenSize).xyz;
+	vec3 tNorm = normalize(normal).xyz;
     //vec3 lightPosition = vec3(gl_LightSource[0].position);
 	
 	vec3 viewVec = normalize(cameraPosition.xyz - position);
@@ -102,17 +103,11 @@ void main(void) {
 	}
 	float spec_thresh = 0.4; //set threshold for specular lighting
 	float specMask = (pow(dot(reflecVec, tNorm), Kspec) > spec_thresh) ? 1 : 0;  //limit specular
-
-	//Get outline
-	float edge_thresh = 0.0; //set threshold for edge detection
-	float visiblity = dot(viewVec, tNorm);
-
-	float edge_detection = (visiblity > edge_thresh) ? 0 : 1; 	//Black color if dot product is smaller than 0.2 else keep the same colors
-	
 	
 	//final color for object	
-	vec3 final_color= (ambient + diffuse + specular * specMask)* color;
+	vec3 final_color = (ambient + diffuse + specular * specMask)* color;
 	
+	//Get outline
 	// ---------- SOBEL ------------
 	vec4 n[9];
 	make_kernel( n, depth, gl_FragCoord.xy / screenSize);//gl_TexCoord[0].st );
@@ -124,10 +119,11 @@ void main(void) {
 	vec3 outputColor3;
 
 	vec3 sobelout = 1.0 - sobel.xyz;
+	// no outline
 	if ((sobelout.x + sobelout.y + sobelout.z) >= 2.99f) {
 		outputColor3 = final_color;
 	}
-	else {
+	else { // outline
 		outputColor3 = vec3(0.0);
 	}
 
