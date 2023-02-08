@@ -37,7 +37,7 @@ const int numberElements = 4;   // classic Kuwahara uses 4 rectangular subregion
 
 layout (location = 0) out vec4 result;
 
-vec4 classicKuwahara(vec3 ecPos, vec3 diffuseColor)
+vec4 classicKuwahara(vec2 ecPos, vec3 diffuseColor)
 {   
     // create a variable for storing the result
     vec4 result = vec4(1.0, 1.0, 1.0, 1.0);
@@ -48,8 +48,8 @@ vec4 classicKuwahara(vec3 ecPos, vec3 diffuseColor)
     struct Window {float xStart, xEnd, yStart, yEnd;};
     Window window[4] = Window[4](
         Window(ecPos.x - fradius, ecPos.x, ecPos.y, ecPos.y + fradius),    // upper left
-        Window(ecPos.x, ecPos.x + radius, ecPos.y, ecPos.y + radius),    // upper right
-        Window(ecPos.x, ecPos.x + radius, ecPos.y - fradius, ecPos.y),    // lower right
+        Window(ecPos.x, ecPos.x + fradius, ecPos.y, ecPos.y + fradius),    // upper right
+        Window(ecPos.x, ecPos.x + fradius, ecPos.y - fradius, ecPos.y),    // lower right
         Window(ecPos.x - fradius, ecPos.x, ecPos.y - fradius, ecPos.y));   // lower left
 
     // set up the storing variables, initialize them to contain zeros only
@@ -73,7 +73,7 @@ vec4 classicKuwahara(vec3 ecPos, vec3 diffuseColor)
 
         for (float j = window[k].yStart; j <= window[k].yEnd; j+= 1.0) {
             for (float i = window[k].xStart; i <= window[k].xEnd; i+= 1.0) {
-                vec3 color = diffuseColor;
+                vec3 color = texture(textureDiffuse, vec2(i, j) / screenSize).rgb; // get the color of the current pixel
                 mean[k] += color;              // sum up all pixel colors in the subregion
                 variance[k] += color * color;  // sum up all pixels, to the power of 2
             }
@@ -131,7 +131,7 @@ void main()
         diffuseColor = texColor.rgb;
     }
     
-    vec4 color = classicKuwahara(ecPos, diffuseColor);
+    vec4 color = classicKuwahara(gl_FragCoord.xy, diffuseColor);
 
     result = color;
 }
