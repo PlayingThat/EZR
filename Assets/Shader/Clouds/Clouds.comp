@@ -18,6 +18,9 @@ uniform vec2 resolution = vec2(1200, 800);
 uniform vec3 cameraPosition;
 uniform uint interlaceIndex;
 
+uniform float timespeed;
+uniform bool timeLapsActivated;
+
 uniform vec3 sunPosition = vec3(1000.0, 1000.0, 1000.0);
 
 uniform vec3 sunlightColorDay = vec3(0.65f, 0.88f, 1.0f);       // light blue

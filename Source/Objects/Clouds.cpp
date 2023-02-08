@@ -73,8 +73,12 @@ void Clouds::draw()
 
     m_volumetricCloudsComputeShaderProgram->setFloat("timeOfDay", m_timeOfDay);
     m_volumetricCloudsComputeShaderProgram->setBool("timeLapsActivated", m_timeLapsActivated);
+    m_volumetricCloudsComputeShaderProgram->setFloat("timespeed", m_timespeed);
     m_volumetricCloudsComputeShaderProgram->setFloat("time", glfwGetTime() - m_startTime);  // Delta time
-    m_volumetricCloudsComputeShaderProgram->setFloat("windSpeed", m_windSpeed);
+    if (m_timeLapsActivated)
+        m_volumetricCloudsComputeShaderProgram->setFloat("windSpeed", m_windSpeed * 100.0f);
+    else
+        m_volumetricCloudsComputeShaderProgram->setFloat("windSpeed", m_windSpeed );
 
     // if the user has activated timeLaps, the day-night cycle runs automatically
     if(m_timeLapsActivated == true){
