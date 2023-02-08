@@ -202,7 +202,7 @@ void Scene::setupNPREffects()
     addNPREffect(m_outlShaderProgram, false);
     addNPRProperty("Outline", "colored", &m_OutlinePropertyColored, true);
     addNPRProperty("Outline", "displayNormals", &m_OutlinePropertyNormals, true);
-    
+
     // Setup Watercolor (by Alyssa)
     m_waterColVertexShader = std::make_shared<Shader>("./Assets/Shader/Watercolor.vert");
     m_waterColFragmentShader = std::make_shared<Shader>("./Assets/Shader/Watercolor.frag");
@@ -527,6 +527,8 @@ void Scene::drawNPRPanel()
     ImGui::Checkbox("Use Parallax Mapping", &m_useParallaxMapping);
     ImGui::SliderFloat("Parallax Height Scale", &m_parallaxMappingHeightScale, 0.0f, 0.02f);
     ImGui::Checkbox("Transparency", &m_transparency);
+    if(ImGui::Checkbox("Toggle terrain pan mode", &m_terrainPanMode))   
+        getState()->getCamera()->setTerrainPanMode(m_terrainPanMode);
     ImGui::Separator();
     
     bool noEffectEnabled = true;

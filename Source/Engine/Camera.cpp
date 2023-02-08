@@ -234,3 +234,8 @@ float Camera::getFov()
 {
     return m_fov;
 }
+
+void setTerrainPanMode(bool mode)
+{
+    m_terrainPanMode = mode;
+}

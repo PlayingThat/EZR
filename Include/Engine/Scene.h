@@ -279,5 +279,6 @@ private:
     std::shared_ptr<Drawable> m_treeBrown;
 
     int m_season = 1;
+    bool m_terrainPanMode = false;
 
 };

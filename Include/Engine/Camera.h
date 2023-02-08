@@ -43,6 +43,8 @@ public:
 
     void getWidthHeight(int *width, int *height);
 
+    void setTerrainPanMode(bool mode);
+
     int getWidth();
 
     int getHeight();
@@ -70,4 +72,6 @@ private:
     float m_farClippingPlane, m_nearClippingPlane;
     bool m_initialMouse;
     bool m_mouseLastPressed;
+
+    bool m_terrainPanMode = false;
 };
