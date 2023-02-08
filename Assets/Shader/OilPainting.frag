@@ -3,9 +3,6 @@
 // Based on "Anisotropic Kuwahara Filtering on the GPU"
 // by Jan Eric Kyprianidis, Henry Kang, and Jürgen Döllner
 
-// Kuwahara divides the filter kernel into 4 rectangular subregions overlapping by 1 pixel
-// The filter response is defined by the mean of a subregion with minimum variance
-
 //
 // Created by jesbu on 07.02.2023.
 //
@@ -35,6 +32,8 @@ const int NumberElements = 4;
 
 layout (location = 0) out vec4 result;
 
+// Classic Kuwahara divides the filter kernel into 4 rectangular subregions overlapping by 1 pixel
+// The filter response is defined by the mean of a subregion with minimum variance
 vec4 classicKuwahara()
 {   
     // create a variable for storing the result
@@ -89,11 +88,13 @@ vec4 classicKuwahara()
     return result;
 }
 
-/*
-void generalizedKuwahara(ecPos){
-
+// Generalized Kuwahara divides the circular filter kernel into equal subregions overlapping by 1 pixel
+// The filter response is defined as a weighted sum of the local averages
+// More weight is given to those averages with low standard deviation
+void generalizedKuwahara(){
+  
 }
-*/
+
 
 void main()
 {

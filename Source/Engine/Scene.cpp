@@ -221,7 +221,7 @@ void Scene::setupNPREffects()
     m_oilShaderProgram->link();
     addNPREffect(m_oilShaderProgram, false);
     addNPRProperty("OilPainting", "Radius##OilPainting", &m_oilPropertyFilterRadius, true, 0, 10);
-    addNPRProperty("OilPainting", "NumberSubregions##OilPainting", &m_oilPropertyNumberSubregions, true, 4, 8);
+    addNPRProperty("OilPainting", "NumberSubregions##OilPainting", &m_oilPropertyNumberSubregions, false, 4, 8);
     addNPRProperty("OilPainting", "UseSun##OilPainting", &m_oilPropertyUseSun, true);
 
     // Setup Pattern Shader (by Jessica)
