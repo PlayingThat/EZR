@@ -31,7 +31,7 @@ GLuint *loadTexturesInParallel(std::vector<std::string> paths, bool log = true, 
 
 GLuint createTextureFromFile(const char* path);
 
-Pixel* loadTextureFromFileDirect(const char* path, int &width, int &height);
+Pixel* loadTextureFromFileDirect(const char* path, int &width, int &height, bool flip = false);
 
 const uint16_t *createTextureFromFile16(const char* path, int &width, int &height);
 

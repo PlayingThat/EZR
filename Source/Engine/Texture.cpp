@@ -124,12 +124,13 @@ GLuint createTextureFromFile(const char* path)
     return texHandle;
 }
 
-Pixel* loadTextureFromFileDirect(const char* path, int &width, int &height)
+Pixel* loadTextureFromFileDirect(const char* path, int &width, int &height, bool flip)
 {
     // Load image from file
     int nrComponents;
+    stbi_set_flip_vertically_on_load(flip);
     Pixel* data = (Pixel*) stbi_load(path, &width, &height, &nrComponents, STBI_rgb);
-
+    stbi_set_flip_vertically_on_load(0);
     if (data)
     {
         // Free image memory
