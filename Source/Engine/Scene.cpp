@@ -668,12 +668,9 @@ void Scene::updateMapTexture()
 
 void Scene::loadMapTexture()
 {
-    //change the color of the leaves depending on the season
-    std::shared_ptr<Drawable> m_treeColor = m_scene->getTreeColor();
-
     // Map between the texture rgb pixels and the object type
     std::map<std::tuple<int, int, int>, std::shared_ptr<Drawable>> pixelToObjectMap = {
-        { std::make_tuple(41, 253, 47), m_treeColor },
+        { std::make_tuple(41, 253, 47), m_treeGreen },
         { std::make_tuple(211, 131, 31), m_snowMan },
         { std::make_tuple(255, 245, 117), m_stone1 },
         { std::make_tuple(11, 36, 251), m_stone2 },
@@ -688,12 +685,14 @@ void Scene::loadMapTexture()
     // Load map texture
     int width, height;
 
-    Pixel* map = loadTextureFromFileDirect("./Assets/Terrain/mapSmall02.png", width, height);
+    Pixel* map = loadTextureFromFileDirect("./Assets/Terrain/mapSmall02.png", width, height, true);
     float scaleOffset = 1.0f;
-    glm::vec3 offset = glm::vec3(0, -800, 0);
+    glm::vec3 offset = glm::vec3(-50, -985.0f, 0);
 
     float pixelMappingOffsetWidth = displacementMapWidth / (float)width;
     float pixelMappingOffsetHeight = displacementMapHeight / (float)height;
+
+    float terrainToMapScaleOffset = 1000.0f / 512.0f;
 
     for (size_t i = 0; i < height; i++) {
         for (size_t j = 0; j < width; j++) {
@@ -706,8 +705,9 @@ void Scene::loadMapTexture()
                 // Calculate the height of the terrain at the position of the object
                 int displacementMapIndex = (int)(i * pixelMappingOffsetHeight) * displacementMapHeight + (int)(j * pixelMappingOffsetWidth);
                 float height = displacementMap[displacementMapIndex]; // in [0,2^16-1]
-                float zf = float(height) / float((1 << 16) - 1) * -100.0f;
-                Transformation t = Transformation { offset + glm::vec3(j, i, 0) * scaleOffset + glm::vec3(0, 0, zf), glm::vec3(1.0f), glm::vec3(1, 0, 0), 90.0f };
+                float zf = float(height) / float((1 << 16) - 1) * -33.0f;
+                Transformation t = Transformation { offset + terrainToMapScaleOffset * glm::vec3(j, i, 0) * scaleOffset
+                                                     + glm::vec3(0, 0, zf), glm::vec3(1.0f), glm::vec3(0.01f, 0, 0), 90.0f };
                 addObject(pixelToObjectMap[tmp], false, t);
             }
             else {
