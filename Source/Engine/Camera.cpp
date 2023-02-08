@@ -77,79 +77,103 @@ void Camera::update(GLFWwindow *window)
     m_deltaTime = glfwGetTime() - m_LastDeltaTime;
     m_LastDeltaTime = glfwGetTime();
 
-    double x, y;
+    // for gradient calculation
+    glm::vec3 previousCameraPos = m_cameraPos;
 
-    glfwGetCursorPos(window, &x, &y);
-    if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
-    {
-        m_mouseLastPressed = true;
+    if(m_terrainPanMode) {
 
-        if(m_initialMouse)
+        m_terrainOffsetAngle += 10.0f * m_deltaTime;
+        float radius = 200.0f;
+
+        m_cameraPos = glm::vec3(
+            radius * sin(glm::radians(-m_terrainOffsetAngle)) + 500,
+            30.0f,
+            radius * cos(glm::radians(-m_terrainOffsetAngle)) - 500
+        );
+
+        glm::vec3 gradientViewDir = m_cameraPos + m_cameraPos - previousCameraPos;
+
+        m_cameraFront = glm::normalize(gradientViewDir);
+        glm::vec3 cameraRight = glm::normalize(glm::cross(glm::vec3(0,1,0), m_cameraFront));
+        m_up = glm::cross(m_cameraFront, cameraRight);
+
+        m_viewmatrix = glm::lookAt(m_cameraPos, gradientViewDir, m_up);
+    }
+    else {
+         double x, y;
+
+        glfwGetCursorPos(window, &x, &y);
+        if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
         {
-            m_oldX = x;
-            m_oldY = y;
-            m_initialMouse = false;
+            m_mouseLastPressed = true;
+
+            if(m_initialMouse)
+            {
+                m_oldX = x;
+                m_oldY = y;
+                m_initialMouse = false;
+            }
+
+            float changeX = ((float) x - m_oldX) * m_sensitivity;
+            float changeY = ((float) y - m_oldY) * m_sensitivity;
+
+            m_oldX = (float) x;
+            m_oldY = (float) y;
+
+            m_yaw += changeX;
+            m_pitch -= changeY;
+
+            // reset pitch so camera can be rotated indefinitely
+            if(m_pitch >= 360.0f || m_pitch <= -360.0f)
+                m_pitch = 0.0f;
+
+            glm::vec3 direction;
+            direction.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+            direction.y = sin(glm::radians(m_pitch));
+            direction.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+
+            m_cameraFront = glm::normalize(direction);
+        } else if(m_mouseLastPressed)
+        {
+            m_mouseLastPressed = false;
+            m_initialMouse = true;
         }
 
-        float changeX = ((float) x - m_oldX) * m_sensitivity;
-        float changeY = ((float) y - m_oldY) * m_sensitivity;
+        // calculate real up vector based on cross product of the cameras front facing direction and the y axis
+        glm::vec3 up;
 
-        m_oldX = (float) x;
-        m_oldY = (float) y;
-
-        m_yaw += changeX;
-        m_pitch -= changeY;
-
-        // reset pitch so camera can be rotated indefinitely
-        if(m_pitch >= 360.0f || m_pitch <= -360.0f)
-            m_pitch = 0.0f;
-
-        glm::vec3 direction;
-        direction.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-        direction.y = sin(glm::radians(m_pitch));
-        direction.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-
-        m_cameraFront = glm::normalize(direction);
-    } else if(m_mouseLastPressed)
-    {
-        m_mouseLastPressed = false;
-        m_initialMouse = true;
-    }
-
-    // calculate real up vector based on cross product of the cameras front facing direction and the y axis
-    glm::vec3 up;
-
-    if(m_pitch >= 90.0f && m_pitch <= 270.0f || m_pitch <= -90.0f && m_pitch >= -270.0f)
-        up = glm::vec3(0.0f, -1.0f, 0.0f);
-    else
-        up = glm::vec3(0.0f, 1.0f, 0.0f);
+        if(m_pitch >= 90.0f && m_pitch <= 270.0f || m_pitch <= -90.0f && m_pitch >= -270.0f)
+            up = glm::vec3(0.0f, -1.0f, 0.0f);
+        else
+            up = glm::vec3(0.0f, 1.0f, 0.0f);
 
 
-    glm::vec3 cameraRight = glm::normalize(glm::cross(up, m_cameraFront));
-    m_up = glm::cross(m_cameraFront, cameraRight);
+        glm::vec3 cameraRight = glm::normalize(glm::cross(up, m_cameraFront));
+        m_up = glm::cross(m_cameraFront, cameraRight);
 
-    // speed up camera movement by pressing shift
-    float speedUp = 1.0f;
-    if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        speedUp = 100.0f;
+        // speed up camera movement by pressing shift
+        float speedUp = 1.0f;
+        if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+            speedUp = 100.0f;
 
-    speedUp *= m_speed;
-    
-    // handle camera movement
-    if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        m_cameraPos += m_speed * speedUp * m_cameraFront * m_deltaTime;
-    if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        m_cameraPos -= m_speed * speedUp * m_cameraFront * m_deltaTime;
-    if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        m_cameraPos -= glm::normalize(glm::cross(m_cameraFront, m_up)) * m_speed * 2.0f * speedUp * m_deltaTime;
-    if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        m_cameraPos += glm::normalize(glm::cross(m_cameraFront, m_up)) * m_speed * 2.0f * speedUp * m_deltaTime;
-    if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        m_cameraPos += m_speed * speedUp * m_deltaTime * m_up;
-    if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        m_cameraPos -= m_speed * speedUp * m_deltaTime * m_up;
+        speedUp *= m_speed;
+        
+        // handle camera movement
+        if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            m_cameraPos += m_speed * speedUp * m_cameraFront * m_deltaTime;
+        if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            m_cameraPos -= m_speed * speedUp * m_cameraFront * m_deltaTime;
+        if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            m_cameraPos -= glm::normalize(glm::cross(m_cameraFront, m_up)) * m_speed * 2.0f * speedUp * m_deltaTime;
+        if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            m_cameraPos += glm::normalize(glm::cross(m_cameraFront, m_up)) * m_speed * 2.0f * speedUp * m_deltaTime;
+        if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+            m_cameraPos += m_speed * speedUp * m_deltaTime * m_up;
+        if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+            m_cameraPos -= m_speed * speedUp * m_deltaTime * m_up;
 
     m_viewmatrix = glm::lookAt(m_cameraPos, m_cameraPos + m_cameraFront, m_up);
+    }
 }
 
 

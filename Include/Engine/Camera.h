@@ -74,4 +74,5 @@ private:
     bool m_mouseLastPressed;
 
     bool m_terrainPanMode = false;
+    float m_terrainOffsetAngle = 0.0f;
 };
