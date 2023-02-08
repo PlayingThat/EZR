@@ -21,47 +21,43 @@ uniform sampler2D colorDiffuse;
 
 uniform vec2 screenSize;
 
-uniform bool Textured;      // If true, the shader will be applied on the textured object
 
-/*
 vec3 testLightPosition = vec3(0, 10, 4);    //(test) light position in world coordinates
 uniform bool UseSun;
 uniform float SunlightInfluence;
 uniform vec3 lightPosition;
 uniform vec4 lightColor;
-*/
 
-int radius = 7;             // filter radius
-const int numberElements = 4;   // classic Kuwahara uses 4 rectangular subregions 
-                            // but it would be possible to generalize the algorithm by using a circle
+uniform int Radius;             // filter radius
+uniform int NumberSubregions;   // classic Kuwahara uses 4 rectangular subregions 
+                                // but it would be possible to generalize the algorithm by using a circle
+const int NumberElements = 4;
 
 layout (location = 0) out vec4 result;
 
-vec4 classicKuwahara(vec2 ecPos, vec3 diffuseColor)
+vec4 classicKuwahara()
 {   
     // create a variable for storing the result
     vec4 result = vec4(1.0, 1.0, 1.0, 1.0);
 
-    float fradius = float(radius);
-
     // set up the rectangular subregions
     struct Window {float xStart, xEnd, yStart, yEnd;};
     Window window[4] = Window[4](
-        Window(ecPos.x - fradius, ecPos.x, ecPos.y, ecPos.y + fradius),    // upper left
-        Window(ecPos.x, ecPos.x + fradius, ecPos.y, ecPos.y + fradius),    // upper right
-        Window(ecPos.x, ecPos.x + fradius, ecPos.y - fradius, ecPos.y),    // lower right
-        Window(ecPos.x - fradius, ecPos.x, ecPos.y - fradius, ecPos.y));   // lower left
+        Window(gl_FragCoord.x - Radius, gl_FragCoord.x, gl_FragCoord.y, gl_FragCoord.y + Radius),    // upper left
+        Window(gl_FragCoord.x, gl_FragCoord.x + Radius, gl_FragCoord.y, gl_FragCoord.y + Radius),    // upper right
+        Window(gl_FragCoord.x, gl_FragCoord.x + Radius, gl_FragCoord.y - Radius, gl_FragCoord.y),    // lower right
+        Window(gl_FragCoord.x - Radius, gl_FragCoord.x, gl_FragCoord.y - Radius, gl_FragCoord.y));   // lower left
 
     // set up the storing variables, initialize them to contain zeros only
-    vec3 mean[numberElements];
-    vec3 variance[numberElements];
-    for (int k = 0; k < numberElements; k++){
+    vec3 mean[NumberElements];
+    vec3 variance[NumberElements];
+    for (int k = 0; k < NumberElements; k++){
         mean[k] = vec3(0.0);
         variance[k] = vec3(0.0);
     }
 
     //calculate the number of pixels in each subregion -> (r + 1)^2
-    int numPix = (radius + 1)*(radius +1);      
+    int numPix = (Radius + 1)*(Radius +1);      
 
     // set sigma value for later comparison
     float min_sigma2 = 1e+2; 
@@ -69,7 +65,7 @@ vec4 classicKuwahara(vec2 ecPos, vec3 diffuseColor)
     // calculate the mean and variance of each subregion
     // mean = sum of all values / |number of pixels| 
     // variance = (sum of all values - mean)^2 / |number of pixels|
-    for (int k = 0; k < numberElements; k++){
+    for (int k = 0; k < NumberElements; k++){
 
         for (float j = window[k].yStart; j <= window[k].yEnd; j+= 1.0) {
             for (float i = window[k].xStart; i <= window[k].xEnd; i+= 1.0) {
@@ -109,29 +105,30 @@ void main()
     // Deferred shading 
     vec4 vPosition = texture(positions, gl_FragCoord.xy / screenSize);
     vec3 ecPos = vPosition.xyz;
+    vec3 viewVec = normalize(-ecPos);
 
-    //vec3 tNorm = texture(normals, gl_FragCoord.xy / screenSize).xyz;
-    //vec3 normalVec = normalize(tNorm);
+    vec3 tNorm = texture(normals, gl_FragCoord.xy / screenSize).xyz;
+    vec3 normalVec = normalize(tNorm);
     
-    /*vec3 lightVec;
+    vec3 lightVec;
     if (UseSun){        // use sun light for more realism
         lightVec = normalize(lightPosition - ecPos);
     }
     else {              // use test light for presentation purposes    
         lightVec = normalize(testLightPosition - ecPos);
         
-    }*/
-
-    vec4 texColor;
-    vec3 diffuseColor = texture(colorDiffuse, gl_FragCoord.xy / screenSize).rgb;
-
-    if (Textured) {
-        //get the color from the texture
-        texColor = texture(textureDiffuse, gl_FragCoord.xy / screenSize);
-        diffuseColor = texColor.rgb;
     }
-    
-    vec4 color = classicKuwahara(gl_FragCoord.xy, diffuseColor);
+
+    vec3 reflecVec = normalize(reflect(-lightVec, normalVec));
+
+    float NdotL = (dot(lightVec, normalVec) + 1.0) * 0.5;
+
+    //set the specular highlight using the reflected lightvector & viewvector
+    vec3 nRefl = normalize(reflecVec);
+    vec3 nView = normalize(viewVec);
+    float spec = pow(max(dot(nRefl, nView), 0.0), 32.0);
+
+    vec4 color = classicKuwahara() + 0.3 * spec;
 
     result = color;
 }

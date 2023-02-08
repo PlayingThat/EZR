@@ -212,7 +212,7 @@ void Scene::setupNPREffects()
     m_waterColShaderProgram->link();
     addNPREffect(m_waterColShaderProgram, false);
     
-    // Setup Oil Painting (by Jessica)
+    // Setup Oil Painting Shader (by Jessica)
     m_oilVertexShader = std::make_shared<Shader>("./Assets/Shader/OilPainting.vert");
     m_oilFragmentShader = std::make_shared<Shader>("./Assets/Shader/OilPainting.frag");
     m_oilShaderProgram = std::make_shared<ShaderProgram>("OilPainting");
@@ -220,7 +220,9 @@ void Scene::setupNPREffects()
     m_oilShaderProgram->addShader(m_oilFragmentShader);
     m_oilShaderProgram->link();
     addNPREffect(m_oilShaderProgram, false);
-    addNPRProperty("OilPainting", "Textured##OilPainting", &m_glowPropertyTextured, true);
+    addNPRProperty("OilPainting", "Radius##OilPainting", &m_oilPropertyFilterRadius, true, 0, 10);
+    addNPRProperty("OilPainting", "NumberSubregions##OilPainting", &m_oilPropertyNumberSubregions, true, 4, 8);
+    addNPRProperty("OilPainting", "UseSun##OilPainting", &m_oilPropertyUseSun, true);
 
     // Setup Pattern Shader (by Jessica)
     m_pattVertexShader = std::make_shared<Shader>("./Assets/Shader/Patterns.vert");

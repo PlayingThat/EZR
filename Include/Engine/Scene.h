@@ -258,8 +258,10 @@ private:
     std::shared_ptr<Shader> m_oilVertexShader;
     std::shared_ptr<Shader> m_oilFragmentShader;
     std::shared_ptr<ShaderProgram> m_oilShaderProgram;
-    bool m_oilPropertyTextured = true;         // whether to use the textures or not
-    
+    int m_oilPropertyFilterRadius = 6;          // size of the filter kernel
+    int m_oilPropertyNumberSubregions = 4;      // number of subregions
+    bool m_oilPropertyUseSun = false;           // whether to use the sun as light source or not
+        
     //////////////////////////////////////////
     // Objects
     std::shared_ptr<Drawable> m_triangle;
