@@ -341,7 +341,7 @@ void Terrain::loadTerrainVariables()
 void Terrain::loadTextures()
 {
     loadSceneFramebufferTexture();
-    loadTerrainMaps("./Assets/Terrain/displacement_map_kauai.png");
+    loadTerrainMaps("./Assets/Terrain/island.png");
     loadAtmosphereTexture();
 }
 
