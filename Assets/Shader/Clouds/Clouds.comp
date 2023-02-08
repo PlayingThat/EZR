@@ -660,7 +660,7 @@ void main()
 
     // early exit
     if(fogAmount > 0.95f){
-        vec4 fragColor = vec4(skyColor * 0.8f, 1);
+        vec4 fragColor = vec4(skyColor, 1);
         imageStore(fragColorImage, fragCoord, fragColor);
         return;
     }
