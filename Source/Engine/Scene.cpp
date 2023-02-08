@@ -201,7 +201,8 @@ void Scene::setupNPREffects()
     m_outlShaderProgram->link();
     addNPREffect(m_outlShaderProgram, false);
     addNPRProperty("Outline", "colored", &m_OutlinePropertyColored, true);
-
+    addNPRProperty("Outline", "displayNormals", &m_OutlinePropertyNormals, true);
+    
     // Setup Watercolor (by Alyssa)
     m_waterColVertexShader = std::make_shared<Shader>("./Assets/Shader/Watercolor.vert");
     m_waterColFragmentShader = std::make_shared<Shader>("./Assets/Shader/Watercolor.frag");

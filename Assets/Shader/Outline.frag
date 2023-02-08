@@ -12,6 +12,7 @@ uniform sampler2D textureDiffuse;
 uniform sampler2D colorDiffuse;
 uniform vec2 screenSize;
 uniform sampler2D heightMap;
+uniform bool displayNormals;
 
 uniform bool colored;
 //uniform bool Textured;
@@ -66,6 +67,11 @@ void main(void)
 	{
 		color = texture(colorDiffuse, gl_FragCoord.xy / screenSize).xyz;
 	}
+
+	if (displayNormals)
+    {
+        color = texture(normals, gl_FragCoord.xy / screenSize).xyz;
+    }
 
 	FragColor = vec4(color * strength, 1.0);
 } 
