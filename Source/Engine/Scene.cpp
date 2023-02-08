@@ -78,21 +78,21 @@ void Scene::setup(std::shared_ptr<Scene> scene)
     //addObject(m_triangle);
     addObject(m_terrain);
     addObject(m_clouds);
-    addObject(m_ghost, true, Transformation{glm::vec3(1, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_ghost, true, Transformation{glm::vec3(4, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_ghost, false, Transformation{glm::vec3(-4, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    // addObject(m_ghost, true, Transformation{glm::vec3(1, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_ghost, true, Transformation{glm::vec3(4, 0, -0.4), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_ghost, false, Transformation{glm::vec3(-4, 0, -0.4), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
 
-    addObject(m_gingerbreadHouse, false, Transformation{glm::vec3(-3, -8, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_snowMan, false, Transformation{glm::vec3(1, -4, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_stone1, false, Transformation{glm::vec3(-3, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_stone2, false, Transformation{glm::vec3(-2, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_stone3, false, Transformation{glm::vec3(-1, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_stone4, false, Transformation{glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_treePlain, false, Transformation{glm::vec3(-8, -4, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_treeGreen, false, Transformation{glm::vec3(3, -6, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_treeOlive, false, Transformation{glm::vec3(8, -6, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_treeGold, false, Transformation{glm::vec3(13, -6, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
-    addObject(m_treeBrown, false, Transformation{glm::vec3(18, -6, 0), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_gingerbreadHouse, false, Transformation{glm::vec3(-3, -8, -0.4), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_snowMan, false, Transformation{glm::vec3(1, -4, -0.4), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_stone1, false, Transformation{glm::vec3(-3, 0, -0.4), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_stone2, false, Transformation{glm::vec3(-2, 0, -0.4), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_stone3, false, Transformation{glm::vec3(-1, 0, -0.4), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_stone4, false, Transformation{glm::vec3(0, 0, -0.4), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_treePlain, false, Transformation{glm::vec3(-8, -4, -0.4), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_treeGreen, false, Transformation{glm::vec3(3, -6, -0.4), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_treeOlive, false, Transformation{glm::vec3(8, -6, -0.4), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_treeGold, false, Transformation{glm::vec3(13, -6, -0.4), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
+    addObject(m_treeBrown, false, Transformation{glm::vec3(18, -6, -0.4), glm::vec3(1, 1, 1), glm::vec3(1.0f, 0.0f, 0.0f), 90.0f});
 
     loadMapTexture();
 }
