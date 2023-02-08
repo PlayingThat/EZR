@@ -109,7 +109,10 @@ private:
     // Setup Stippling Textures
     void createStipplingTexture();
 
+
+    std::shared_ptr<Drawable> getTreeColor();
     void loadMapTexture();
+    void updateMapTexture();
 
     std::shared_ptr<Scene> m_scene;
     std::shared_ptr<ProfilersWindow> m_profilerWindow;
@@ -273,5 +276,7 @@ private:
     std::shared_ptr<Drawable> m_treeOlive;
     std::shared_ptr<Drawable> m_treeGold;
     std::shared_ptr<Drawable> m_treeBrown;
+
+    int m_season = 1;
 
 };
