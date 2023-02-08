@@ -522,6 +522,7 @@ void Scene::drawNPRPanel()
     // Add General Category
     ImGui::Text("General");
     ImGui::Separator();
+    ImGui::SliderInt("Season", &m_season, 0, 4);
     ImGui::Checkbox("Use Parallax Mapping", &m_useParallaxMapping);
     ImGui::SliderFloat("Parallax Height Scale", &m_parallaxMappingHeightScale, 0.0f, 0.02f);
     ImGui::Checkbox("Transparency", &m_transparency);
@@ -645,11 +646,34 @@ std::shared_ptr<ProfilersWindow> Scene::getProfilerWindow()
     return m_profilerWindow;
 }
 
+//change the color of the leaves depending on the season
+std::shared_ptr<Drawable> Scene::getTreeColor()
+{
+    std::shared_ptr<Drawable> m_treeColor;
+
+    if (m_season == 0){ m_treeColor = m_treeOlive; }
+    else if (m_season == 1){ m_treeColor = m_treeGreen; }
+    else if (m_season == 2){ m_treeColor = m_treeGold;}
+    else if (m_season == 3){ m_treeColor = m_treeBrown; }
+    else if (m_season == 4){ m_treeColor = m_treePlain; }
+    else { LOG_ERROR ("no season found"); }
+
+    return m_treeColor;
+}
+
+void Scene::updateMapTexture()
+{
+    //if(m_season){loadMapTexture();}
+}
+
 void Scene::loadMapTexture()
 {
+    //change the color of the leaves depending on the season
+    std::shared_ptr<Drawable> m_treeColor = m_scene->getTreeColor();
+
     // Map between the texture rgb pixels and the object type
     std::map<std::tuple<int, int, int>, std::shared_ptr<Drawable>> pixelToObjectMap = {
-        { std::make_tuple(41, 253, 47), m_treeGreen },
+        { std::make_tuple(41, 253, 47), m_treeColor },
         { std::make_tuple(211, 131, 31), m_snowMan },
         { std::make_tuple(255, 245, 117), m_stone1 },
         { std::make_tuple(11, 36, 251), m_stone2 },
