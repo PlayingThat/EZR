@@ -1,13 +1,31 @@
 
+# Overview
+![Dynamic Terrain Division](https://github.com/PlayingThat/EZR/blob/main/EZR.gif)
+![Non-photorealistic rendering effects](https://github.com/PlayingThat/EZR/blob/main/NPR.gif)
+
+-   OpenGL rendering of terrain with dynamic LOD
+    -   The system is based on Binary Trees: https://onrendering.com/data/papers/cbt/ConcurrentBinaryTrees.pdf
+    -   Parallelized division and splitting on the GPU
+-   Various non-photorealistic rendering effects
+-   Volumetric clouds
+
 # Setup
 
-1. `build_dependencies.bat` ausführen, am besten als Administrator. Damit sollten glfw und glm gebaut und die Umgebungsvariablen automatisch gesetzt werden.
-2. EZR Project in VS Code/CLion/was auch immer öffnen und gucken ob es klappt,  OpenGL sollte automatisch gefunden werden.
-3. Bitte nur bei Erfolg berichten :|
+1.  Under Windows, run  `build_dependencies.bat`  as administrator. This should build glfw and glm and set the environment variables automatically.
+2.  Open the EZR project in VS Code/CLion/whatever and check if it works. OpenGL should be found automatically.
 
-# Infos
+## Dependencies
 
-- Einfach mal durchgucken, es gibt `Engine` für die Basisfunktionalität des Frameworks, `Objects` sollten aber ihre speziellen Features selbst verwalten (siehe `ColorfullTriangle` als Beispiel).
-- Bitte smart pointer verwenden, also `make_unique/make_shared` statt "new". Dann müssen wir die Objekte nicht selbst löschen. Auch dazu gibt es überall schon Beispiele im Code.
-- ImGui macht die Oberfläche, das ist ganz einfach, hat alle Elemente, die man so brauchen könnte und da gibt es auch schon 1-2 Beispiele zu im Code, sonst einfach Googeln.
-- Es gibt ein System zur Verwaltung von Shadern, damit können wir dann die uniforms leichter setzen und den Überblick behalten.
+-   OpenGL 4.5
+
+### Included
+
+-   ImGui: https://github.com/ocornut/imgui
+-   Assimp: https://github.com/assimp/assimp
+
+# Info
+
+-   Use  `Engine`  for the basic functionality of the framework, but  `Objects`  should manage their own special features (see  `Clouds`  as an example).
+-   Use smart pointers, i.e.  `make_unique/make_shared`  instead of  `new`. There are also examples of this in the code.
+-   ImGui provides the user interface.
+-   There is a shader management system, so that uniforms can be set more easily.
